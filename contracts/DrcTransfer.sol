@@ -1,5 +1,5 @@
-pragma solidity ^0.6.0;
-
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.16;
 contract DrcHandler {
     // Define the struct that represents a piece of land
     struct Land {
@@ -79,6 +79,9 @@ contract DrcHandler {
         // Emit the DevelopmentRightsTransferred event
         emit DevelopmentRightsTransferred(_id, msg.sender, _to);
     }
+}
+
+
 
     // Create a function
 /* List of the functions needed
@@ -98,3 +101,4 @@ contract DrcHandler {
     change area
     change
 12 change the accout id with the address
+*/
