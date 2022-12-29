@@ -60,68 +60,7 @@ contract DrcCrud {
 
     }
     // Create a function to add a new Drc to the mapping
-    function createDRC(DRC memory _drc) public {
-
-        // Increment the counter to get the next unique ID
-        
-
-        // // Create a new Drc with the provided name and age, and the next unique ID
-        // Drc memory newDrc = Drc(DrcCount, _name, _age);
-
-        // Add the new Drc to the mapping
- 
-
-
-    //     for(uint i=0; i< _drc.subDrc.length; i++){
-    //         uint l = drc.subDrc.length();
-    //         src.subDrc.push(); // add a new element to subdrc
-    //         drc.subDrc[l].sNo= _drc.subDrc[i].sNo;
-    //         drc.subDrc[l].area = _drc.subDrc[i].area;
-    //         drc.subDrc[l].status = _drc.subDrc[i].status;
-    //         drc.subDrc[l].linkeDrcId= _drc.subDrc[i].linkeDrcId;
-    //         }
-    //     for(uint i=0; i< _drc.owners.length; i++){
-    //         uint l = drc.owners.length();
-    //         src.owners.push(); // add a new element to owners
-    //         drc.owners[l]._address= _drc.owners[i]._address;
-    //         drc.owners[l].area = _drc.owners[i].area;
-    //         }
-    //     for(uint i=0; i< _drc.subDrc.length; i++){
-    //         uint l = drc.subDrc.length();
-    //         src.subDrc.push(); // add a new element to subdrc
-    //         drc.subDrc[l].sNo= _drc.subDrc[i].sNo;
-    //         drc.subDrc[l].area = _drc.subDrc[i].area;
-    //         drc.subDrc[l].status = _drc.subDrc[i].status;
-    //         drc.subDrc[l].linkeDrcId= _drc.subDrc[i].linkeDrcId;
-    //         }
-
-    //     drc.subDrc = SubDrc[_drc.subDrc.length]
-    //         drc.attributes.push(_subDrc.a) 
-    //   // add the credential at the end of the batch Credential array
-    //   Credential memory _credential = dataList[i];
-    //   uint l = batch.credentials.length;
-    //   batch.credentials.push();
-    //   batch.credentials[l].candidate=_credential.candidate;
-    //   for(uint j=0; j < _credential.attributes.length;j++){
-    //       batch.credentials[l].attributes.push(_credential.attributes[j]);
-    //   }
-    //     // uint availableArea;
-    //     // uint khasraNo;
-    //     // string village;
-    //     // string ward;
-    //     // string scheme;
-    //     // string plotNo;
-    //     // string tehsil;
-    //     // string district;
-    //     string landUse; // It could be enum
-    //     uint areaSurrendered;
-    //     uint circleRateSurrendered;
-    //     uint circleRateUtilization;
-    //     uint FarCredited;
-    //     SubDrc[] subDrc; 
-    //     DrcOwner[] owners;
-    //     Attribute[] attributes;
-
+    function createDRC(DRC memory _drc) public onlyOwner{
 
         // DrcList[drc.id] = drc;
         // emit event
@@ -137,9 +76,8 @@ contract DrcCrud {
     }
 
     // Create a function to update a Drc in the mapping
-    function updateDrc(uint _id, DRC memory _drc) public {
+    function updateDrc(uint _id, DRC memory _drc) public onlyOwner {
         // the drc should exist
-        // if drcList[_id] length !=0
         // Update the Drc in the mapping
         require(_id==_drc.id, "drcid should be same");
         insertDrc((_drc));
@@ -147,7 +85,7 @@ contract DrcCrud {
     }
 
     // // Create a function to delete a Drc from the mapping
-    function deleteDrc(uint _id) public {
+    function deleteDrc(uint _id) public onlyOwner{
         // Delete the Drc from the mapping
         delete DrcList[_id];
     }
@@ -162,11 +100,7 @@ contract DrcCrud {
         drc.areaSurrendered = _drc.areaSurrendered;
         drc.circleRateSurrendered=_drc.circleRateSurrendered;
         drc.circleRateUtilization = _drc.circleRateUtilization;
-        // drc.FarCredited = _drc.FarCredited;
-        // drc.subDrc=_drc.subDrc; //
-        // drc.owners = _drc.owners;
-        // drc.attributes = _drc.attributes;
-// copy the subDrc to the drc
+
         for(uint i=0; i< _drc.subDrc.length; i++){
             drc.subDrc.push(_drc.subDrc[i]);
         }
@@ -179,13 +113,20 @@ contract DrcCrud {
         DrcList[drc.id]=drc; // final insertion
     }
 
-    //todo
-    /*
-    1. ensure that there is an owner and method to transfer and owner
-    2. ensure that there is a method to update the drc such that all field might not be required,
-     or you can extracst the drc and then update all the fields. 
-     Since the drc would be stored in a map, it means that internally also, i have to update everything in one go, 
-     unless I can store drc in a nested map like structure, and then update only the least feasible branch. Why would I do that?
-    */
+  function isDrcCreated (uint _drcId) public view returns (bool) {
+    // in mapping, default values of all atrributes is zero
+    if( DrcList[_drcId].id !=0){
+            return true; 
+        }
+        return false;
+  }
 }
 
+
+/*
+for test cases
+1. test whether the drc exist or not
+2. test whether only owner is allowed to make changes
+3. check whether one can change the owner
+
+*/
