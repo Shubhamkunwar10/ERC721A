@@ -11,47 +11,45 @@ contract TdrStorage {
     address public admin;
 
     // Mapping from TDR id to TDR data
-    mapping(string => TdrNotice) public noticeMap;
-    mapping(string => TdrApplication) public applicationMap;
+    mapping(bytes32 => TdrNotice) public noticeMap;
+    mapping(bytes32 => TdrApplication) public applicationMap;
 
     enum ApplicationStatus {applied, verified, approved, issued}
     enum NoticeStatus{pending, issued}
     // TDR struct definition
     struct TdrApplication {
-        string applicationId;
+        bytes32 applicationId;
         uint applicationDate;
-        string place;
-        string noticeId;
+        bytes32 place;
+        bytes32 noticeId;
         uint farRequested;
         address[] applicants;
-        string description;
-        uint expiration;
         ApplicationStatus status;
     }
     struct TdrNotice{
-        string noticeId;
+        bytes32 noticeId;
         uint noticeDate;
-        string khasraOrPlotNo;
-        string villageOrWard;
-        string Tehsil;
-        string district;
-        string landUse;
-        string masterPlan;
+        bytes32 khasraOrPlotNo;
+        bytes32 villageOrWard;
+        bytes32 Tehsil;
+        bytes32 district;
+        bytes32 landUse;
+        bytes32 masterPlan;
         TdrApplication[] applications;
         NoticeStatus status;
 
     }
 
     // Event emitted after a TDR is created
-    event TDRCreated(string noticeId, string applicationId);
-    event NoticeCreated(string noticeId);
+    event TDRCreated(bytes32 noticeId, bytes32 applicationId);
+    event NoticeCreated(bytes32 noticeId);
 
 
     // Event emitted after a TDR is updated
-    event TDRUpdated(string noticeId, string applicationId);
+    event TDRUpdated(bytes32 noticeId, bytes32 applicationId);
 
     // Event emitted after a TDR is deleted
-    event TDRDeleted(string noticeId);
+    event TDRDeleted(bytes32 noticeId);
 
     // Constructor function to set the initial values of the contract
     constructor(address _admin) {
@@ -118,7 +116,7 @@ contract TdrStorage {
 
 
     // Function to read a TDR
-    function getApplication(string memory _applicationId) public view returns (TdrApplication memory) {
+    function getApplication(bytes32 _applicationId) public view returns (TdrApplication memory) {
         // Retrieve the TDR from the mapping
         TdrApplication memory application = applicationMap[_applicationId];
 
@@ -126,7 +124,7 @@ contract TdrStorage {
         return application;
     }
     // function to get a notice
-    function getNotice(string memory _noticeId) public view returns (TdrNotice memory) {
+    function getNotice(bytes32 _noticeId) public view returns (TdrNotice memory) {
         // Retrieve the TDR from the mapping
         TdrNotice memory notice = noticeMap[_noticeId];
 
@@ -134,11 +132,11 @@ contract TdrStorage {
         return notice;
     }
     // Function to update a TDR
-    function updateApplicationStatus(string memory _applicationId, ApplicationStatus _status) public onlyManager {
+    function updateApplicationStatus(bytes32 _applicationId, ApplicationStatus _status) public onlyManager {
         // fetch the application
         TdrApplication storage application = applicationMap[_applicationId];
         // revert if empty
-        if(bytes(application.applicationId).length <=0){
+        if(application.applicationId==""){
             revert("Application with does not exist");
         }
         // update the application
@@ -165,9 +163,9 @@ contract TdrStorage {
        
   function isNoticeCreated(TdrNotice memory _tdrNotice) public pure returns (bool) {
     // in mapping, default values of all atrributes is zero
-    if( bytes(_tdrNotice.noticeId).length >0){
-            return true; 
+    if( _tdrNotice.noticeId==""){
+            return false; 
         }
-        return false;
+        return true;
   }
 }
