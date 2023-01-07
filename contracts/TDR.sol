@@ -22,14 +22,7 @@ contract TdrStorage {
         uint applicationDate;
         string place;
         string noticeId;
-        uint noticeDate;
         uint farRequested;
-        string khasraOrPlotNo;
-        string villageOrWard;
-        string Tehsil;
-        string district;
-        string landUse;
-        string masterPlan;
         address[] applicants;
         string description;
         uint expiration;
@@ -37,6 +30,13 @@ contract TdrStorage {
     }
     struct TdrNotice{
         string noticeId;
+        uint noticeDate;
+        string khasraOrPlotNo;
+        string villageOrWard;
+        string Tehsil;
+        string district;
+        string landUse;
+        string masterPlan;
         TdrApplication[] applications;
         NoticeStatus status;
 
@@ -44,6 +44,8 @@ contract TdrStorage {
 
     // Event emitted after a TDR is created
     event TDRCreated(string noticeId, string applicationId);
+    event NoticeCreated(string noticeId);
+
 
     // Event emitted after a TDR is updated
     event TDRUpdated(string noticeId, string applicationId);
@@ -73,12 +75,12 @@ contract TdrStorage {
     }
 
     // Function to create a new TDR
-    function createTDR(TdrApplication memory _tdrApplication) public onlyManager {
+    function createApplication(TdrApplication memory _tdrApplication) public onlyManager {
         //check whether the notice has been created or not. 
         TdrNotice storage tdrNotice = noticeMap[_tdrApplication.noticeId];
         // if notice is empty, create notice.
         if(!isNoticeCreated(tdrNotice)){
-            tdrNotice.noticeId = _tdrApplication.noticeId;
+            revert("No such notice has been created");
         }
         // add application to the notice
         tdrNotice.applications.push(_tdrApplication);
@@ -89,6 +91,31 @@ contract TdrStorage {
         // Emit the TDRCreated event
         emit TDRCreated(_tdrApplication.noticeId, _tdrApplication.applicationId);
     }
+
+    // Function to create a new TDR
+    function createNotice(TdrNotice memory _tdrNotice) public onlyManager {
+        //check whether the notice has been created or not. 
+        TdrNotice storage tdrNotice = noticeMap[_tdrNotice.noticeId];
+        // if notice is empty, create notice.
+        if(isNoticeCreated(tdrNotice)){
+            revert("notice already created");
+        }
+        tdrNotice.noticeDate = _tdrNotice.noticeDate;
+        tdrNotice.khasraOrPlotNo = _tdrNotice.khasraOrPlotNo;
+        tdrNotice.villageOrWard = _tdrNotice.villageOrWard;
+        tdrNotice.Tehsil = _tdrNotice.Tehsil;
+        tdrNotice.district = _tdrNotice.district;
+        tdrNotice.landUse = _tdrNotice.landUse;
+        tdrNotice.masterPlan = _tdrNotice.masterPlan;
+        tdrNotice.status = _tdrNotice.status;
+        // add application to the map
+        noticeMap[_tdrNotice.noticeId]=tdrNotice;
+        // Create a new TDR and add it to the mapping
+
+        // Emit the TDRCreated event
+        emit NoticeCreated(_tdrNotice.noticeId);
+    }
+
 
     // Function to read a TDR
     function getApplication(string memory _applicationId) public view returns (TdrApplication memory) {
@@ -136,7 +163,7 @@ contract TdrStorage {
 
         // Emit the TDRDeleted event
        
-  function isNoticeCreated(TdrNotice memory _tdrNotice) public view returns (bool) {
+  function isNoticeCreated(TdrNotice memory _tdrNotice) public pure returns (bool) {
     // in mapping, default values of all atrributes is zero
     if( bytes(_tdrNotice.noticeId).length >0){
             return true; 
