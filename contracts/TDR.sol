@@ -1,7 +1,8 @@
 pragma solidity ^0.8.16;
 
-// Contract to maintain the TDR notice and applications.
-// A TdrNotice stores all the applications against a notice. If any of the application is converted to DRC, it stops taking further application against that notice. One should that go to court and get the DRC quashed.
+// Contract to maintain the TDR notice and applicationIds.
+// A TdrNotice stores all the applicationIds against a notice. If any of the application is converted to DRC, it stops taking further application against that notice. One should that go to court and get the DRC quashed.
+// Note: This is a storage contract. Job of this contract is not to see the logic of the storage, but to store the values in the blockchain. All the logic and checks should be there in the TdrManager contract
 // TDR storage contract
 contract TdrStorage {
     // Address of the TDR manager
@@ -35,7 +36,7 @@ contract TdrStorage {
         bytes32 district;
         bytes32 landUse;
         bytes32 masterPlan;
-        TdrApplication[] applications;
+        bytes32[] applicationIds;
         NoticeStatus status;
 
     }
@@ -74,14 +75,6 @@ contract TdrStorage {
 
     // Function to create a new TDR
     function createApplication(TdrApplication memory _tdrApplication) public onlyManager {
-        //check whether the notice has been created or not. 
-        TdrNotice storage tdrNotice = noticeMap[_tdrApplication.noticeId];
-        // if notice is empty, create notice.
-        if(!isNoticeCreated(tdrNotice)){
-            revert("No such notice has been created");
-        }
-        // add application to the notice
-        tdrNotice.applications.push(_tdrApplication);
         // add application to the map
         applicationMap[_tdrApplication.applicationId]=_tdrApplication;
         // Create a new TDR and add it to the mapping
@@ -112,6 +105,38 @@ contract TdrStorage {
 
         // Emit the TDRCreated event
         emit NoticeCreated(_tdrNotice.noticeId);
+    }
+
+    function updateNotice(TdrNotice memory _tdrNotice) public {
+        TdrNotice storage tdrNotice = noticeMap[_tdrNotice.noticeId];
+        // if notice is empty, create notice.
+        if(!isNoticeCreated(tdrNotice)){
+            revert("no such notice exists, reverting");
+        }
+        tdrNotice.noticeDate = _tdrNotice.noticeDate;
+        tdrNotice.khasraOrPlotNo = _tdrNotice.khasraOrPlotNo;
+        tdrNotice.villageOrWard = _tdrNotice.villageOrWard;
+        tdrNotice.Tehsil = _tdrNotice.Tehsil;
+        tdrNotice.district = _tdrNotice.district;
+        tdrNotice.landUse = _tdrNotice.landUse;
+        tdrNotice.masterPlan = _tdrNotice.masterPlan;
+        tdrNotice.status = _tdrNotice.status;
+        // add application to the map
+        noticeMap[_tdrNotice.noticeId]=tdrNotice;
+        // Create a new TDR and add it to the mapping
+
+        // Emit the TDRCreated event
+        emit NoticeCreated(_tdrNotice.noticeId);
+    }
+
+    function addApplicationToNotice(bytes32 noticeId, bytes32 applicationId) public {
+        TdrNotice storage tdrNotice = noticeMap[noticeId];
+        // notice should exist
+        if(tdrNotice.noticeId==""){
+		    revert("No such notice exist");
+	    }
+	    tdrNotice.applicationIds.push(applicationId);
+
     }
 
 
