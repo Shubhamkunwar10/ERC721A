@@ -43,8 +43,23 @@ contract TDRManager {
         tdrStorage.createApplication(_tdrApplication);
 
         // add application in the notice 
-        tdrStorage.addApplicationToNotice(_tdrApplication.noticeId,_tdrApplication);
+        tdrStorage.addApplicationToNotice(_tdrApplication.noticeId,_tdrApplication.applicationId); 
         // Call the TDR storage contract's createApplication function
+    }
+// This function mark the application as verified
+    function verifyApplication(bytes32 applicationId) onlyAdmin{
+    // get application
+    TdrApplication memory tdrApplication = tdrStorage.getApplication(applicaitonId);
+    // ensure that the notice is not finalized
+    TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
+    if(notice.status == NoticeStatus.issued){
+        revert("DRC already issued against this notice");
+    }
+
+    // set application status as verified
+    tdrApplication.status = ApplicationStatus.verified;
+    // update Application
+    tdrApplication.updateApplication(tdrApplication);
     }
 
     // // Function to update a TDR application

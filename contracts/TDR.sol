@@ -42,8 +42,11 @@ contract TdrStorage {
     }
 
     // Event emitted after a TDR is created
-    event TDRCreated(bytes32 noticeId, bytes32 applicationId);
+    event ApplicationCreated(bytes32 noticeId, bytes32 applicationId);
+    event ApplicationUpdated(bytes32 noticeId, bytes32 applicationId);
+
     event NoticeCreated(bytes32 noticeId);
+    event NoticeUpdated(bytes32 noticeId);
 
 
     // Event emitted after a TDR is updated
@@ -156,6 +159,7 @@ contract TdrStorage {
         // Return the TDR data
         return notice;
     }
+    
     // Function to update a TDR
     function updateApplicationStatus(bytes32 _applicationId, ApplicationStatus _status) public onlyManager {
         // fetch the application
@@ -177,6 +181,11 @@ contract TdrStorage {
 
         // Emit the TDRUpdated event
         emit TDRUpdated(application.noticeId,application.applicationId);
+    }
+
+    function updateApplication(TdrApplication memory _application){
+        applicationMap[_application.applicationId]=_application;
+        emit ApplicationUpdated(_applicaiton.noticeId, _applicaiton.applicationId) // emit this event
     }
 
     // // Function to delete a TDR
