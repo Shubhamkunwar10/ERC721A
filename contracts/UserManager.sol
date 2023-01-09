@@ -1,17 +1,31 @@
-pragma solidity ^0.8.0;
+//SPDX-License-Identifier: UNLICENSED
+
+/**
+
+UserManager contract is used to map user id to user address, and to manage verifier, approver and issuer addresses.
+The contract owner and admin have the authority to update user, verifier, approver and issuer addresses.
+*/
+pragma solidity ^0.8.16;
 
 contract UserManager {
     // Mapping from user id to user address
     mapping(bytes32 => address) public userMap;
+    mapping(address => bytes32) public reverseUserMap;
 
     // List of verifier addresses
     mapping(bytes32 => address) public verifierMap;
+    mapping(address => bytes32) public reverseVerifierMap;
+
 
     // List of approver addresses
     mapping(bytes32 => address) public approverMap;
+    mapping(address => bytes32) public reverseApproverMap;
+
 
     // List of issuer addresses
     mapping(bytes32 => address) public issuerMap;
+    mapping(address => bytes32) public reverseIssuerMap;
+
 
     // Address of the contract owner
     address public owner;
@@ -292,5 +306,38 @@ contract UserManager {
     function getIssuer(bytes32 id) public view returns (address) {
         return issuerMap[id];
     }
+
+/// public functions to know whether the user is an issuer, verifier, approver or admin.
+    /**
+
+    @dev Function to check if an address is an issuer
+    @param _address address to be checked
+    @return bool true if the address is an issuer, false otherwise
+    */
+    function isIssuer(address _address) public view returns (bool) {
+    return reverseIssuerMap[_address]!="";
+    }
+    /**
+
+    @dev Function to check if an address is a verifier
+    @param _address address to be checked
+    @return bool true if the address is a verifier, false otherwise
+    */
+    function isVerifier(address _address) public view returns (bool) {
+    return reverseVerifierMap[_address]!="";
+    }
+    /**
+
+    @dev Function to check if an address is an approver
+    @param _address address to be checked
+    @return bool true if the address is an approver, false otherwise
+    */
+    function isApprover(address _address) public view returns (bool) {
+    return reverseApproverMap[_address]!="";
+    }
+    function isAdmin(address _address) public view returns (bool) {
+    return admin == _address;
+    }
+    
 
 }
