@@ -15,7 +15,7 @@ contract TdrStorage {
     mapping(bytes32 => TdrNotice) public noticeMap;
     mapping(bytes32 => TdrApplication) public applicationMap;
 
-    enum ApplicationStatus {applied, verified, approved, issued}
+    enum ApplicationStatus {applied, verified, approved, issued,rejected}
     enum NoticeStatus{pending, issued}
     // TDR struct definition
     struct TdrApplication {
@@ -24,6 +24,7 @@ contract TdrStorage {
         bytes32 place;
         bytes32 noticeId;
         uint farRequested;
+        uint farGranted;
         address[] applicants;
         ApplicationStatus status;
     }
@@ -83,7 +84,7 @@ contract TdrStorage {
         // Create a new TDR and add it to the mapping
 
         // Emit the TDRCreated event
-        emit TDRCreated(_tdrApplication.noticeId, _tdrApplication.applicationId);
+        emit ApplicationCreated(_tdrApplication.noticeId, _tdrApplication.applicationId);
     }
 
     // Function to create a new TDR
@@ -183,9 +184,9 @@ contract TdrStorage {
         emit TDRUpdated(application.noticeId,application.applicationId);
     }
 
-    function updateApplication(TdrApplication memory _application){
+    function updateApplication(TdrApplication memory _application) public {
         applicationMap[_application.applicationId]=_application;
-        emit ApplicationUpdated(_applicaiton.noticeId, _applicaiton.applicationId) // emit this event
+        emit ApplicationUpdated(_application.noticeId, _application.applicationId); // emit this event
     }
 
     // // Function to delete a TDR
