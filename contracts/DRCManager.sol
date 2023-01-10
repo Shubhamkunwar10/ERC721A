@@ -127,8 +127,8 @@ contract DRCManager{
         applicationMap[applicationId]=application;
         // change the owner of the new drc
         DrcStorage.SubDrc memory subDrc;
-        DrcStorage.DrcOwner[] storage newDrcOwners = application.newDrcOwner;
         DrcStorage.DRC memory drc = drcStorage.getDrc(application.drcId);
+        
         for (uint i=0;i<drc.subDrcs.length;i++){
             DrcStorage.SubDrc memory sd = drc.subDrcs[i];
             if(sd.linkedDrcId == applicationId){
@@ -147,6 +147,7 @@ contract DRCManager{
         newDrc.status = DrcStorage.DrcStatus.available;
         newDrc.farCredited = application.farTransferred;
         newDrc.farAvailable = application.farTransferred;
+        newDrc.owners = application.newDrcOwner;
         drcStorage.createDRC(newDrc);
     }
 
