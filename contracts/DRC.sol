@@ -35,6 +35,7 @@ contract DrcStorage {
         SubDrcStatus status;
         bytes32 linkedDrcId;
         // owners of subdrc is same as the original drc
+        // new owners in case of transfer can be fetched from the application
     }
 
     struct Attribute{
