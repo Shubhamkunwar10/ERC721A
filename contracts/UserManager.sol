@@ -33,8 +33,11 @@ contract UserManager {
     // Address of the contract admin
     address public admin;
 
+    // address of the manager of the contract
+    address public manager;
     // Address of the Vice-chairman
     address public vc;
+
      
     // Event emitted after a user is updated   
     event UserAdded(bytes32 userId, address userAddress);
@@ -68,12 +71,13 @@ contract UserManager {
     event IssuerListUpdated(address[] issuerAddresses);
 
     // Constructor function to set the initial values of the contract
-    constructor(address _admin) {
+    constructor(address _admin, address _manager) {
         // Set the contract owner to the caller
         owner = msg.sender;
 
         // Set the contract admin
         admin = _admin;
+        manager = _manager;
     }
 
 /**
@@ -93,6 +97,14 @@ contract UserManager {
     }
 
 /**
+ * @dev Modifier to check if the caller is the contract admin
+ */
+    modifier onlyManager() {
+        require(msg.sender == manager, "Caller is not the contract admin");
+        _;
+    }
+
+/**
  * @dev Function to add a user
  * @param userId 12 bit uint id of the user
  * @param userAddress address of the user
@@ -104,6 +116,7 @@ contract UserManager {
         }
         // Update the user in the mapping
         userMap[userId] = userAddress;
+        reverseUserMap[userAddress]=userId;
 
         // Emit the UserAdded event
         emit UserAdded(userId, userAddress);
@@ -122,6 +135,8 @@ contract UserManager {
 
         // Update the user in the mapping
         userMap[userId] = userAddress;
+        reverseUserMap[userAddress]=userId;
+
 
         // Emit the UserUpdated event
         emit UserUpdated(userId, userAddress);
@@ -139,6 +154,8 @@ contract UserManager {
         }
         // Update the verifier in the mapping
         verifierMap[id] = _address;
+        reverseVerifierMap[_address]=id;
+
 
         // Emit the verifierAdded event
         emit VerifierAdded(id, _address);
@@ -155,6 +172,7 @@ contract UserManager {
         }
         // Update the verifier in the mapping
         verifierMap[id] = _address;
+        reverseVerifierMap[_address]=id;
 
         // Emit the verifierUpdated event
         emit VerifierUpdated(id, _address);
@@ -170,7 +188,9 @@ contract UserManager {
             revert("Verifier does not exist");
         }
         // Delete the verifier in the mapping
+        address _address = verifierMap[id];
         delete(verifierMap[id]);
+        delete(reverseVerifierMap[_address]);
 
         // Emit the verifierUpdated event
         emit VerifierDeleted(id);
@@ -198,6 +218,8 @@ contract UserManager {
         }
         // Update the approver in the mapping
         approverMap[id] = _address;
+        reverseApproverMap[_address]=id;
+
 
         // Emit the ApproverAdded event
         emit ApproverAdded(id, _address);
@@ -215,6 +237,7 @@ contract UserManager {
         }
         // Update the approver in the mapping
         approverMap[id] = _address;
+        reverseVerifierMap[_address]=id;
 
         // Emit the ApproverUpdated event
         emit ApproverUpdated(id, _address);
@@ -230,7 +253,9 @@ contract UserManager {
             revert("Approver does not exist");
         }
         // Delete the approver in the mapping
+        address _address = approverMap[id];
         delete(approverMap[id]);
+        delete(reverseVerifierMap[_address]);
 
         // Emit the ApproverDeleted event
         emit ApproverDeleted(id);
@@ -260,6 +285,7 @@ contract UserManager {
         }
         // Update the issuer in the mapping
         issuerMap[id] = _address;
+        reverseIssuerMap[_address]=id;
 
         // Emit the IssuerAdded event
         emit IssuerAdded(id, _address);
@@ -277,6 +303,7 @@ contract UserManager {
         }
         // Update the issuer in the mapping
         issuerMap[id] = _address;
+        reverseIssuerMap[_address]=id;
 
         // Emit the IssuerUpdated event
         emit IssuerUpdated(id, _address);
@@ -292,8 +319,9 @@ contract UserManager {
             revert("Issuer does not exist");
         }
         // Delete the issuer in the mapping
+        address _address = approverMap[id];
         delete(issuerMap[id]);
-
+        delete(reverseIssuerMap[_address]);
         // Emit the Issuer Deleted event
         emit IssuerDeleted(id);
     }
@@ -338,6 +366,16 @@ contract UserManager {
     function isAdmin(address _address) public view returns (bool) {
     return admin == _address;
     }
+    function getUserId (address _address) view public returns (bytes32){
+        return reverseUserMap[_address];
+    }
+    function getVerifierId (address _address) view public returns (bytes32){
+        return reverseVerifierMap[_address];
+    }
+    function getIssuerId (address _address) view public returns (bytes32){
+        return reverseIssuerMap[_address];
+    }
+
     
 
 }
