@@ -102,6 +102,9 @@ contract DrcStorage {
         DRC storage drc = drcMap[_drcId];
         drc.owners.push(newOwner);
         drcMap[_drcId] = drc;
+        bytes32[] storage drcList = ownerMap[newOwner.id];
+        drcList.push(_drcId);
+        ownerMap[newOwner.id] = drcList;
     } 
 
   function addDrcOnwers(bytes32 _drcId, DrcOwner[] memory newOwners)public {
@@ -109,6 +112,9 @@ contract DrcStorage {
     DRC storage drc = drcMap[_drcId];
     for(uint i= 0; i< newOwners.length;i++){
         drc.owners.push(newOwners[i]);
+        bytes32[] storage drcList = ownerMap[newOwners[i].id];
+        drcList.push(_drcId);
+        ownerMap[newOwners[i].id] = drcList;
     }
     drcMap[_drcId] = drc;
   }
@@ -118,21 +124,39 @@ contract DrcStorage {
     // Funtion searches for owners and deletes it. Assume that there are multiple owner with same owner id.
     DRC storage drc = drcMap[_drcId];
     // uint count =0;
-    uint index;
+    uint index=drc.owners.length;
     for(uint i=0; i<drc.owners.length; i++ ){
         if(ownerId == drc.owners[i].id){
             index = i;
             break;
         }
-        if(i == drc.owners.length -1){
+
+    }
+    if(index ==drc.owners.length){
             revert("Owner not found");
         }
-    }
     for(uint i=index; i<drc.owners.length-1;i++){
         drc.owners[i]=drc.owners[i+1];
     }
-    drc.owners.pop();
+    drc.owners.pop();    
+    // remove the drc from the the deleted user drcList.
+    bytes32[] storage drcList = ownerMap[ownerId];
+    index = drcList.length;
+    for (uint i=0; i<drcList.length; i++){
+        if(_drcId == drcList[i]){
+            index =i;
+            break;
+        }
 
+    }
+    if(index==drcList.length){
+            revert ("error. Owner not found");
+        }
+    for(uint i=index; i<drcList.length-1;i++){
+        drcList[i]=drcList[i+1];
+    }
+    drcList.pop;
+    ownerMap[ownerId]=drcList;
     }
 
   function getOwnerDetails(bytes32 _drcId, bytes32 ownerId) view public returns (DrcOwner memory) {
