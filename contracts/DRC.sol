@@ -56,7 +56,7 @@ contract DrcStorage {
     function createDRC(DRC memory _drc) public onlyManager{
         //check whether the DRC already exists
         require(isDrcCreated(_drc.id),"DRC already exists");
-        drcMap[_drc.id] = _drc;
+        storeDrcInMap(_drc);
         emit DrcCreated(_drc.id);
     }
     // Create a function to update a Drc in the mapping
@@ -66,10 +66,10 @@ contract DrcStorage {
         require(_id ==_drc.id, "drcid should be same");
         require(!isDrcCreated(_drc.id),"DRC does not exists");
         // insertDrc((_drc));
-        drcMap[_id] = _drc;
+        storeDrcInMap(_drc);
     }
 
-    // // Create a function to retrieve a Drc from the mapping by ID
+    // Create a function to retrieve a Drc from the mapping by ID
     function getDrc(bytes32 _id) public view returns (DRC memory) {
         // Retrieve the Drc from the mapping
         DRC memory drc = drcMap[_id];
@@ -80,7 +80,7 @@ contract DrcStorage {
 
 
 
-    // // Create a function to delete a Drc from the mapping
+    // Create a function to delete a Drc from the mapping
     function deleteDrc(bytes32 _id) public onlyOwner{
         // Delete the Drc from the mapping
         delete drcMap[_id];
@@ -88,20 +88,20 @@ contract DrcStorage {
 
 
 
-  function isDrcCreated (bytes32 _drcId) public view returns (bool) {
-    // in mapping, default values of all atrributes is zero
-    if(drcMap[_drcId].id !=""){
-            return true; 
-        }
-        return false;
-  }
-  // ideally these functions should be moved to manager contract
-  function addDrcOnwer(bytes32 _drcId, DrcOwner memory newOwner)public {
-    require(isDrcCreated(_drcId),"DRC does not exists");
-    DRC storage drc = drcMap[_drcId];
-    drc.owners.push(newOwner);
-    drcMap[_drcId] = drc;
-  }
+    function isDrcCreated (bytes32 _drcId) public view returns (bool) {
+        // in mapping, default values of all atrributes is zero
+        if(drcMap[_drcId].id !=""){
+                return true; 
+            }
+            return false;
+    }
+    // ideally these functions should be moved to manager contract
+    function addDrcOnwer(bytes32 _drcId, DrcOwner memory newOwner)public {
+        require(isDrcCreated(_drcId),"DRC does not exists");
+        DRC storage drc = drcMap[_drcId];
+        drc.owners.push(newOwner);
+        drcMap[_drcId] = drc;
+    } 
 
   function addDrcOnwers(bytes32 _drcId, DrcOwner[] memory newOwners)public {
     require(isDrcCreated(_drcId),"DRC does not exists");
@@ -145,7 +145,28 @@ contract DrcStorage {
     return emptyDrcOwner;
     }
 
-    
+    function storeDrcInMap (DRC memory _drc) internal {
+        DRC storage drc = drcMap[_drc.id];
+        
+        drc.id = _drc.id;
+        drc.notice = _drc.notice;
+        drc.status = _drc.status;
+        drc.farAvailable = _drc.farAvailable;
+        drc.areaSurrendered = _drc.areaSurrendered;
+        drc.circleRateSurrendered = _drc.circleRateSurrendered;
+        drc.circleRateUtilization = _drc.circleRateUtilization;
+        for(uint i =0; i<_drc.applications.length; i++){
+            drc.applications[i]= _drc.applications[i];
+        }
+        for(uint i =0; i<_drc.owners.length; i++){
+            drc.owners[i]= _drc.owners[i];
+        }
+        for(uint i =0; i<_drc.attributes.length; i++){
+            drc.attributes[i]= _drc.attributes[i];
+        }
+
+        drcMap[drc.id]=drc;
+    }
 }
 
 
