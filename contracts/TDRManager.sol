@@ -35,6 +35,7 @@ contract TDRManager {
     address public admin;
     address public tdrStorageAddress;
     address public userManagerAddress;
+    event ApplicationRejected(bytes32 applicationId, string reason);
 
     // Constructor function to set the initial values of the contract
     constructor(TdrStorage _tdrStorage, address _admin) {
@@ -78,7 +79,7 @@ contract TDRManager {
 
 
     // Function to create a new TDR notice
-    function createNotice(TdrStorage.TdrNotice memory _tdrNotice) public {
+    function createNotice(TdrNotice memory _tdrNotice) public {
         // Call the TDR storage contract's createNotice function
         tdrStorage.createNotice(_tdrNotice);
     }
@@ -88,9 +89,9 @@ contract TDRManager {
     @param _tdrApplication TdrApplication memory object representing the application to be created
     @dev Revert if the notice for the application does not exist
     */
-    function createApplication(TdrStorage.TdrApplication memory _tdrApplication) public {
+    function createApplication(TdrApplication memory _tdrApplication) public {
         // check whether Notice has been created for the application. If not, revert
-        TdrStorage.TdrNotice memory tdrNotice = tdrStorage.getNotice(_tdrApplication.noticeId);
+        TdrNotice memory tdrNotice = tdrStorage.getNotice(_tdrApplication.noticeId);
         // if notice is empty, create notice.
         if(tdrNotice.noticeId==""){
             revert("No such notice has been created");
@@ -105,15 +106,15 @@ contract TDRManager {
     function verifyApplication(bytes32 applicationId) public{
     assert(userManager.isVerifier(msg.sender)|| userManager.isAdmin(msg.sender));
     // get application
-    TdrStorage.TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
+    TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
     // ensure that the notice is not finalized
-    TdrStorage.TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-    if(notice.status == TdrStorage.NoticeStatus.issued){
+    TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
+    if(notice.status == NoticeStatus.issued){
         revert("DRC already issued against this notice");
     }
 
     // set application status as verified
-    tdrApplication.status = TdrStorage.ApplicationStatus.verified;
+    tdrApplication.status = ApplicationStatus.verified;
     // update Application
     tdrStorage.updateApplication(tdrApplication);
     }
@@ -122,26 +123,27 @@ contract TDRManager {
     function rejectApplication(bytes32 applicationId,string memory reason) public {
     assert(userManager.isApprover(msg.sender)||userManager.isVerifier(msg.sender)||userManager.isIssuer(msg.sender)||userManager.isAdmin(msg.sender)); //what about admin
     // get application
-    TdrStorage.TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
+    TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
     // No need to check notice, as application can be rejected even when DRC is issued.
     // set application status as verified
-    tdrApplication.status = TdrStorage.ApplicationStatus.rejected;
+    tdrApplication.status = ApplicationStatus.rejected;
     // update Application
     tdrStorage.updateApplication(tdrApplication);
+    emit ApplicationRejected(applicationId, reason);
     }
 
    function approveApplication(bytes32 applicationId) public {
     assert(userManager.isApprover(msg.sender)||userManager.isAdmin(msg.sender));
     // get application
-    TdrStorage.TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
+    TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
     // ensure that the notice is not finalized
-    TdrStorage.TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-    if(notice.status == TdrStorage.NoticeStatus.issued){
+    TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
+    if(notice.status == NoticeStatus.issued){
         revert("DRC already issued against this notice");
     }
 
     // set application status as verified
-    tdrApplication.status = TdrStorage.ApplicationStatus.approved;
+    tdrApplication.status = ApplicationStatus.approved;
     // update Application
     tdrStorage.updateApplication(tdrApplication);
     }
@@ -150,19 +152,19 @@ contract TDRManager {
     function issueDRC(bytes32 applicationId, uint far) public {
     assert(userManager.isIssuer(msg.sender)|| userManager.isAdmin(msg.sender));
     // get application
-    TdrStorage.TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
+    TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
     // ensure that the notice is not finalized
-    TdrStorage.TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-    if(notice.status == TdrStorage.NoticeStatus.issued){
+    TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
+    if(notice.status == NoticeStatus.issued){
         revert("DRC already issued against this notice");
     }
 
     // set application status as verified
-    tdrApplication.status = TdrStorage.ApplicationStatus.issued;
+    tdrApplication.status = ApplicationStatus.drcIssued;
     // update FAR in application
     tdrApplication.farGranted=far;
     // set notice as issued
-    notice.status = TdrStorage.NoticeStatus.issued;
+    notice.status = NoticeStatus.issued;
     tdrStorage.updateNotice(notice);
 
     // update Application
@@ -172,29 +174,4 @@ contract TDRManager {
     // emit events
     }
 
-    // // Function to update a TDR application
-    // function updateApplication(TdrApplication memory _tdrApplication) public {
-    //     // Call the TDR storage contract's updateApplication function
-    //     tdrStorage.updateApplication(_tdrApplication);
-    // }
-
-    // // Function to delete a TDR application
-    // function deleteApplication(bytes32 _applicationId) public {
-    //     // Call the TDR storage contract's deleteApplication function
-    //     tdrStorage.deleteApplication(_applicationId);
-    // }
-
-    // // Function to change the TDR manager
-    // function changeDRCManager(address _newDRCManager) public onlyAdmin {
-    //     // Set the new TDR manager
-    //     tdrStorage.tdrManager = _newDRCManager;
-    // }
-
-
-    /*
-    1. Apply TDR
-    2. approve TDR
-    3. Approve TDR
-    4. Issue DRC
-    */
 }

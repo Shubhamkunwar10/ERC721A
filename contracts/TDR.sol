@@ -1,4 +1,5 @@
 pragma solidity ^0.8.16;
+import "./DataTypes.sol";
 
 // Contract to maintain the TDR notice and applicationIds.
 // A TdrNotice stores all the applicationIds against a notice. If any of the application is converted to DRC, it stops taking further application against that notice. One should that go to court and get the DRC quashed.
@@ -15,32 +16,9 @@ contract TdrStorage {
     mapping(bytes32 => TdrNotice) public noticeMap;
     mapping(bytes32 => TdrApplication) public applicationMap;
 
-    enum ApplicationStatus {applied, verified, approved, issued,rejected}
-    enum NoticeStatus{pending, issued}
+    // enum ApplicationStatus {applied, verified, approved, issued,rejected}
     // TDR struct definition
-    struct TdrApplication {
-        bytes32 applicationId;
-        uint applicationDate;
-        bytes32 place;
-        bytes32 noticeId;
-        uint farRequested;
-        uint farGranted;
-        address[] applicants;
-        ApplicationStatus status;
-    }
-    struct TdrNotice{
-        bytes32 noticeId;
-        uint noticeDate;
-        bytes32 khasraOrPlotNo;
-        bytes32 villageOrWard;
-        bytes32 Tehsil;
-        bytes32 district;
-        bytes32 landUse;
-        bytes32 masterPlan;
-        bytes32[] applicationIds;
-        NoticeStatus status;
 
-    }
 
     // Event emitted after a TDR is created
     event ApplicationCreated(bytes32 noticeId, bytes32 applicationId);
@@ -174,7 +152,7 @@ contract TdrStorage {
         // Update the application in the mapping
         applicationMap[_applicationId] = application;
         // check for the notice 
-        if(_status == ApplicationStatus.issued){
+        if(_status == ApplicationStatus.drcIssued){
             TdrNotice storage notice = noticeMap[application.noticeId];
             notice.status= NoticeStatus.issued;
             noticeMap[application.noticeId]=notice;

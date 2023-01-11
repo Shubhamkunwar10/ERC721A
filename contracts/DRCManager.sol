@@ -54,7 +54,7 @@ contract DRCManager{
         // make sure the user has not signed the transfer
         for (uint i=0;i<application.signatories.length;i++){
             Signatory memory signatory = application.signatories[i];
-            if(signatory.userId == userManager.getId(msg.sender)){
+            if(signatory.userId == userManager.getUserId(msg.sender)){
                 require(!signatory.hasUserSigned,"User have already signed the application");
                 signatory.hasUserSigned = true;
             }
@@ -145,7 +145,7 @@ contract DRCManager{
         // make sure the user has not signed the transfer
         for (uint i=0;i<application.signatories.length;i++){
             Signatory memory signatory = application.signatories[i];
-            if(signatory.userId == userManager.getId(msg.sender)){
+            if(signatory.userId == userManager.getUserId(msg.sender)){
                 require(!signatory.hasUserSigned,"User have already signed the application");
                 signatory.hasUserSigned = true;
             }
