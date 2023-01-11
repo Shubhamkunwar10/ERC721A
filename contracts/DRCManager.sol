@@ -16,22 +16,6 @@ contract DRCManager{
     DrcTransferApplicationStorage public dtaStorage;
     enum ApplicationStatus {pending, submitted, approved, rejected}
 
-    // struct DrcTransferApplication {
-    //     bytes32 id;
-    //     bytes32 drcId;
-    //     uint farTransferred;
-    //     Signatory[] signatories;
-    //     DrcStorage.DrcOwner[] newDrcOwner;
-    //     ApplicationStatus status;
-        
-    // }
-    // struct Signatory {
-    //     bytes32 userId;
-    //     bool hasUserSigned;
-    // }
-
-    // mapping (bytes32 => DrcTransferApplication) public applicationMap;
-
     // Address of the contract admin
     address public admin;
     address public drcStorageAddress;
@@ -49,64 +33,26 @@ contract DRCManager{
 
         DrcTransferApplicationStorage.Signatory[] memory dtaSignatories = new DrcTransferApplicationStorage.Signatory[](drc.owners.length);
 
-        // no user has yet signed;
-
-        // DrcTransferApplication storage application = applicationMap[applicationId];
-        // application.id = applicationId;
-        // application.drcId = drcId;
-
+        // no user has signed yet
         for(uint i=0; i<drc.owners.length; i++){
             DrcTransferApplicationStorage.Signatory memory s;
             s.userId = drc.owners[i].id;
             s.hasUserSigned = false;
-            // if(userManager.getId(msg.sender)==drc.owners[i].id){
-            //     s.hasUserSigned=true;
-            // } else {
-            //     s.hasUserSigned = false;
-            // }
             dtaSignatories[i]=s;
         }
 
         dtaStorage.createApplication(applicationId,drcId,far,dtaSignatories, newDrcOwners, DrcTransferApplicationStorage.Status.pending);
 
-        // for (uint i=0; i< newDrcOwners.length;i++){
-        //     application.newDrcOwner.push(newDrcOwners[i]);
-        // }
-        // application.status = ApplicationStatus.pending;
-        // applicationMap[applicationId]=application;
         
         //########
         // drc.applications.push(applicationId);
         drc.farAvailable = drc.farAvailable-far;
-
-        // uint sNo = drc.subDrcs.length;
-        // DrcStorage.SubDrc memory subDrc;
-        // subDrc.sNo = sNo+1;
-        // subDrc.far = far;
-        // subDrc.status = DrcStorage.SubDrcStatus.locked_for_transfer;
-        // subDrc.linkedDrcId = applicationId;
-        // drc.subDrcs.push(subDrc); // This statement is not available in memory. so lets create a new subDrc array, and then transfer it to Drc;
-        // DrcStorage.SubDrc[] memory newSubDrcs = new DrcStorage.SubDrc[](drc.subDrcs.length+1);
-        // for (uint i=0; i< drc.subDrcs.length; i++){
-        //     newSubDrcs[i]=drc.subDrcs[i];
-        // }
-        // newSubDrcs[drc.subDrcs.length]=(subDrc);
-        // drc.subDrcs = newSubDrcs;
-        // drc.farAvailable = drc.farAvailable-far;
-
-
-        // see the caller of the copntract is one of the owner
-        // save all the new owners
-        // make sure that all the subsequent request have the same data
-        //lock the DRC
-        // change the signatories of the DRC
 
     }
 
     // this function is called by the user to approve the transfer
     function drcTransferApprove(bytes32 applicationId) public {
         DrcTransferApplicationStorage.DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
-        // DrcTransferApplication storage application = applicationMap[applicationId];
         // make sure the user has not signed the transfer
         for (uint i=0;i<application.signatories.length;i++){
             DrcTransferApplicationStorage.Signatory memory signatory = application.signatories[i];
@@ -144,24 +90,6 @@ contract DRCManager{
         // change the status of the application
         application.status = DrcTransferApplicationStorage.Status.approved;
         dtaStorage.updateApplication(application);
-        // applicationMap[applicationId]=application;
-        // change the owner of the new drc
-
-        // Not needed as appliction is dynamically tracked
-        // DrcStorage.SubDrc memory subDrc;
-        // DrcStorage.DRC memory drc = drcStorage.getDrc(application.drcId);
-        
-        // for (uint i=0;i<drc.subDrcs.length;i++){
-        //     DrcStorage.SubDrc memory sd = drc.subDrcs[i];
-        //     if(sd.linkedDrcId == applicationId){
-        //         sd.status = DrcStorage.SubDrcStatus.transferred;
-        //         subDrc = sd;
-        //         break;
-        //     }
-        // }
-        // drc.subDrcs[subDrc.sNo-1] = subDrc;
-        // drcStorage.updateDrc(drc.id,drc);
-     
         // add the new drc
        DrcStorage.DRC memory drc = drcStorage.getDrc(application.drcId);
         DrcStorage.DRC memory newDrc;
@@ -187,13 +115,6 @@ contract DRCManager{
         // applicationMap[applicationId]=application;
         // change the status of the sub-drc
         DrcStorage.DRC memory drc = drcStorage.getDrc(application.drcId);
-        // for (uint i=0;i<drc.subDrcs.length;i++){
-        //     DrcStorage.SubDrc memory sd = drc.subDrcs[i];
-        //     if(sd.linkedDrcId == applicationId){
-        //         sd.status = DrcStorage.SubDrcStatus.rejected;
-        //         break;
-        //     }
-        // }
         drc.farAvailable = drc.farAvailable+application.farTransferred;
         drcStorage.updateDrc(drc.id,drc);
     }
