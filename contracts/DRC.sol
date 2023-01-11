@@ -11,6 +11,7 @@ contract DrcStorage {
     // Mappings
     // Create a mapping to store the DRC against Drc id
     mapping(bytes32 => DRC) public drcMap; 
+    mapping(bytes32 => bytes32[]) public ownerMap;
 
     // Events
     event DrcCreated(bytes32 drcId);
@@ -160,6 +161,9 @@ contract DrcStorage {
         }
         for(uint i =0; i<_drc.owners.length; i++){
             drc.owners[i]= _drc.owners[i];
+            bytes32[] storage drcList = ownerMap[_drc.owners[i].id];
+            drcList.push(drc.id);
+            ownerMap[_drc.owners[i].id] = drcList;
         }
         for(uint i =0; i<_drc.attributes.length; i++){
             drc.attributes[i]= _drc.attributes[i];
