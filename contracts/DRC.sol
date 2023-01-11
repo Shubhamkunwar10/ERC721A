@@ -19,7 +19,7 @@ contract DrcStorage {
         uint areaSurrendered;
         uint circleRateSurrendered;
         uint circleRateUtilization;
-        SubDrc[] subDrcs; 
+        bytes32[] applications; 
         DrcOwner[] owners;
         Attribute[] attributes; //keep this field for the future attributes
         // string issueDate;
@@ -29,14 +29,14 @@ contract DrcStorage {
         bytes32 id;
         uint area;
     }
-    struct SubDrc{
-        uint sNo;
-        uint far;
-        SubDrcStatus status;
-        bytes32 linkedDrcId;
-        // owners of subdrc is same as the original drc
-        // new owners in case of transfer can be fetched from the application
-    }
+    // struct SubDrc{
+    //     uint sNo;
+    //     uint far;
+    //     SubDrcStatus status;
+    //     bytes32 linkedDrcId;
+    //     // owners of subdrc is same as the original drc
+    //     // new owners in case of transfer can be fetched from the application
+    // }
 
     struct Attribute{
     string name;
