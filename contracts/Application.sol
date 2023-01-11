@@ -21,24 +21,46 @@ contract DrcTransferApplicationStorage {
     }
 
     mapping(bytes32 => DrcTransferApplication) public applicationMap;
-    address admin;
 
-    constructor(){
-        admin = msg.sender;
+
+    address owner;
+    address admin;
+    address manager;
+
+    constructor() {
+        owner = msg.sender;
     }
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Caller is not the contract admin");
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner can perform this action.");
         _;
     }
 
+    modifier onlyAdmin() {
+        require(msg.sender == admin || msg.sender == owner, "Only the admin or owner can perform this action.");
+        _;
+    }
+
+    modifier onlyManager() {
+        require(msg.sender == manager, "Only the manager, admin, or owner can perform this action.");
+        _;
+    }
+
+    function setAdmin(address _admin) public onlyOwner {
+        admin = _admin;
+    }
+
+    function setManager(address _manager) public {
+        require (msg.sender == owner ||  msg.sender == admin);
+        manager = _manager;
+    }
 
     function createApplication(DrcTransferApplication memory dta) public onlyAdmin{
         require(applicationMap[dta.id].id =="","application already exist");
         storeApplicationInMap(dta);
     }
 
-    function createApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, DrcStorage.DrcOwner[] memory _newDrcOwner, Status _status) public {
-        require(msg.sender == admin, "Only the admin can create applications.");
+    function createApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, DrcStorage.DrcOwner[] memory _newDrcOwner, Status _status) public onlyManager{
         require(applicationMap[_id].id =="","application already exist");
         storeApplicationInMap(DrcTransferApplication(_id, _drcId, _farTransferred, _signatories, _newDrcOwner, _status));
     }
@@ -49,8 +71,7 @@ contract DrcTransferApplicationStorage {
 
     }
 
-    function updateApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, DrcStorage.DrcOwner[] memory _newDrcOwner, Status _status) public {
-        require(msg.sender == admin, "Only the admin can update applications.");
+    function updateApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, DrcStorage.DrcOwner[] memory _newDrcOwner, Status _status) public onlyManager{
         require(applicationMap[_id].id !="","application does not exist");
         storeApplicationInMap(DrcTransferApplication(_id, _drcId, _farTransferred, _signatories, _newDrcOwner, _status));
     }
@@ -60,7 +81,7 @@ contract DrcTransferApplicationStorage {
        return applicationMap[_id];
     }
 
-    function deleteApplication(bytes32 _id) public {
+    function deleteApplication(bytes32 _id) public onlyManager {
         require(msg.sender == admin, "Only the admin can delete applications.");
         delete applicationMap[_id];
     }
