@@ -1,40 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.16;
 import "./TDR.sol";
+import "./DataTypes.sol";
 
 contract DrcStorage {
     // Define the struct that we will be using for our CRUD operations
 
-    enum DrcStatus {available,locked_for_transfer, locked_for_utilization, transferred, utilized}
-    enum SubDrcStatus{locked_for_transfer, locked_for_utilization, transferred, utilized,rejected}
 
-    // DRC would be stored in this struct. knowing this DRC one should know the owner of the DRC, area and the status of the DRC
-    // Everything else, is static data, not to be interpretted by blockchain.
-    struct DRC {
-        bytes32 id;
-        TdrStorage.TdrNotice notice;
-        DrcStatus status;
-        uint farCredited;
-        uint farAvailable;
-        uint areaSurrendered;
-        uint circleRateSurrendered;
-        uint circleRateUtilization;
-        bytes32[] applications; 
-        DrcOwner[] owners;
-        Attribute[] attributes; //keep this field for the future attributes
-        // string issueDate;
-    }
-
-    struct DrcOwner{
-        bytes32 id;
-        uint area;
-    }
-
-    struct Attribute{
-    string name;
-    string value;
-    string mimeType;
-    }
 
     // Mappings
     // Create a mapping to store the DRC against Drc id

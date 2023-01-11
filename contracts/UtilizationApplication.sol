@@ -4,20 +4,8 @@ import "./DRC.sol";
 import "./UserManager.sol";
 
 contract DuaStorage {
-    enum Status {pending, submitted, approved, rejected}
 
-    struct DUA {
-        bytes32 id;
-        bytes32 drcId;
-        uint farUtilized;
-        Signatory[] signatories;
-        Status status;
-    }
 
-    struct Signatory {
-        bytes32 userId;
-        bool hasUserSigned;
-    }
 
     mapping(bytes32 => DUA) public applicationMap;
 
@@ -59,7 +47,7 @@ contract DuaStorage {
         storeApplicationInMap(dta);
     }
 
-    function createApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, Status _status) public onlyManager{
+    function createApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, ApplicationStatus _status) public onlyManager{
         require(applicationMap[_id].id =="","application already exist");
         storeApplicationInMap(DUA(_id, _drcId, _farTransferred, _signatories, _status));
     }
@@ -70,7 +58,7 @@ contract DuaStorage {
 
     }
 
-    function updateApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, Status _status) public onlyManager{
+    function updateApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, ApplicationStatus _status) public onlyManager{
         require(applicationMap[_id].id !="","application does not exist");
         storeApplicationInMap(DUA(_id, _drcId, _farTransferred, _signatories, _status));
     }

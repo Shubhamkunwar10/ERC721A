@@ -4,6 +4,7 @@ import "./DRC.sol";
 import "./UserManager.sol";
 import "./Application.sol";
 import "./UtilizationApplication.sol";
+import "./DataTypes.sol";
 
 /**
 @title TDR Manager for TDR storage
@@ -16,7 +17,7 @@ contract DRCManager{
     UserManager public userManager;
     DrcTransferApplicationStorage public dtaStorage;
     DuaStorage public duaStorage;
-    enum ApplicationStatus {pending, submitted, approved, rejected}
+
 
     // Address of the contract admin
     address public admin;
@@ -25,34 +26,34 @@ contract DRCManager{
 // Inserts usual admin level stuff
     
     // This function begins the drd transfer application
-    function createTransferApplication(bytes32 drcId,bytes32 applicationId, uint far, DrcStorage.DrcOwner[] memory newDrcOwners) public {
+    function createTransferApplication(bytes32 drcId,bytes32 applicationId, uint far, DrcOwner[] memory newDrcOwners) public {
         // check drc exists or not
         require(drcStorage.isDrcCreated(drcId),"DRC not created");
-        DrcStorage.DRC memory drc = drcStorage.getDrc(drcId);
+        DRC memory drc = drcStorage.getDrc(drcId);
         // far should be less than available far.
         require(far <= drc.farAvailable, "Transfer area is greater than the available area");
         // add all the owners id from the drc to the mapping
 
-        DrcTransferApplicationStorage.Signatory[] memory dtaSignatories = new DrcTransferApplicationStorage.Signatory[](drc.owners.length);
+        Signatory[] memory dtaSignatories = new Signatory[](drc.owners.length);
 
         // no user has signed yet
         for(uint i=0; i<drc.owners.length; i++){
-            DrcTransferApplicationStorage.Signatory memory s;
+            Signatory memory s;
             s.userId = drc.owners[i].id;
             s.hasUserSigned = false;
             dtaSignatories[i]=s;
         }
         drcTransferApprove(applicationId);
-        dtaStorage.createApplication(applicationId,drcId,far,dtaSignatories, newDrcOwners, DrcTransferApplicationStorage.Status.pending);
+        dtaStorage.createApplication(applicationId,drcId,far,dtaSignatories, newDrcOwners, ApplicationStatus.pending);
         addApplicationToDrc(drc.id,applicationId,far);
     }
 
     // this function is called by the user to approve the transfer
     function drcTransferApprove(bytes32 applicationId) public {
-        DrcTransferApplicationStorage.DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
+        DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
         // make sure the user has not signed the transfer
         for (uint i=0;i<application.signatories.length;i++){
-            DrcTransferApplicationStorage.Signatory memory signatory = application.signatories[i];
+            Signatory memory signatory = application.signatories[i];
             if(signatory.userId == userManager.getId(msg.sender)){
                 require(!signatory.hasUserSigned,"User have already signed the application");
                 signatory.hasUserSigned = true;
@@ -62,7 +63,7 @@ contract DRCManager{
         // find out whether all the users have signed
         bool allSignatoriesSign = true;
         for (uint i=0;i<application.signatories.length;i++){
-            DrcTransferApplicationStorage.Signatory memory s = application.signatories[i];
+            Signatory memory s = application.signatories[i];
             if(!s.hasUserSigned){
                 allSignatoriesSign = false;
                 break;
@@ -72,7 +73,7 @@ contract DRCManager{
         if(allSignatoriesSign){
             //all the signatories has signed
             //change the status of the sub-drc
-            application.status = DrcTransferApplicationStorage.Status.submitted;
+            application.status = ApplicationStatus.submitted;
             // applicationMap[applicationId]=application;
         }
         dtaStorage.updateApplication(application);
@@ -81,18 +82,18 @@ contract DRCManager{
     // this function is called by the admin to approve the transfer
     function drcTransferApproveAdmin(bytes32 applicationId) public {
         require(msg.sender == admin,"Only admin can approve the Transfer");
-        DrcTransferApplicationStorage.DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
-        require(application.status != DrcTransferApplicationStorage.Status.approved,"Application already approved");
-        require(application.status == DrcTransferApplicationStorage.Status.submitted,"Application is not submitted");
+        DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
+        require(application.status != ApplicationStatus.approved,"Application already approved");
+        require(application.status == ApplicationStatus.submitted,"Application is not submitted");
         // change the status of the application
-        application.status = DrcTransferApplicationStorage.Status.approved;
+        application.status = ApplicationStatus.approved;
         dtaStorage.updateApplication(application);
         // add the new drc
-       DrcStorage.DRC memory drc = drcStorage.getDrc(application.drcId);
-        DrcStorage.DRC memory newDrc;
+       DRC memory drc = drcStorage.getDrc(application.drcId);
+        DRC memory newDrc;
         newDrc.id = applicationId;
         newDrc.notice = drc.notice;
-        newDrc.status = DrcStorage.DrcStatus.available;
+        newDrc.status = DrcStatus.available;
         newDrc.farCredited = application.farTransferred;
         newDrc.farAvailable = application.farTransferred;
         newDrc.owners = application.newDrcOwner;
@@ -102,16 +103,16 @@ contract DRCManager{
     // this function is called by the admin to reject the transfer
     function drcTransferReject(bytes32 applicationId) public {
         require(msg.sender == admin,"Only admin can reject the Transfer");
-        DrcTransferApplicationStorage.DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
-        require(application.status != DrcTransferApplicationStorage.Status.approved,"Application is already approved");        
-        require(application.status == DrcTransferApplicationStorage.Status.submitted,"Application is not yet submitted");
+        DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
+        require(application.status != ApplicationStatus.approved,"Application is already approved");        
+        require(application.status == ApplicationStatus.submitted,"Application is not yet submitted");
 
         // change the status of the application
-        application.status = DrcTransferApplicationStorage.Status.rejected;
+        application.status = ApplicationStatus.rejected;
         dtaStorage.updateApplication(application);
         // applicationMap[applicationId]=application;
         // change the status of the sub-drc
-        DrcStorage.DRC memory drc = drcStorage.getDrc(application.drcId);
+        DRC memory drc = drcStorage.getDrc(application.drcId);
         drc.farAvailable = drc.farAvailable+application.farTransferred;
         drcStorage.updateDrc(drc.id,drc);
     }
@@ -120,30 +121,30 @@ contract DRCManager{
  function createUtilizationApplication(bytes32 drcId,bytes32 applicationId, uint far) public {
         // check drc exists or not
         require(drcStorage.isDrcCreated(drcId),"DRC not created");
-        DrcStorage.DRC memory drc = drcStorage.getDrc(drcId);
+        DRC memory drc = drcStorage.getDrc(drcId);
         // far should be less than available far.
         require(far <= drc.farAvailable, "Utilized area is greater than the available area");
         // add all the owners id from the drc to the mapping
 
-       DuaStorage.Signatory[] memory duaSignatories = new DuaStorage.Signatory[](drc.owners.length);
+       Signatory[] memory duaSignatories = new Signatory[](drc.owners.length);
 
         // no user has signed yet
         for(uint i=0; i<drc.owners.length; i++){
-            DuaStorage.Signatory memory s;
+            Signatory memory s;
             s.userId = drc.owners[i].id;
             s.hasUserSigned = false;
             duaSignatories[i]=s;
         }
         drcUtilizationApprove(applicationId);
-        duaStorage.createApplication(applicationId,drc.id,far,duaSignatories,DuaStorage.Status.pending);
+        duaStorage.createApplication(applicationId,drc.id,far,duaSignatories,ApplicationStatus.pending);
         addApplicationToDrc(drc.id,applicationId,far);
     }
 
    function drcUtilizationApprove(bytes32 applicationId) public {
-        DuaStorage.DUA  memory application = duaStorage.getApplication(applicationId);
+        DUA  memory application = duaStorage.getApplication(applicationId);
         // make sure the user has not signed the transfer
         for (uint i=0;i<application.signatories.length;i++){
-            DuaStorage.Signatory memory signatory = application.signatories[i];
+            Signatory memory signatory = application.signatories[i];
             if(signatory.userId == userManager.getId(msg.sender)){
                 require(!signatory.hasUserSigned,"User have already signed the application");
                 signatory.hasUserSigned = true;
@@ -153,7 +154,7 @@ contract DRCManager{
         // find out whether all the users have signed
         bool allSignatoriesSign = true;
         for (uint i=0;i<application.signatories.length;i++){
-            DuaStorage.Signatory memory s = application.signatories[i];
+            Signatory memory s = application.signatories[i];
             if(!s.hasUserSigned){
                 allSignatoriesSign = false;
                 break;
@@ -162,14 +163,14 @@ contract DRCManager{
         // if all the signatories has not signed
         if(allSignatoriesSign){
             //all the signatories has signed
-            application.status = DuaStorage.Status.approved;
+            application.status = ApplicationStatus.approved;
         }
         duaStorage.updateApplication(application);
      
     }
 
     function addApplicationToDrc(bytes32 drcId,bytes32 applicationId, uint farConsumed) internal {
-        DrcStorage.DRC memory drc = drcStorage.getDrc(drcId);
+        DRC memory drc = drcStorage.getDrc(drcId);
         drc.farAvailable = drc.farAvailable - farConsumed;
         bytes32[] memory newApplications = new bytes32[](drc.applications.length+1);
         for (uint i=0; i< drc.applications.length; i++){

@@ -2,23 +2,11 @@
 pragma solidity ^0.8.16;
 import "./DRC.sol";
 import "./UserManager.sol";
+import "./DataTypes.sol";
 
 contract DrcTransferApplicationStorage {
-    enum Status {pending, submitted, approved, rejected}
+    // enum ApplicationStatus {pending, submitted, approved, rejected}
 
-    struct DrcTransferApplication {
-        bytes32 id;
-        bytes32 drcId;
-        uint farTransferred;
-        Signatory[] signatories;
-        DrcStorage.DrcOwner[] newDrcOwner;
-        Status status;
-    }
-
-    struct Signatory {
-        bytes32 userId;
-        bool hasUserSigned;
-    }
 
     mapping(bytes32 => DrcTransferApplication) public applicationMap;
 
@@ -60,7 +48,7 @@ contract DrcTransferApplicationStorage {
         storeApplicationInMap(dta);
     }
 
-    function createApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, DrcStorage.DrcOwner[] memory _newDrcOwner, Status _status) public onlyManager{
+    function createApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, DrcOwner[] memory _newDrcOwner, ApplicationStatus _status) public onlyManager{
         require(applicationMap[_id].id =="","application already exist");
         storeApplicationInMap(DrcTransferApplication(_id, _drcId, _farTransferred, _signatories, _newDrcOwner, _status));
     }
@@ -71,7 +59,7 @@ contract DrcTransferApplicationStorage {
 
     }
 
-    function updateApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, DrcStorage.DrcOwner[] memory _newDrcOwner, Status _status) public onlyManager{
+    function updateApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, DrcOwner[] memory _newDrcOwner, ApplicationStatus _status) public onlyManager{
         require(applicationMap[_id].id !="","application does not exist");
         storeApplicationInMap(DrcTransferApplication(_id, _drcId, _farTransferred, _signatories, _newDrcOwner, _status));
     }
