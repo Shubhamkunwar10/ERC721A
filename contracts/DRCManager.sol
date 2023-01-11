@@ -42,14 +42,9 @@ contract DRCManager{
             s.hasUserSigned = false;
             dtaSignatories[i]=s;
         }
-
+        drcTransferApprove(applicationId);
         dtaStorage.createApplication(applicationId,drcId,far,dtaSignatories, newDrcOwners, DrcTransferApplicationStorage.Status.pending);
-
-        
-        //########
-        // drc.applications.push(applicationId);
-        drc.farAvailable = drc.farAvailable-far;
-
+        addApplicationToDrc(drc.id,applicationId,far);
     }
 
     // this function is called by the user to approve the transfer
@@ -139,14 +134,9 @@ contract DRCManager{
             s.hasUserSigned = false;
             duaSignatories[i]=s;
         }
-
-
-
+        drcUtilizationApprove(applicationId);
         duaStorage.createApplication(applicationId,drc.id,far,duaSignatories,DuaStorage.Status.pending);
- 
-        drc.farAvailable = drc.farAvailable-far;
-
-
+        addApplicationToDrc(drc.id,applicationId,far);
     }
 
    function drcUtilizationApprove(bytes32 applicationId) public {
@@ -178,5 +168,16 @@ contract DRCManager{
      
     }
 
+    function addApplicationToDrc(bytes32 drcId,bytes32 applicationId, uint farConsumed) internal {
+        DrcStorage.DRC memory drc = drcStorage.getDrc(drcId);
+        drc.farAvailable = drc.farAvailable - farConsumed;
+        bytes32[] memory newApplications = new bytes32[](drc.applications.length+1);
+        for (uint i=0; i< drc.applications.length; i++){
+            newApplications[i]=drc.applications[i];
+        }
+        newApplications[drc.applications.length]=applicationId;
+        drcStorage.updateDrc(drc.id,drc);
+
+    }
 
 }
