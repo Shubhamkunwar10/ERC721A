@@ -21,6 +21,7 @@ from web3.middleware import geth_poa_middleware
 import logging
 import json
 import solcx
+import os
 
 # Set up the loggig services
 # Create a logger
@@ -132,6 +133,8 @@ def save_contract(key, value):
     :param key: The name of the contract
     :param value: A dictionary containing the ABI and bytecode of the contract
     """
+    os.system("mkdir -p ../build/abi")
+    os.system("mkdir -p ../build/bytecode")
     f_abi = open("../build/abi/"+key + ".abi", 'w+')
     f_bin = open("../build/bytecode/"+key + ".bin", 'w+')
 
