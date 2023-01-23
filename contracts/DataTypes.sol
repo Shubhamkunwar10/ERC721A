@@ -1,11 +1,11 @@
-pragma solidity ^0.8.0;
-import "./TDR.sol";
+pragma solidity ^0.8.16;
+//import "./TDR.sol";
     enum DrcStatus {available,locked_for_transfer, locked_for_utilization, transferred, utilized}
     enum ApplicationStatus {pending, submitted, approved, rejected,drcIssued,verified}
     enum NoticeStatus{pending, issued}
 
     // DRC would be stored in this struct. knowing this DRC one should know the owner of the DRC, area and the status of the DRC
-    // Everything else, is static data, not to be interpretted by blockchain.
+    // Everything else, is static data, not to be interpreted by blockchain.
     struct DRC {
         bytes32 id;
         TdrNotice notice;

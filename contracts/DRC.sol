@@ -19,15 +19,17 @@ contract DrcStorage {
     
     address owner;
     address admin;
-    address drcManager;
-    constructor(address _admin) {
+    address manager;
+
+    // Constructor function to set the initial values of the contract
+    constructor(address _admin, address _manager) {
+        // Set the contract owner to the caller
+        owner = msg.sender;
+
         // Set the contract admin
         admin = _admin;
-
-        // Set the TDR manager to the contract admin
-        owner = msg.sender;
+        manager = _manager;
     }
-
     // Modifier to check if the caller is the TDR manager
     modifier onlyOwner() {
         require(msg.sender == owner, "Caller is not the TDR manager");
@@ -40,7 +42,7 @@ contract DrcStorage {
         _;
     }
     modifier onlyManager() {
-        require(msg.sender == drcManager, "Caller is not the contract admin");
+        require(msg.sender == manager, "Caller is not the contract admin");
         _;
     }
 
@@ -51,7 +53,7 @@ contract DrcStorage {
         owner = _newOwner;
     }
     function changeManager(address _newManager) onlyAdmin public {
-        drcManager = _newManager;
+        manager = _newManager;
     }
     // Create a function to add a new Drc to the mapping
     function createDRC(DRC memory _drc) public onlyManager{
