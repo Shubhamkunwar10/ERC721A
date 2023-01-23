@@ -1,23 +1,26 @@
-from time import sleep
+"""
+Author: Ras Dwivedi
+Email: rasd.phd@gmail.com
+
+This scripts deploys all the contract for the KDA-TDR project on the quorum blockchain. Contracts are stored in ../contracts directory and the list of the contract to be deployed is specified.
+
+Contracts might have dependencies and hence it is necessary to deploy them in a specific order
+Currently the order in which the contracts should be deployed is
+   1. UserManager
+   2. DataTypes
+   3. TDR
+   4. TDR Manager
+   5. DRC
+   6 Application
+   7. Utilization application
+   8. DRC Manager
+"""
 
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 import logging
 import json
-from web3.contract import ConciseContract
 import solcx
-import http.client
-
-# ORDER IN WHICH THE CONTRACTS CAN BE COMPILED AND ARE DEPLOYED
-#     1. UserManager
-#     2. DataTypes
-#     3. TDR
-#     4. TDR Manager
-#     5. DRC
-#     6 Application
-#     7. Utilization application
-#     8. DRC Manager
-
 
 # Set up the loggig services
 # Create a logger
@@ -46,7 +49,7 @@ SOLC_VERSION = config["solcVersion"]
 HOST = config["nodeHost"]
 PORT = config["nodePort"]
 
-logger.debug("Connecting to blockchain host %s:%s ", HOST,PORT)
+logger.debug("Connecting to blockchain host %s:%s ", HOST, PORT)
 
 # Connect to Quorum node
 w3 = Web3(Web3.HTTPProvider("http://" + HOST + ":" + PORT))
@@ -86,9 +89,14 @@ logger.info(FILES_TO_COMPILE)
 
 def get_compiled_contracts():
     """
-    This function returns a dictionary of all the compiled contract, their abi and bytecode
-    :return:
+    This function returns a dictionary of all the compiled contracts, their ABI and bytecode.
+    It uses the solcx library to compile the contracts specified in the FILES_TO_COMPILE variable.
+    The returned dictionary has the
+    contract name as the key and a dictionary containing the ABI and bytecode as the value.
+    Additionally, it saves the contracts to the local storage using the save_contract function.
+    :return: A dictionary with contract name as the key and a dictionary containing the ABI and bytecode as the value.
     """
+
 
     _compiled_contracts = solcx.compile_files(FILES_TO_COMPILE,
                                               output_values=["abi", "bin"])
@@ -99,12 +107,13 @@ def get_compiled_contracts():
         # print(key)
         new_key = key.split(":")[1]
         compiled_contracts[new_key] = value
+        save_contract(new_key,value)
     return compiled_contracts
 
 
 def log_dict(d, s=1):
     """
-    A code to print the dictionory object with proper spacing
+    Prints the dictionary object with proper spacing
     """
 
     for key in d.keys():
@@ -115,7 +124,35 @@ def log_dict(d, s=1):
             logger.debug('  ' * s, d.get(key))
 
 
+def save_contract(key, value):
+    """
+    This function saves the ABI and bytecode of a contract to the local storage.
+    The ABI is saved in a file named "{key}.abi" in the "../build/abi/" directory,
+    and the bytecode is saved in a file named "{key}.bin" in the "../build/bytecode/" directory.
+    :param key: The name of the contract
+    :param value: A dictionary containing the ABI and bytecode of the contract
+    """
+    f_abi = open("../build/abi/"+key + ".abi", 'w+')
+    f_bin = open("../build/bytecode/"+key + ".bin", 'w+')
+
+    f_abi.write(str(value.get('abi')))
+    f_abi.close()
+
+    f_bin.write(value.get('bin'))
+    f_bin.close()
+
+
 def deploy_contract(abi, bytecode):
+    """
+    This function deploys a contract to the Ethereum network.
+    It takes in the ABI and bytecode of the contract and uses them to create a contract instance.
+    It estimates the gas required for the deployment and builds the deployment transaction.
+    The deployment transaction is signed by the owner account and sent to the Ethereum network.
+    The function returns the address of the deployed contract.
+    :param abi: The ABI of the contract
+    :param bytecode: The bytecode of the contract
+    :return: The address of the deployed contract.
+    """
     contract = w3.eth.contract(abi=abi, bytecode=bytecode)
     gas_estimate = contract.constructor(ADMIN_ACCOUNT.address, MANAGER_ACCOUNT.address).estimateGas()
     transaction = contract.constructor(ADMIN_ACCOUNT.address, MANAGER_ACCOUNT.address).buildTransaction({
@@ -135,13 +172,30 @@ def deploy_contract(abi, bytecode):
     return contract_address
 
 
-def main():
-    compiled_contracts = get_compiled_contracts()
+def deploy_all_contracts(compiled_contracts):
+    """
+    Deploys all the contracts
+    :param compiled_contracts: a dictionary objcet containing all the compiled contracts, with their abi and bytecode
+    :return: contract_address: a dictionary containing contract name as key mapped with their address
+    """
+    contract_addresses = {}
     for contract in CONTRACTS:
         abi = compiled_contracts.get(contract).get('abi')
         bytecode = compiled_contracts.get(contract).get('bin')
         address = deploy_contract(abi, bytecode)
+        contract_addresses[contract] = address
         logger.info('address for contract named %s is %s', str(contract), str(address))
+    return contract_addresses
+
+
+def main():
+    """
+    The main function
+    :return:
+    """
+    compiled_contracts = get_compiled_contracts()
+    contract_addresses = deploy_all_contracts(compiled_contracts)
+    logger.info(contract_addresses)
 
 
 if __name__ == "__main__":
