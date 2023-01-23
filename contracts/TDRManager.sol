@@ -32,24 +32,47 @@ contract TDRManager {
 
 
     // Address of the contract admin
-    address public admin;
     address public tdrStorageAddress;
     address public userManagerAddress;
     event ApplicationRejected(bytes32 applicationId, string reason);
 
+    address owner;
+    address admin;
+    address manager;
+
+
     // Constructor function to set the initial values of the contract
-    constructor(TdrStorage _tdrStorage, address _admin) {
-        // Set the TDR storage contract
-        tdrStorage = _tdrStorage;
+    constructor(address _admin, address _manager) {
+        // Set the contract owner to the caller
+        owner = msg.sender;
 
         // Set the contract admin
         admin = _admin;
+        manager = _manager;
     }
 
-    // Modifier to check if the caller is the contract admin
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Caller is not the contract admin");
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner can perform this action.");
         _;
+    }
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin || msg.sender == owner, "Only the admin or owner can perform this action.");
+        _;
+    }
+
+    modifier onlyManager() {
+        require(msg.sender == manager, "Only the manager, admin, or owner can perform this action.");
+        _;
+    }
+
+    function setAdmin(address _admin) public onlyOwner {
+        admin = _admin;
+    }
+
+    function setManager(address _manager) public {
+        require (msg.sender == owner ||  msg.sender == admin);
+        manager = _manager;
     }
 
     // Import all the contracts

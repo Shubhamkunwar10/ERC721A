@@ -15,8 +15,15 @@ contract DrcTransferApplicationStorage {
     address admin;
     address manager;
 
-    constructor() {
+
+    // Constructor function to set the initial values of the contract
+    constructor(address _admin, address _manager) {
+        // Set the contract owner to the caller
         owner = msg.sender;
+
+        // Set the contract admin
+        admin = _admin;
+        manager = _manager;
     }
 
     modifier onlyOwner() {

@@ -9,8 +9,6 @@ contract TdrStorage {
     // Address of the TDR manager
     address public tdrManager;
 
-    // Address of the contract admin
-    address public admin;
 
     // Mapping from TDR id to TDR data
     mapping(bytes32 => TdrNotice) public noticeMap;
@@ -34,25 +32,43 @@ contract TdrStorage {
     // Event emitted after a TDR is deleted
     event TDRDeleted(bytes32 noticeId);
 
+    address owner;
+    address admin;
+    address manager;
+
+
     // Constructor function to set the initial values of the contract
-    constructor(address _admin) {
+    constructor(address _admin, address _manager) {
+        // Set the contract owner to the caller
+        owner = msg.sender;
+
         // Set the contract admin
         admin = _admin;
-
-        // Set the TDR manager to the contract admin
-        tdrManager = admin;
+        manager = _manager;
     }
 
-    // Modifier to check if the caller is the TDR manager
-    modifier onlyManager() {
-        require(msg.sender == tdrManager, "Caller is not the TDR manager");
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner can perform this action.");
         _;
     }
 
-    // Modifier to check if the caller is the contract admin
     modifier onlyAdmin() {
-        require(msg.sender == admin, "Caller is not the contract admin");
+        require(msg.sender == admin || msg.sender == owner, "Only the admin or owner can perform this action.");
         _;
+    }
+
+    modifier onlyManager() {
+        require(msg.sender == manager, "Only the manager, admin, or owner can perform this action.");
+        _;
+    }
+
+    function setAdmin(address _admin) public onlyOwner {
+        admin = _admin;
+    }
+
+    function setManager(address _manager) public {
+        require (msg.sender == owner ||  msg.sender == admin);
+        manager = _manager;
     }
 
     // Function to create a new TDR

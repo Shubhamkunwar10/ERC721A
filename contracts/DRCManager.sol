@@ -20,11 +20,48 @@ contract DRCManager{
 
 
     // Address of the contract admin
-    address public admin;
     address public drcStorageAddress;
     address public userManagerAddress;
 // Inserts usual admin level stuff
-    
+    address owner;
+    address admin;
+    address manager;
+
+
+    // Constructor function to set the initial values of the contract
+    constructor(address _admin, address _manager) {
+        // Set the contract owner to the caller
+        owner = msg.sender;
+
+        // Set the contract admin
+        admin = _admin;
+        manager = _manager;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner can perform this action.");
+        _;
+    }
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin || msg.sender == owner, "Only the admin or owner can perform this action.");
+        _;
+    }
+
+    modifier onlyManager() {
+        require(msg.sender == manager, "Only the manager, admin, or owner can perform this action.");
+        _;
+    }
+
+    function setAdmin(address _admin) public onlyOwner {
+        admin = _admin;
+    }
+
+    function setManager(address _manager) public {
+        require (msg.sender == owner ||  msg.sender == admin);
+        manager = _manager;
+    }
+
     // This function begins the drd transfer application
     function createTransferApplication(bytes32 drcId,bytes32 applicationId, uint far, DrcOwner[] memory newDrcOwners) public {
         // check drc exists or not
