@@ -84,7 +84,7 @@ FILES_TO_COMPILE = [
 ]
 CONTRACTS = ["DrcTransferApplicationStorage", "DrcStorage", "DRCManager", "TdrStorage", "TDRManager", "UserManager",
              "DuaStorage"]
-logger.info('following files woud be compiled')
+logger.info('following files would be compiled')
 logger.info(FILES_TO_COMPILE)
 
 
@@ -137,8 +137,9 @@ def save_contract(key, value):
     os.system("mkdir -p ../build/bytecode")
     f_abi = open("../build/abi/"+key + ".abi", 'w+')
     f_bin = open("../build/bytecode/"+key + ".bin", 'w+')
-
-    f_abi.write(str(value.get('abi')))
+    # logger.debug(type(value.get('abi')))
+    # logger.debug(json.dumps(value.get('abi')))
+    f_abi.write(json.dumps(value.get('abi')))
     f_abi.close()
 
     f_bin.write(value.get('bin'))
@@ -199,6 +200,8 @@ def main():
     compiled_contracts = get_compiled_contracts()
     contract_addresses = deploy_all_contracts(compiled_contracts)
     logger.info(contract_addresses)
+    f=open('../build/contract_addres/addresses.txt','w')
+    f.write(contract_addresses)
 
 
 if __name__ == "__main__":
