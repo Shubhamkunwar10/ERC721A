@@ -199,6 +199,49 @@ def move_files_to_backend():
     os.system('cp -r ../build/bytecode/  ../../backend/backend/services/blockchain/contracts/')
     os.system('cp -r ../build/contract_address  ../../backend/backend/services/blockchain/contracts/')
 
+
+    
+def execute_contract_method(f,account):
+    gas_estimate = f.estimateGas()
+    print(gas_estimate)
+    transaction = f.buildTransaction({
+        'from': OWNER_ACCOUNT.address,
+        'gas': gas_estimate,
+        'gasPrice': w3.eth.gasPrice,
+        'nonce': w3.eth.getTransactionCount(OWNER_ACCOUNT.address)
+    })
+
+    # buildTransaction()({
+    #     'from': account.address,
+    #     'gas': gas_estimate,
+    #     'gasPrice': w3.eth.gasPrice,
+    #     'nonce': w3.eth.getTransactionCount(account.address)
+    # })
+    signed_transaction = OWNER_ACCOUNT.signTransaction(transaction)
+    tx_hash = w3.eth.sendRawTransaction(signed_transaction.rawTransaction)
+    tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+    if not tx_receipt.transactionHash.hex():
+        raise Exception("execution failed %s", str(f))
+
+def instantiate(contract_address,compiled_contracts):
+    """
+    Managers of all the functions needs to be instantiated
+    1. TDR manager manages TdrStorage
+    2. TDR manager also needs user manager
+
+    """    
+    # For user manager
+    tdr_storage_address = contract_address.get('TdrStorage')
+    user_manager_address = contract_address.get('UserManager')
+    tdr_manager_address = contract_address.get('TDRManager')
+    #load tdr manager abi
+    tdr_manager_contract = w3.eth.contract(address=tdr_manager_address,abi=compiled_contracts.get('TDRManager').get('abi'))
+    update_tdr_storage_method = tdr_manager_contract.functions.updateTdrStorage(tdr_storage_address)
+    update_user_manager_method= tdr_manager_contract.functions.updateUserManager(user_manager_address)
+  
+    execute_contract_method(update_tdr_storage_method,OWNER_ACCOUNT)
+    execute_contract_method(update_user_manager_method,OWNER_ACCOUNT)
+
 def main():
     """
     The main function
@@ -209,6 +252,8 @@ def main():
     compiled_contracts = get_compiled_contracts()
     print("Contracts compiled")
     print("Deploying contract")
+    # f=open('../build/contract_address/addresses.txt')
+    # contract_addresses = json.loads(f.read())
     contract_addresses = deploy_all_contracts(compiled_contracts)
     print("Contracts deployed")
     logger.info(contract_addresses)
@@ -218,6 +263,8 @@ def main():
     f.close()
     move_files_to_backend()
     end_time = datetime.datetime.now()
+    print("instantiating")
+    instantiate(contract_addresses,compiled_contracts)
     print("total execution time: ", end_time - start_time)
 
 if __name__ == "__main__":
