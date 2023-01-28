@@ -22,7 +22,7 @@ import logging
 import json
 import solcx
 import os
-
+import datetime
 # Set up the loggig services
 # Create a logger
 logger = logging.getLogger()
@@ -204,6 +204,7 @@ def main():
     The main function
     :return:
     """
+    start_time =st = datetime.datetime.now()
     print("Compiling contracts")
     compiled_contracts = get_compiled_contracts()
     print("Contracts compiled")
@@ -211,11 +212,13 @@ def main():
     contract_addresses = deploy_all_contracts(compiled_contracts)
     print("Contracts deployed")
     logger.info(contract_addresses)
+    print(json.dumps(contract_addresses))
     f=open('../build/contract_address/addresses.txt','w')
     f.write(json.dumps(contract_addresses))
     f.close()
     move_files_to_backend()
-
+    end_time = datetime.datetime.now()
+    print("total execution time: ", end_time - start_time)
 
 if __name__ == "__main__":
     main()

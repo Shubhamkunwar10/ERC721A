@@ -33,6 +33,7 @@ contract TdrStorage {
 
     // Event emitted after a TDR is deleted
     event TDRDeleted(bytes32 noticeId);
+    event GeneralMessage(string s);
 
     address owner;
     address admin;
@@ -84,27 +85,28 @@ contract TdrStorage {
     }
 
     // Function to create a new TDR
-    function createNotice(TdrNotice memory _tdrNotice) public onlyManager {
+    function createNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan) public {
+        emit GeneralMessage("create notice was called");
         //check whether the notice has been created or not. 
-        TdrNotice storage tdrNotice = noticeMap[_tdrNotice.noticeId];
+        TdrNotice storage tdrNotice = noticeMap[_noticeId];
         // if notice is empty, create notice.
-        if(isNoticeCreated(tdrNotice)){
-            revert("notice already created");
-        }
-        tdrNotice.noticeDate = _tdrNotice.noticeDate;
-        tdrNotice.khasraOrPlotNo = _tdrNotice.khasraOrPlotNo;
-        tdrNotice.villageOrWard = _tdrNotice.villageOrWard;
-        tdrNotice.Tehsil = _tdrNotice.Tehsil;
-        tdrNotice.district = _tdrNotice.district;
-        tdrNotice.landUse = _tdrNotice.landUse;
-        tdrNotice.masterPlan = _tdrNotice.masterPlan;
-        tdrNotice.status = _tdrNotice.status;
+        // if(isNoticeCreated(tdrNotice)){
+        //     revert("notice already created");
+        // }
+        tdrNotice.noticeDate = _noticeDate;
+        tdrNotice.khasraOrPlotNo = _khasraOrPlotNo;
+        tdrNotice.villageOrWard = _villageOrWard;
+        tdrNotice.Tehsil = _Tehsil;
+        tdrNotice.district = _district;
+        tdrNotice.landUse = _landUse;
+        tdrNotice.masterPlan = _masterPlan;
+        tdrNotice.status=NoticeStatus.pending;
         // add application to the map
-        noticeMap[_tdrNotice.noticeId]=tdrNotice;
+        noticeMap[_noticeId]=tdrNotice;
         // Create a new TDR and add it to the mapping
 
         // Emit the TDRCreated event
-        emit NoticeCreated(_tdrNotice.noticeId);
+        emit NoticeCreated(_noticeId);
     }
 
     function updateNotice(TdrNotice memory _tdrNotice) public {
