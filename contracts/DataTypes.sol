@@ -74,7 +74,7 @@ pragma solidity ^0.8.16;
         bytes32 district;
         bytes32 landUse;
         bytes32 masterPlan;
-        bytes32[] applicationIds;
+//        bytes32[] applicationIds;
         NoticeStatus status;
 
     }

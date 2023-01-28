@@ -106,6 +106,20 @@ contract TDRManager {
         // Call the TDR storage contract's createNotice function
         tdrStorage.createNotice(_tdrNotice);
     }
+    function createNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan) public {
+        // Call the TDR storage contract's createNotice function
+        TdrNotice memory _tdrNotice = TdrNotice({noticeId: _noticeId,
+        noticeDate:_noticeDate,
+        khasraOrPlotNo:_khasraOrPlotNo,
+        villageOrWard:_villageOrWard,
+        Tehsil:_Tehsil,
+        district:_district,
+        landUse:_landUse,
+        masterPlan:_masterPlan,
+        status:NoticeStatus.pending});
+        tdrStorage.createNotice(_tdrNotice);
+    }
+
 
     /**
     @dev Function to create an application

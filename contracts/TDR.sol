@@ -13,6 +13,8 @@ contract TdrStorage {
     // Mapping from TDR id to TDR data
     mapping(bytes32 => TdrNotice) public noticeMap;
     mapping(bytes32 => TdrApplication) public applicationMap;
+    // Map to store the applications against the notice
+    mapping(bytes32 => bytes32[]) public noticeApplicationMap;
 
     // enum ApplicationStatus {applied, verified, approved, issued,rejected}
     // TDR struct definition
@@ -127,14 +129,21 @@ contract TdrStorage {
         emit NoticeCreated(_tdrNotice.noticeId);
     }
 
+    /**
+     * @dev Adds an application to a notice specified by its noticeId.
+    * @param noticeId The bytes32 identifier of the notice to which the application is to be added.
+    * @param applicationId The bytes32 identifier of the application to be added to the notice.
+    * @dev Revert if no notice exists with the given noticeId.
+    */
     function addApplicationToNotice(bytes32 noticeId, bytes32 applicationId) public {
         TdrNotice storage tdrNotice = noticeMap[noticeId];
         // notice should exist
         if(tdrNotice.noticeId==""){
 		    revert("No such notice exist");
 	    }
-	    tdrNotice.applicationIds.push(applicationId);
-
+        bytes32[] storage applications = noticeApplicationMap[noticeId];
+        applications.push(applicationId);
+        noticeApplicationMap[noticeId]=applications;
     }
 
 

@@ -159,6 +159,7 @@ def deploy_contract(abi, bytecode):
     """
     contract = w3.eth.contract(abi=abi, bytecode=bytecode)
     gas_estimate = contract.constructor(ADMIN_ACCOUNT.address, MANAGER_ACCOUNT.address).estimateGas()
+    print("gas estimate is ", gas_estimate)
     transaction = contract.constructor(ADMIN_ACCOUNT.address, MANAGER_ACCOUNT.address).buildTransaction({
         'from': OWNER_ACCOUNT.address,
         'gas': gas_estimate,
@@ -191,17 +192,29 @@ def deploy_all_contracts(compiled_contracts):
         logger.info('address for contract named %s is %s', str(contract), str(address))
     return contract_addresses
 
+def move_files_to_backend():
+    os.system('rm -r ../../backend/backend/services/blockchain/contracts/')
+    os.system('mkdir -p ../../backend/backend/services/blockchain/contracts/')
+    os.system('cp -r ../build/abi/  ../../backend/backend/services/blockchain/contracts/')
+    os.system('cp -r ../build/bytecode/  ../../backend/backend/services/blockchain/contracts/')
+    os.system('cp -r ../build/contract_address  ../../backend/backend/services/blockchain/contracts/')
 
 def main():
     """
     The main function
     :return:
     """
+    print("Compiling contracts")
     compiled_contracts = get_compiled_contracts()
+    print("Contracts compiled")
+    print("Deploying contract")
     contract_addresses = deploy_all_contracts(compiled_contracts)
+    print("Contracts deployed")
     logger.info(contract_addresses)
-    f=open('../build/contract_addres/addresses.txt','w')
-    f.write(contract_addresses)
+    f=open('../build/contract_address/addresses.txt','w')
+    f.write(json.dumps(contract_addresses))
+    f.close()
+    move_files_to_backend()
 
 
 if __name__ == "__main__":
