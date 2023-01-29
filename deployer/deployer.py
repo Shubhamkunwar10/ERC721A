@@ -193,17 +193,20 @@ def deploy_all_contracts(compiled_contracts):
     return contract_addresses
 
 def move_files_to_backend():
+    #move to backend
     os.system('rm -r ../../backend/backend/services/blockchain/contracts/')
     os.system('mkdir -p ../../backend/backend/services/blockchain/contracts/')
     os.system('cp -r ../build/abi/  ../../backend/backend/services/blockchain/contracts/')
-    os.system('cp -r ../build/bytecode/  ../../backend/backend/services/blockchain/contracts/')
     os.system('cp -r ../build/contract_address  ../../backend/backend/services/blockchain/contracts/')
+    # move to event parser
+    os.system('mkdir -p ../../quorum-event-parser/contracts/')
+    os.system('cp -r ../build/abi/  ../../quorum-event-parser/contracts/')
+    os.system('cp -r ../build/contract_address  ../../quorum-event-parser/contracts/')
 
 
     
 def execute_contract_method(f,account):
     gas_estimate = f.estimateGas()
-    print(gas_estimate)
     transaction = f.buildTransaction({
         'from': OWNER_ACCOUNT.address,
         'gas': gas_estimate,
@@ -238,9 +241,19 @@ def instantiate(contract_address,compiled_contracts):
     tdr_manager_contract = w3.eth.contract(address=tdr_manager_address,abi=compiled_contracts.get('TDRManager').get('abi'))
     update_tdr_storage_method = tdr_manager_contract.functions.updateTdrStorage(tdr_storage_address)
     update_user_manager_method= tdr_manager_contract.functions.updateUserManager(user_manager_address)
-  
+    
+    logger.debug("instantiating update_tdr_storage_method")
+    print('instantiating update_tdr_storage_method')
     execute_contract_method(update_tdr_storage_method,OWNER_ACCOUNT)
+    logger.debug("instantiating update_user_manager_method")
+    print('instantiating update_user_manager_method')
     execute_contract_method(update_user_manager_method,OWNER_ACCOUNT)
+    #setting manager for tdrStorage
+    tdr_storage_contract = w3.eth.contract(address=tdr_manager_address,abi=compiled_contracts.get('TdrStorage').get('abi'))
+    update_tdr_storage_manager_method = tdr_storage_contract.functions.setManager(tdr_manager_address)
+    logger.debug("instantiating update_tdr_storage_manager_method")
+    print('instantiating update_tdr_storage_manager_method')
+    execute_contract_method(update_tdr_storage_manager_method,OWNER_ACCOUNT)
 
 def main():
     """

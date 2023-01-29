@@ -84,15 +84,20 @@ contract TdrStorage {
         emit ApplicationCreated(_tdrApplication.noticeId, _tdrApplication.applicationId);
     }
 
+    event CallerAddress(address a);
     // Function to create a new TDR
-    function createNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan) public {
+    function createNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status) public {
         emit GeneralMessage("create notice was called");
-        //check whether the notice has been created or not. 
+        emit CallerAddress(msg.sender);
+        //check whether the notice has been created or not. i1
         TdrNotice storage tdrNotice = noticeMap[_noticeId];
         // if notice is empty, create notice.
-        // if(isNoticeCreated(tdrNotice)){
-        //     revert("notice already created");
-        // }
+        emit GeneralMessage("checking  notice");
+        if(isNoticeCreated(tdrNotice)){
+            revert("notice already created");
+        }
+        emit GeneralMessage("notice check over");
+        tdrNotice.noticeId = _noticeId;
         tdrNotice.noticeDate = _noticeDate;
         tdrNotice.khasraOrPlotNo = _khasraOrPlotNo;
         tdrNotice.villageOrWard = _villageOrWard;
@@ -100,7 +105,7 @@ contract TdrStorage {
         tdrNotice.district = _district;
         tdrNotice.landUse = _landUse;
         tdrNotice.masterPlan = _masterPlan;
-        tdrNotice.status=NoticeStatus.pending;
+        tdrNotice.status=_status;
         // add application to the map
         noticeMap[_noticeId]=tdrNotice;
         // Create a new TDR and add it to the mapping
@@ -201,11 +206,16 @@ contract TdrStorage {
 
         // Emit the TDRDeleted event
        
-  function isNoticeCreated(TdrNotice memory _tdrNotice) public pure returns (bool) {
+  function isNoticeCreated(TdrNotice memory _tdrNotice) public returns (bool) {
+    emit GeneralMessage("notice check was called");
     // in mapping, default values of all atrributes is zero
-    if( _tdrNotice.noticeId==""){
+    TdrNotice memory _noticeFromMap = noticeMap[_tdrNotice.noticeId];
+    if( _noticeFromMap.noticeId==""){
             return false; 
         }
+    emit GeneralMessage("notice was not created");
+    emit NoticeCreated(_tdrNotice.noticeId);
+    emit NoticeCreated(_noticeFromMap.noticeId);
         return true;
   }
 }

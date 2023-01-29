@@ -121,7 +121,7 @@ contract TDRManager {
         // status:NoticeStatus.pending});
         // emit Message("struct was initialized");
         // tdrStorage.createNotice(_tdrNotice);
-        tdrStorage.createNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan);
+        tdrStorage.createNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, NoticeStatus.pending);
         // return _tdrNotice;
     }
 
