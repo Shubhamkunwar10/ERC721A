@@ -35,7 +35,7 @@ contract TDRManager {
     address public tdrStorageAddress;
     address public userManagerAddress;
     event ApplicationRejected(bytes32 applicationId, string reason);
-    event Message(string s);
+    event Logger(string s);
 
     address owner;
     address admin;
@@ -109,19 +109,17 @@ contract TDRManager {
     // }
     function createNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan) public {
         // Call the TDR storage contract's createNotice function
-        emit Message("create notice was called");
-        // TdrNotice memory _tdrNotice = TdrNotice({noticeId: _noticeId,
-        // noticeDate:_noticeDate,
-        // khasraOrPlotNo:_khasraOrPlotNo,
-        // villageOrWard:_villageOrWard,
-        // Tehsil:_Tehsil,
-        // district:_district,
-        // landUse:_landUse,
-        // masterPlan:_masterPlan,
-        // status:NoticeStatus.pending});
-        // emit Message("struct was initialized");
-        // tdrStorage.createNotice(_tdrNotice);
+        emit Logger("START: createNotice");
+
         tdrStorage.createNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, NoticeStatus.pending);
+        // return _tdrNotice;
+    }
+
+    function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan) public {
+        // Call the TDR storage contract's createNotice function
+        emit Logger("START: updateNotice");
+
+        tdrStorage.updateNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, NoticeStatus.pending);
         // return _tdrNotice;
     }
 

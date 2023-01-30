@@ -33,7 +33,7 @@ contract TdrStorage {
 
     // Event emitted after a TDR is deleted
     event TDRDeleted(bytes32 noticeId);
-    event GeneralMessage(string s);
+    event Logger(string log);
 
     address owner;
     address admin;
@@ -84,19 +84,17 @@ contract TdrStorage {
         emit ApplicationCreated(_tdrApplication.noticeId, _tdrApplication.applicationId);
     }
 
-    event CallerAddress(address a);
+    event LogAddress(string addressInfo, address _address);
     // Function to create a new TDR
     function createNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status) public {
-        emit GeneralMessage("create notice was called");
-        emit CallerAddress(msg.sender);
+        emit Logger("START createNotice");
+        emit LogAddress("message.sender",msg.sender);
         //check whether the notice has been created or not. i1
         TdrNotice storage tdrNotice = noticeMap[_noticeId];
         // if notice is empty, create notice.
-        emit GeneralMessage("checking  notice");
         if(isNoticeCreated(tdrNotice)){
             revert("notice already created");
         }
-        emit GeneralMessage("notice check over");
         tdrNotice.noticeId = _noticeId;
         tdrNotice.noticeDate = _noticeDate;
         tdrNotice.khasraOrPlotNo = _khasraOrPlotNo;
@@ -113,28 +111,55 @@ contract TdrStorage {
         // Emit the TDRCreated event
         emit NoticeCreated(_noticeId);
     }
-
-    function updateNotice(TdrNotice memory _tdrNotice) public {
-        TdrNotice storage tdrNotice = noticeMap[_tdrNotice.noticeId];
+    function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status) public {
+        TdrNotice storage tdrNotice = noticeMap[_noticeId];
+        emit Logger("START: updateNotice");
+        emit LogAddress("message.sender",msg.sender);
         // if notice is empty, create notice.
         if(!isNoticeCreated(tdrNotice)){
             revert("no such notice exists, reverting");
         }
-        tdrNotice.noticeDate = _tdrNotice.noticeDate;
-        tdrNotice.khasraOrPlotNo = _tdrNotice.khasraOrPlotNo;
-        tdrNotice.villageOrWard = _tdrNotice.villageOrWard;
-        tdrNotice.Tehsil = _tdrNotice.Tehsil;
-        tdrNotice.district = _tdrNotice.district;
-        tdrNotice.landUse = _tdrNotice.landUse;
-        tdrNotice.masterPlan = _tdrNotice.masterPlan;
-        tdrNotice.status = _tdrNotice.status;
+        tdrNotice.noticeId = _noticeId;
+        tdrNotice.noticeDate = _noticeDate;
+        tdrNotice.khasraOrPlotNo = _khasraOrPlotNo;
+        tdrNotice.villageOrWard = _villageOrWard;
+        tdrNotice.Tehsil = _Tehsil;
+        tdrNotice.district = _district;
+        tdrNotice.landUse = _landUse;
+        tdrNotice.masterPlan = _masterPlan;
+        tdrNotice.status=_status;
         // add application to the map
-        noticeMap[_tdrNotice.noticeId]=tdrNotice;
+        noticeMap[_noticeId]=tdrNotice;
         // Create a new TDR and add it to the mapping
 
         // Emit the TDRCreated event
-        emit NoticeCreated(_tdrNotice.noticeId);
+        emit NoticeUpdated(_noticeId);
     }
+
+    function updateNotice(TdrNotice memory _tdrNotice) public {
+        updateNotice(_tdrNotice.noticeId, _tdrNotice.noticeDate, _tdrNotice.khasraOrPlotNo,_tdrNotice.villageOrWard,_tdrNotice.Tehsil,_tdrNotice.district,_tdrNotice.landUse,_tdrNotice.masterPlan,_tdrNotice.status);
+    }
+//        TdrNotice storage tdrNotice = noticeMap[_noticeId];
+//        // if notice is empty, create notice.
+//        if(!isNoticeCreated(tdrNotice)){
+//            revert("no such notice exists, reverting");
+//        }
+//        tdrNotice.noticeId = _noticeId;
+//        tdrNotice.noticeDate = _noticeDate;
+//        tdrNotice.khasraOrPlotNo = _khasraOrPlotNo;
+//        tdrNotice.villageOrWard = _villageOrWard;
+//        tdrNotice.Tehsil = _Tehsil;
+//        tdrNotice.district = _district;
+//        tdrNotice.landUse = _landUse;
+//        tdrNotice.masterPlan = _masterPlan;
+//        tdrNotice.status=_status;
+//        // add application to the map
+//        noticeMap[_noticeId]=tdrNotice;
+//        // Create a new TDR and add it to the mapping
+//
+//        // Emit the TDRCreated event
+//        emit NoticeUpdated(_noticeId);
+//    }
 
     /**
      * @dev Adds an application to a notice specified by its noticeId.
@@ -207,13 +232,13 @@ contract TdrStorage {
         // Emit the TDRDeleted event
        
   function isNoticeCreated(TdrNotice memory _tdrNotice) public returns (bool) {
-    emit GeneralMessage("notice check was called");
+    emit Logger("notice check was called");
     // in mapping, default values of all atrributes is zero
     TdrNotice memory _noticeFromMap = noticeMap[_tdrNotice.noticeId];
     if( _noticeFromMap.noticeId==""){
             return false; 
         }
-    emit GeneralMessage("notice was not created");
+    emit Logger("notice was not created");
     emit NoticeCreated(_tdrNotice.noticeId);
     emit NoticeCreated(_noticeFromMap.noticeId);
         return true;
