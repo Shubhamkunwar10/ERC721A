@@ -238,21 +238,23 @@ def instantiate(contract_address,compiled_contracts):
     user_manager_address = contract_address.get('UserManager')
     tdr_manager_address = contract_address.get('TDRManager')
     #load tdr manager abi
+    tdr_storage_contract = w3.eth.contract(address=tdr_storage_address,abi=compiled_contracts.get('TdrStorage').get('abi'))
+    user_manager_contract = w3.eth.contract(address=user_manager_address,abi=compiled_contracts.get('UserManager').get('abi'))
     tdr_manager_contract = w3.eth.contract(address=tdr_manager_address,abi=compiled_contracts.get('TDRManager').get('abi'))
+
+    #updating storage in tdr manager 
     update_tdr_storage_method = tdr_manager_contract.functions.updateTdrStorage(tdr_storage_address)
-    update_user_manager_method= tdr_manager_contract.functions.updateUserManager(user_manager_address)
-    
-    logger.debug("instantiating update_tdr_storage_method")
-    print('instantiating update_tdr_storage_method')
+    logger.debug("updating  tdr storage in tdr manager contract")
     execute_contract_method(update_tdr_storage_method,OWNER_ACCOUNT)
-    logger.debug("instantiating update_user_manager_method")
-    print('instantiating update_user_manager_method')
+    
+    # updating user manager in tdr manager
+    update_user_manager_method= tdr_manager_contract.functions.updateUserManager(user_manager_address)
+    logger.debug("updating user manager in tdr manager contract")
     execute_contract_method(update_user_manager_method,OWNER_ACCOUNT)
+
     #setting manager for tdrStorage
-    tdr_storage_contract = w3.eth.contract(address=tdr_manager_address,abi=compiled_contracts.get('TdrStorage').get('abi'))
     update_tdr_storage_manager_method = tdr_storage_contract.functions.setManager(tdr_manager_address)
-    logger.debug("instantiating update_tdr_storage_manager_method")
-    print('instantiating update_tdr_storage_manager_method')
+    print('updating manager in tdr storage contract')
     execute_contract_method(update_tdr_storage_manager_method,OWNER_ACCOUNT)
 
 def main():
