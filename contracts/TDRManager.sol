@@ -115,11 +115,11 @@ contract TDRManager {
         // return _tdrNotice;
     }
 
-    function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan) public {
+    function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status) public {
         // Call the TDR storage contract's createNotice function
         emit Logger("START: updateNotice");
 
-        tdrStorage.updateNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, NoticeStatus.pending);
+        tdrStorage.updateNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, _status);
         // return _tdrNotice;
     }
 

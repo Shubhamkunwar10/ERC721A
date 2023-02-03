@@ -1,7 +1,22 @@
 pragma solidity ^0.8.16;
 //import "./TDR.sol";
-    enum DrcStatus {available,locked_for_transfer, locked_for_utilization, transferred, utilized}
-    enum ApplicationStatus {pending, submitted, approved, rejected,drcIssued,verified}
+    enum DrcStatus {
+                    available,
+                    locked_for_transfer, 
+                    locked_for_utilization, 
+                    transferred, 
+                    utilized
+                }
+
+    enum ApplicationStatus {
+                            pending, 
+                            submitted, 
+                            approved, 
+                            rejected,
+                            drcIssued,
+                            verified
+                        }
+
     enum NoticeStatus{pending, issued}
 
     // DRC would be stored in this struct. knowing this DRC one should know the owner of the DRC, area and the status of the DRC
@@ -62,7 +77,7 @@ pragma solidity ^0.8.16;
         bytes32 noticeId;
         uint farRequested;
         uint farGranted;
-        address[] applicants;
+        bytes32[] applicants; // this should be applicants user id and then account should be taken from some mapping
         ApplicationStatus status;
     }
     struct TdrNotice{

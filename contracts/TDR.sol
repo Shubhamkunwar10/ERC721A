@@ -34,6 +34,8 @@ contract TdrStorage {
     // Event emitted after a TDR is deleted
     event TDRDeleted(bytes32 noticeId);
     event Logger(string log);
+    event LogAddress(string addressInfo, address _address);
+
 
     address owner;
     address admin;
@@ -61,7 +63,7 @@ contract TdrStorage {
     }
 
     modifier onlyManager() {
-        require(msg.sender == manager, "Only the manager, admin, or owner can perform this action.");
+       require(msg.sender == manager, "Only the manager, admin, or owner can perform this action.");
         _;
     }
 
@@ -76,6 +78,7 @@ contract TdrStorage {
 
     // Function to create a new TDR
     function createApplication(TdrApplication memory _tdrApplication) public onlyManager {
+        // check that an application have not been created earlier
         // add application to the map
         applicationMap[_tdrApplication.applicationId]=_tdrApplication;
         // Create a new TDR and add it to the mapping
@@ -84,9 +87,8 @@ contract TdrStorage {
         emit ApplicationCreated(_tdrApplication.noticeId, _tdrApplication.applicationId);
     }
 
-    event LogAddress(string addressInfo, address _address);
     // Function to create a new TDR
-    function createNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status) public {
+    function createNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status) public onlyManager{
         emit Logger("START createNotice");
         emit LogAddress("message.sender",msg.sender);
         //check whether the notice has been created or not. i1
@@ -111,7 +113,7 @@ contract TdrStorage {
         // Emit the TDRCreated event
         emit NoticeCreated(_noticeId);
     }
-    function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status) public {
+    function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status) public onlyManager {
         TdrNotice storage tdrNotice = noticeMap[_noticeId];
         emit Logger("START: updateNotice");
         emit LogAddress("message.sender",msg.sender);
