@@ -77,11 +77,7 @@ pragma solidity ^0.8.16;
         bytes32 noticeId;
         uint farRequested;
         uint farGranted;
-<<<<<<< Updated upstream
-        bytes32[] applicants; // this should be applicants user id and then account should be taken from some mapping
-=======
         Signatory[] applicants; // this should be applicants user id and then account should be taken from some mapping
->>>>>>> Stashed changes
         ApplicationStatus status;
     }
     struct TdrNotice{

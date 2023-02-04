@@ -35,10 +35,7 @@ contract TdrStorage {
     event TDRDeleted(bytes32 noticeId);
     event Logger(string log);
     event LogAddress(string addressInfo, address _address);
-<<<<<<< Updated upstream
-=======
     event LogBytes(string messgaeInfo, bytes32 _bytes);
->>>>>>> Stashed changes
 
 
     address owner;
@@ -83,12 +80,9 @@ contract TdrStorage {
     // Function to create a new TDR
     function createApplication(TdrApplication memory _tdrApplication) public onlyManager {
         // check that an application have not been created earlier
-<<<<<<< Updated upstream
-=======
         if(isApplicationCreated(_tdrApplication.applicationId)){
             revert("application with same id has already been created");
         }
->>>>>>> Stashed changes
         // add application to the map
         addApplicationToMap(_tdrApplication);
 //        applicationMap[_tdrApplication.applicationId]=_tdrApplication;
@@ -283,19 +277,11 @@ contract TdrStorage {
     // in mapping, default values of all atrributes is zero
     TdrNotice memory _noticeFromMap = noticeMap[_tdrNotice.noticeId];
     if( _noticeFromMap.noticeId==""){
-<<<<<<< Updated upstream
-            return false; 
-        }
-    emit Logger("notice was not created");
-    emit NoticeCreated(_tdrNotice.noticeId);
-    emit NoticeCreated(_noticeFromMap.noticeId);
-=======
             emit Logger("notice has not been created");
 
             return false; 
         }
     emit Logger("notice has been created");
->>>>>>> Stashed changes
         return true;
   }
 
