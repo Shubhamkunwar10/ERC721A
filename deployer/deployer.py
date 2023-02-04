@@ -23,10 +23,7 @@ import json
 import solcx
 import os
 import datetime
-<<<<<<< Updated upstream
-=======
 from tests import create_and_push_applicatin_test, create_and_push_notice_test
->>>>>>> Stashed changes
 # Set up the loggig services
 # Create a logger
 logger = logging.getLogger()
@@ -260,15 +257,12 @@ def instantiate(contract_address,compiled_contracts):
     update_tdr_storage_manager_method = tdr_storage_contract.functions.setManager(tdr_manager_address)
     print('updating manager in tdr storage contract')
     execute_contract_method(update_tdr_storage_manager_method,OWNER_ACCOUNT)
-<<<<<<< Updated upstream
-=======
 
 def run_test():
   print ("running create and push notice test")
   create_and_push_notice_test()
   print('running create and push application test')
   create_and_push_applicatin_test()
->>>>>>> Stashed changes
 
 def main():
     """
@@ -294,11 +288,8 @@ def main():
     print("instantiating")
     instantiate(contract_addresses,compiled_contracts)
     print("total execution time: ", end_time - start_time)
-<<<<<<< Updated upstream
-=======
 
     run_test()
->>>>>>> Stashed changes
 
 if __name__ == "__main__":
     main()
