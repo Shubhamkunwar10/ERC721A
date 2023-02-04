@@ -35,6 +35,10 @@ contract TdrStorage {
     event TDRDeleted(bytes32 noticeId);
     event Logger(string log);
     event LogAddress(string addressInfo, address _address);
+<<<<<<< Updated upstream
+=======
+    event LogBytes(string messgaeInfo, bytes32 _bytes);
+>>>>>>> Stashed changes
 
 
     address owner;
@@ -79,8 +83,15 @@ contract TdrStorage {
     // Function to create a new TDR
     function createApplication(TdrApplication memory _tdrApplication) public onlyManager {
         // check that an application have not been created earlier
+<<<<<<< Updated upstream
+=======
+        if(isApplicationCreated(_tdrApplication.applicationId)){
+            revert("application with same id has already been created");
+        }
+>>>>>>> Stashed changes
         // add application to the map
-        applicationMap[_tdrApplication.applicationId]=_tdrApplication;
+        addApplicationToMap(_tdrApplication);
+//        applicationMap[_tdrApplication.applicationId]=_tdrApplication;
         // Create a new TDR and add it to the mapping
 
         // Emit the TDRCreated event
@@ -210,7 +221,7 @@ contract TdrStorage {
         application.status = _status;
         // Update the application in the mapping
         applicationMap[_applicationId] = application;
-        // check for the notice 
+        // check for the notice
         if(_status == ApplicationStatus.drcIssued){
             TdrNotice storage notice = noticeMap[application.noticeId];
             notice.status= NoticeStatus.issued;
@@ -222,9 +233,43 @@ contract TdrStorage {
     }
 
     function updateApplication(TdrApplication memory _application) public {
-        applicationMap[_application.applicationId]=_application;
+        TdrApplication storage application = applicationMap[_application.applicationId];
+        if(! isApplicationCreated(_application.applicationId)){
+            revert("Application does not exist");
+        }
+        addApplicationToMap(application);
         emit ApplicationUpdated(_application.noticeId, _application.applicationId); // emit this event
     }
+
+    /**
+    * @dev Adds an application to the applicationMap.
+    * @param _application The TdrApplication memory object to be added to the applicationMap.
+    */
+    function addApplicationToMap(TdrApplication memory _application) public {
+        emit Logger("Adding application to map");
+        // Retrieve the application in storage using its applicationId
+        TdrApplication storage application = applicationMap[_application.applicationId];
+        // Copy the properties of the input _application to the storage application
+        application.applicationId = _application.applicationId;
+        application.applicationDate = _application.applicationDate;
+        application.place = _application.place;
+        application.noticeId = _application.noticeId;
+        application.farRequested = _application.farRequested;
+        application.farGranted = _application.farGranted;
+        application.status = _application.status;
+        delete application.applicants;
+
+        // Copy the applicants array from the input _application to the storage application
+        for (uint i=0; i<_application.applicants.length;i++){
+            // possible bug here over then length of the applicants.
+            application.applicants.push(_application.applicants[i]);
+            // application.applicants[i] = _application.applicants[i];
+        }
+        // Add the storage application to the applicationMap using its applicationId
+        applicationMap[_application.applicationId]=application;
+        emit LogBytes("successfully added application to map", _application.applicationId);
+    }
+
 
     // // Function to delete a TDR
     // function deleteTDR(uint _tdrId) public onlyManager {
@@ -238,11 +283,31 @@ contract TdrStorage {
     // in mapping, default values of all atrributes is zero
     TdrNotice memory _noticeFromMap = noticeMap[_tdrNotice.noticeId];
     if( _noticeFromMap.noticeId==""){
+<<<<<<< Updated upstream
             return false; 
         }
     emit Logger("notice was not created");
     emit NoticeCreated(_tdrNotice.noticeId);
     emit NoticeCreated(_noticeFromMap.noticeId);
+=======
+            emit Logger("notice has not been created");
+
+            return false; 
+        }
+    emit Logger("notice has been created");
+>>>>>>> Stashed changes
         return true;
+  }
+
+  function isApplicationCreated(bytes32 _applicationId) public returns (bool) {
+    emit Logger("application check was called");
+    // in mapping, default values of all atrributes is zero
+      TdrApplication memory application = applicationMap[_applicationId];
+    if( application.applicationId==""){
+        emit Logger("application has not been created");
+        return false;
+        }
+    emit Logger("application has been created");
+      return true;
   }
 }

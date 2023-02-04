@@ -113,6 +113,7 @@ contract TDRManager {
 
         tdrStorage.createNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, NoticeStatus.pending);
         // return _tdrNotice;
+<<<<<<< Updated upstream
     }
 
     function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status) public {
@@ -123,6 +124,18 @@ contract TDRManager {
         // return _tdrNotice;
     }
 
+=======
+    }
+
+    function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status) public {
+        // Call the TDR storage contract's createNotice function
+        emit Logger("START: updateNotice");
+
+        tdrStorage.updateNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, _status);
+        // return _tdrNotice;
+    }
+
+>>>>>>> Stashed changes
 
     /**
     @dev Function to create an application
@@ -140,8 +153,41 @@ contract TDRManager {
         tdrStorage.createApplication(_tdrApplication);
 
         // add application in the notice 
-        tdrStorage.addApplicationToNotice(_tdrApplication.noticeId,_tdrApplication.applicationId); 
+        // tdrStorage.addApplicationToNotice(_tdrApplication.noticeId,_tdrApplication.applicationId); 
     }
+
+    // This function takes user consent to create application and then sign it. 
+    function signTdrApplication(bytes32 _applicationId) public {
+        TdrApplication memory  application = tdrStorage.getApplication(_applicationId);
+        // make sure the user has not signed the transfer
+        for (uint i=0;i<application.applicants.length;i++){
+            Signatory memory signatory = application.applicants[i];
+            if(signatory.userId == userManager.getUserId(msg.sender)){
+                require(!signatory.hasUserSigned,"User have already signed the application");
+                application.applicants[i].hasUserSigned = true;
+                // reflect this change in applicton
+            }
+        }
+        // user signs the application
+        // find out whether all the users have signed
+        bool allSignatoriesSign = true;
+        for (uint i=0;i<application.applicants.length;i++){
+            Signatory memory s = application.applicants[i];
+            if(!s.hasUserSigned){
+                allSignatoriesSign = false;
+                break;
+            }
+        }
+        // if all the signatories has not signed
+        if(allSignatoriesSign){
+            //all the signatories has signed
+            //change the status of the sub-drc
+            application.status = ApplicationStatus.submitted;
+            // applicationMap[applicationId]=application;
+        }
+        tdrStorage.updateApplication(application);
+    }
+
 // This function mark the application as verified
     function verifyApplication(bytes32 applicationId) public{
     assert(userManager.isVerifier(msg.sender)|| userManager.isAdmin(msg.sender));
