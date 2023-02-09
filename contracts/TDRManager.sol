@@ -140,20 +140,29 @@ contract TDRManager {
         tdrStorage.createApplication(_tdrApplication);
 
         // add application in the notice 
-        // tdrStorage.addApplicationToNotice(_tdrApplication.noticeId,_tdrApplication.applicationId); 
+        tdrStorage.addApplicationToNotice(_tdrApplication.noticeId,_tdrApplication.applicationId);
+        // add user signature to the appliction
+        signTdrApplication(_tdrApplication.applicationId);
+        // who is signing this application
     }
 
     // This function takes user consent to create application and then sign it. 
     function signTdrApplication(bytes32 _applicationId) public {
         TdrApplication memory  application = tdrStorage.getApplication(_applicationId);
         // make sure the user has not signed the transfer
+        bool isUserFound = false;
         for (uint i=0;i<application.applicants.length;i++){
             Signatory memory signatory = application.applicants[i];
+            // since this is a call in same method, msg.sender is orignal source
             if(signatory.userId == userManager.getUserId(msg.sender)){
                 require(!signatory.hasUserSigned,"User have already signed the application");
                 application.applicants[i].hasUserSigned = true;
+                isUserFound=true;
                 // reflect this change in applicton
             }
+        }
+        if(!isUserFound){
+            revert("Signer is not in the applicants list");
         }
         // user signs the application
         // find out whether all the users have signed
