@@ -70,6 +70,10 @@ contract UserManager {
     // Event emitted after an issuer list is updated
     event IssuerListUpdated(address[] issuerAddresses);
 
+    event Logger(string log);
+    event LogAddress(string addressInfo, address _address);
+    event LogBytes(string messgaeInfo, bytes32 _bytes);
+
     // Constructor function to set the initial values of the contract
     constructor(address _admin, address _manager) {
         // Set the contract owner to the caller
@@ -100,8 +104,16 @@ contract UserManager {
  * @dev Modifier to check if the caller is the contract admin
  */
     modifier onlyManager() {
-        require(msg.sender == manager, "Caller is not the contract admin");
+        require(msg.sender == manager, "Caller is not the contract manager");
         _;
+    }
+    function setAdmin(address _admin) public onlyOwner {
+        admin = _admin;
+    }
+
+    function setManager(address _manager) public {
+        require (msg.sender == owner ||  msg.sender == admin);
+        manager = _manager;
     }
 
 /**
@@ -109,7 +121,7 @@ contract UserManager {
  * @param userId 12 bit uint id of the user
  * @param userAddress address of the user
  */
-    function addUser(bytes32 userId, address userAddress) public onlyAdmin {
+    function addUser(bytes32 userId, address userAddress) public onlyManager {
         // check is user already does not exist
         if(userMap[userId]!=address(0)){
             revert("User already exists, instead try updating the address");
@@ -366,6 +378,7 @@ contract UserManager {
     function isAdmin(address _address) public view returns (bool) {
     return admin == _address;
     }
+    // This method would @return empty address in case address is not found
     function getUserId (address _address) view public returns (bytes32){
         return reverseUserMap[_address];
     }
