@@ -258,6 +258,11 @@ def instantiate(contract_address,compiled_contracts):
     print('updating manager in tdr storage contract')
     execute_contract_method(update_tdr_storage_manager_method,OWNER_ACCOUNT)
 
+    #setting manager for userManager
+    set_user_manager_method= user_manager_contract.functions.setManager(MANAGER_ACCOUNT.address)
+    print('updating manager in user manager contract')
+    execute_contract_method(set_user_manager_method,OWNER_ACCOUNT)
+    print("updated manager to ", MANAGER_ACCOUNT.address)
 def run_test():
   print ("running create and push notice test")
   create_and_push_notice_test()
@@ -288,8 +293,9 @@ def main():
     print("instantiating")
     instantiate(contract_addresses,compiled_contracts)
     print("total execution time: ", end_time - start_time)
+    print("last mined block was ",w3.eth.blockNumber)
 
-    run_test()
+    # run_test()
 
 if __name__ == "__main__":
     main()
