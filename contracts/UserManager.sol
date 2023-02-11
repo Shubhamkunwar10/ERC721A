@@ -379,9 +379,9 @@ contract UserManager {
     return admin == _address;
     }
     // This method would @return empty address in case address is not found
-    function getUserId (address _address) public returns (bytes32){
-        emit LogAddress("user manager called for address",_address);
-        emit LogBytes("returned user id is ",reverseUserMap[_address]);
+    function getUserId (address _address) public view returns (bytes32){
+//        emit LogAddress("user manager called for address",_address);
+//        emit LogBytes("returned user id is ",reverseUserMap[_address]);
         return reverseUserMap[_address];
     }
     function getVerifierId (address _address) view public returns (bytes32){

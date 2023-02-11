@@ -243,7 +243,6 @@ contract TdrStorage {
     */
     function addApplicationToMap(TdrApplication memory _application) public {
         emit Logger("Adding application to map");
-        emit LogApplication("begin adding following application to map", _application);
         // Retrieve the application in storage using its applicationId
         TdrApplication storage application = applicationMap[_application.applicationId];
         // Copy the properties of the input _application to the storage application
@@ -263,7 +262,6 @@ contract TdrStorage {
             // application.applicants[i] = _application.applicants[i];
         }
         // Add the storage application to the applicationMap using its applicationId
-        emit LogApplication("finally pushing following application", application);
         applicationMap[_application.applicationId]=application;
         emit LogBytes("successfully added application to map", _application.applicationId);
     }

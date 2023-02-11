@@ -39,6 +39,7 @@ contract TDRManager {
     event LogAddress(string addressInfo, address _address);
     event LogBytes(string messgaeInfo, bytes32 _bytes);
     event LogBool(string messageInfo, bool message);
+    event LogApplication(string message, TdrApplication application);
 
 
 
@@ -169,9 +170,10 @@ contract TDRManager {
     }
 
     // This function uses address to see whether the user has signed the application or not
-    function getApplicantsPosition(bytes32 _applicationId,address adrs) public returns(uint){
+    function getApplicantsPosition(bytes32 _applicationId,address adrs) public view returns(uint){
         TdrApplication memory  application = tdrStorage.getApplication(_applicationId);
         bytes32 userId = userManager.getUserId(adrs);
+//        emit LogAddress("address quries is ",adrs);
         for (uint i=0;i<application.applicants.length;i++){
             Signatory memory signatory = application.applicants[i];
             if(signatory.userId==userId) {
@@ -180,35 +182,43 @@ contract TDRManager {
         }
         return 0;
     }
-
+    function signApplicationAtPos(bytes32 _applicationId,uint pos) public{
+        if(pos ==0){
+            emit Logger("Applicant not found  in the application");
+        }
+        TdrApplication memory  application = tdrStorage.getApplication(_applicationId);
+        emit LogApplication("appplication is ",application);
+        bytes32 userId = userManager.getUserId(msg.sender);
+        if(application.applicants[pos-1].userId!=userId){
+            revert("user is not sender");
+        }
+        emit LogBytes("modifying application", application.applicationId);
+        application.applicants[pos-1].hasUserSigned=true;
+        tdrStorage.updateApplication(application);
+        emit LogBytes("changed status of applicant", application.applicants[0].userId);
+    }
+// this function is buggy
+    function signApplication(bytes32 _applicationId) public{
+        emit LogAddress("msg.sender is ",msg.sender);
+        uint pos = getApplicantsPosition(_applicationId,msg.sender);
+        signApplicationAtPos(_applicationId,pos);
+    }
     function getApplication(bytes32 _applicationId) public returns(TdrApplication memory){
         TdrApplication memory  application = tdrStorage.getApplication(_applicationId);
         emit LogApplication("application fetched", application);
         return application;
     }
-    event LogApplication(string message, TdrApplication application);
-    function signApplication(bytes32 _applicationId) public{
-        TdrApplication memory  application = tdrStorage.getApplication(_applicationId);
-        bytes32 userId = userManager.getUserId(msg.sender);
-        emit LogBytes("modifying application", application.applicationId);
-        emit LogApplication("application before modification", application);
-        application.applicants[0].hasUserSigned=true;
-        emit LogApplication("application before updating to map", application);
-        tdrStorage.updateApplication(application);
-        emit LogApplication("application after modification", application);
-        emit LogBytes("changed status of applicant", application.applicants[0].userId);
-
-        //        for (uint i=0;i<application.applicants.length;i++){
-//            Signatory memory signatory = application.applicants[i];
-//            if(signatory.userId==userId) {
-//                emit LogBool("has user signed", signatory.hasUserSigned);
-////                application.applicants[i].hasUserSigned = true;
-////                tdrStorage.updateApplication(application);
-//            return signatory.hasUserSigned;
-//            }
-//        }
-//        return false;
-    }
+//    function signApplication(bytes32 _applicationId) public{
+//        TdrApplication memory  application = tdrStorage.getApplication(_applicationId);
+//        bytes32 userId = userManager.getUserId(msg.sender);
+//        emit LogBytes("modifying application", application.applicationId);
+//        emit LogApplication("application before modification", application);
+//        application.applicants[0].hasUserSigned=true;
+//        emit LogApplication("application before updating to map", application);
+//        tdrStorage.updateApplication(application);
+//        emit LogApplication("application after modification", application);
+//        emit LogBytes("changed status of applicant", application.applicants[0].userId);
+//    }
 
     // This function takes user consent to create application and then sign it. 
     function signTdrApplication(bytes32 _applicationId) public {
