@@ -23,7 +23,7 @@ import json
 import solcx
 import os
 import datetime
-from tests import create_and_push_applicatin_test, create_and_push_notice_test
+from tests import create_and_push_applicatin_test, create_and_push_notice_test, run_all_test
 # Set up the loggig services
 # Create a logger
 logger = logging.getLogger()
@@ -295,6 +295,7 @@ def main():
     print("total execution time: ", end_time - start_time)
     print("last mined block was ",w3.eth.blockNumber)
 
+    run_all_test()
     # run_test()
 
 if __name__ == "__main__":
