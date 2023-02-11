@@ -36,6 +36,7 @@ contract TdrStorage {
     event Logger(string log);
     event LogAddress(string addressInfo, address _address);
     event LogBytes(string messgaeInfo, bytes32 _bytes);
+    event LogApplication(string message, TdrApplication application);
 
 
     address owner;
@@ -227,11 +228,12 @@ contract TdrStorage {
     }
 
     function updateApplication(TdrApplication memory _application) public {
+        emit LogBytes("begin update application",_application.applicationId);
         TdrApplication storage application = applicationMap[_application.applicationId];
         if(! isApplicationCreated(_application.applicationId)){
             revert("Application does not exist");
         }
-        addApplicationToMap(application);
+        addApplicationToMap(_application);
         emit ApplicationUpdated(_application.noticeId, _application.applicationId); // emit this event
     }
 
@@ -241,6 +243,7 @@ contract TdrStorage {
     */
     function addApplicationToMap(TdrApplication memory _application) public {
         emit Logger("Adding application to map");
+        emit LogApplication("begin adding following application to map", _application);
         // Retrieve the application in storage using its applicationId
         TdrApplication storage application = applicationMap[_application.applicationId];
         // Copy the properties of the input _application to the storage application
@@ -260,6 +263,7 @@ contract TdrStorage {
             // application.applicants[i] = _application.applicants[i];
         }
         // Add the storage application to the applicationMap using its applicationId
+        emit LogApplication("finally pushing following application", application);
         applicationMap[_application.applicationId]=application;
         emit LogBytes("successfully added application to map", _application.applicationId);
     }
