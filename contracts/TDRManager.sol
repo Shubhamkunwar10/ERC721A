@@ -238,16 +238,16 @@ contract TDRManager {
                 emit Logger("the values were same in if loop");
             }
             if(signatory.userId==userId) {
-//                require(!signatory.hasUserSigned,"User have already signed the application");
-//                application.applicants[i].hasUserSigned = true;
-//                emit Logger("user in application was found");
-//                isUserFound=true;
+                require(!signatory.hasUserSigned,"User have already signed the application");
+                application.applicants[i].hasUserSigned = true;
+                emit Logger("user in application was found");
+                isUserFound=true;
                 // reflect this change in applicton
             }
         }
-//        if(!isUserFound){
-//            revert("Signer is not in the applicants list");
-//        }
+        if(!isUserFound){
+            revert("Signer is not in the applicants list");
+        }
         // user signs the application
         // find out whether all the users have signed
         bool allSignatoriesSign = true;
@@ -262,10 +262,12 @@ contract TDRManager {
         if(allSignatoriesSign){
             //all the signatories has signed
             //change the status of the sub-drc
+            emit Logger("All signatories signed");
             application.status = ApplicationStatus.submitted;
             // applicationMap[applicationId]=application;
         }
         tdrStorage.updateApplication(application);
+        emit LogApplication("final status of the application", application);
     }
 
 // This function mark the application as verified
