@@ -151,8 +151,8 @@ contract TDRManager {
         tdrStorage.addApplicationToNotice(_tdrApplication.noticeId,_tdrApplication.applicationId);
         emit Logger("application added to Notice");
         // add user signature to the appliction
-//        signTdrApplication(_tdrApplication.applicationId);
-//        emit Logger("application signed");
+        signTdrApplication(_tdrApplication.applicationId);
+        emit Logger("application signed by creater");
         // who is signing this application
     }
 
@@ -182,82 +182,79 @@ contract TDRManager {
         }
         return 0;
     }
-    function signApplicationAtPos(bytes32 _applicationId,uint pos) public{
+    function signApplicationAtPos(bytes32 _applicationId,uint pos) private returns (TdrApplication memory){
         if(pos ==0){
             emit Logger("Applicant not found  in the application");
         }
         TdrApplication memory  application = tdrStorage.getApplication(_applicationId);
         emit LogApplication("appplication is ",application);
         bytes32 userId = userManager.getUserId(msg.sender);
-        if(application.applicants[pos-1].userId!=userId){
+        Signatory memory applicant = application.applicants[pos-1];
+        if(applicant.userId!=userId){
             revert("user is not sender");
+        }
+        if(applicant.hasUserSigned){
+            revert("applicant has already signed the application");
         }
         emit LogBytes("modifying application", application.applicationId);
         application.applicants[pos-1].hasUserSigned=true;
-        tdrStorage.updateApplication(application);
-        emit LogBytes("changed status of applicant", application.applicants[0].userId);
+//        tdrStorage.updateApplication(application);
+        emit LogBytes("applicant signed", application.applicants[0].userId);
+        return application;
     }
 // this function is buggy
-    function signApplication(bytes32 _applicationId) public{
-        emit LogAddress("msg.sender is ",msg.sender);
-        uint pos = getApplicantsPosition(_applicationId,msg.sender);
-        signApplicationAtPos(_applicationId,pos);
-    }
+//    function signApplication(bytes32 _applicationId) public{
+//        emit LogAddress("msg.sender is ",msg.sender);
+//        uint pos = getApplicantsPosition(_applicationId,msg.sender);
+//        signApplicationAtPos(_applicationId,pos);
+//    }
     function getApplication(bytes32 _applicationId) public returns(TdrApplication memory){
         TdrApplication memory  application = tdrStorage.getApplication(_applicationId);
         emit LogApplication("application fetched", application);
         return application;
     }
-//    function signApplication(bytes32 _applicationId) public{
-//        TdrApplication memory  application = tdrStorage.getApplication(_applicationId);
-//        bytes32 userId = userManager.getUserId(msg.sender);
-//        emit LogBytes("modifying application", application.applicationId);
-//        emit LogApplication("application before modification", application);
-//        application.applicants[0].hasUserSigned=true;
-//        emit LogApplication("application before updating to map", application);
-//        tdrStorage.updateApplication(application);
-//        emit LogApplication("application after modification", application);
-//        emit LogBytes("changed status of applicant", application.applicants[0].userId);
-//    }
 
     // This function takes user consent to create application and then sign it. 
     function signTdrApplication(bytes32 _applicationId) public {
         TdrApplication memory  application = tdrStorage.getApplication(_applicationId);
-        // make sure the user has not signed the transfer
-        bool isUserFound = false;
-        bytes32 userId = userManager.getUserId(msg.sender);
-        emit LogBytes("user id from manager is ", userId);
-        for (uint i=0;i<application.applicants.length;i++){
-                Signatory memory signatory = application.applicants[i];
-            // since this is a call in same method, msg.sender is orignal source
-            emit LogBytes("signatory user id is ",signatory.userId);
-//            emit LogBytes("user id from manager is ", userManager.getIssuerId(msg.sender));
-            bool isSame = signatory.userId==userId;
-            emit LogBool("Is the signer and user id equal?", isSame);
-            if(isSame) {
-                emit Logger("the values were same in if loop");
-            }
-            if(signatory.userId==userId) {
-                require(!signatory.hasUserSigned,"User have already signed the application");
-                application.applicants[i].hasUserSigned = true;
-                emit Logger("user in application was found");
-                isUserFound=true;
-                // reflect this change in applicton
-            }
-        }
-        if(!isUserFound){
-            revert("Signer is not in the applicants list");
-        }
+        uint pos = getApplicantsPosition(_applicationId,msg.sender);
+        application = signApplicationAtPos(_applicationId,pos);
+
+//        // make sure the user has not signed the transfer
+//        bool isUserFound = false;
+//        bytes32 userId = userManager.getUserId(msg.sender);
+//        emit LogBytes("user id from manager is ", userId);
+//        for (uint i=0;i<application.applicants.length;i++){
+//                Signatory memory signatory = application.applicants[i];
+//            // since this is a call in same method, msg.sender is orignal source
+//            emit LogBytes("signatory user id is ",signatory.userId);
+////            emit LogBytes("user id from manager is ", userManager.getIssuerId(msg.sender));
+//            bool isSame = signatory.userId==userId;
+//            emit LogBool("Is the signer and user id equal?", isSame);
+//            if(isSame) {
+//                emit Logger("the values were same in if loop");
+//            }
+//            if(signatory.userId==userId) {
+//                require(!signatory.hasUserSigned,"User have already signed the application");
+//                application.applicants[i].hasUserSigned = true;
+//                emit Logger("user in application was found");
+//                isUserFound=true;
+//                // reflect this change in applicton
+//            }
+//        }
+//        if(!isUserFound){
+//            revert("Signer is not in the applicants list");
+//        }
         // user signs the application
         // find out whether all the users have signed
-        bool allSignatoriesSign = true;
-        for (uint i=0;i<application.applicants.length;i++){
-            Signatory memory s = application.applicants[i];
-            if(!s.hasUserSigned){
-                allSignatoriesSign = false;
-                break;
-            }
-        }
+        bool allSignatoriesSign = hasAllUserSignedTdrApplication(application);
+//        for (uint i=0;i<application.applicants.length;i++){
+//            Signatory memory s = application.applicants[i];
+//            if(!s.hasUserSigned){
+//                allSignatoriesSign = false;
+//                break;
+//            }
+//        }
         // if all the signatories has not signed
         if(allSignatoriesSign){
             //all the signatories has signed
@@ -270,6 +267,16 @@ contract TDRManager {
         emit LogApplication("final status of the application", application);
     }
 
+    function hasAllUserSignedTdrApplication(TdrApplication memory application) private view returns(bool){
+        bool allSignatoriesSign = true;
+        for (uint i=0;i<application.applicants.length;i++){
+            Signatory memory s = application.applicants[i];
+            if(!s.hasUserSigned){
+                return false;
+            }
+        }
+        return true;
+    }
 // This function mark the application as verified
     function verifyApplication(bytes32 applicationId) public{
     assert(userManager.isVerifier(msg.sender)|| userManager.isAdmin(msg.sender));
