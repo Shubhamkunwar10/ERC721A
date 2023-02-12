@@ -190,19 +190,19 @@ contract UserManager {
      * the method will revert with an error message. If the Officer is added successfully, the method will emit
      * the OfficerAdded event.
      */
-    function addOfficer (KdaOfficer memory officer, address officerAddress) public onlyAdmin {
+    function addOfficer (KdaOfficer memory officer, address officerAddress) public onlyManager {
         // check is user already does not exist
-        if(officerAddressMap[officer.id]!=address(0)){
+        if(officerAddressMap[officer.userId]!=address(0)){
             revert("Officer already exist, instead try updating the address");
         }
         // Update the verifier in the mapping
-        officerMap[officer.id] = officer;
-        officerAddressMap[officer.id]=officerAddress;
-        reverseOfficerMap[officerAddress]=officer.id;
+        officerMap[officer.userId] = officer;
+        officerAddressMap[officer.userId]=officerAddress;
+        reverseOfficerMap[officerAddress]=officer.userId;
 
 
         // Emit the verifierAdded event
-        emit OfficerAdded(officer.id, officerAddress);
+        emit OfficerAdded(officer.userId, officerAddress);
     }
 
     /**
@@ -213,19 +213,19 @@ contract UserManager {
      * mapping, the method will revert with an error message. If the Officer is updated successfully, the method will
      * emit the OfficerUpdated event.
      */
-    function updateOfficer (KdaOfficer memory officer, address officerAddress) public onlyAdmin {
+    function updateOfficer (KdaOfficer memory officer, address officerAddress) public onlyManager {
         // check is user already does not exist
-        if(officerAddressMap[officer.id]==address(0)){
+        if(officerAddressMap[officer.userId]==address(0)){
             revert("Officer does not exist, instead try adding the address");
         }
         // Update the verifier in the mapping
-        officerMap[officer.id] = officer;
-        officerAddressMap[officer.id]=officerAddress;
-        reverseOfficerMap[officerAddress]=officer.id;
+        officerMap[officer.userId] = officer;
+        officerAddressMap[officer.userId]=officerAddress;
+        reverseOfficerMap[officerAddress]=officer.userId;
 
 
         // Emit the verifierAdded event
-        emit OfficerUpdated(officer.id, officerAddress);
+        emit OfficerUpdated(officer.userId, officerAddress);
     }
 
     /**
@@ -235,7 +235,7 @@ contract UserManager {
      * mapping, the method will revert with an error message. If the Officer is deleted successfully, the method will
      * emit the OfficerDeleted event.
      */
-    function deleteOfficer(bytes32 id) public onlyAdmin {
+    function deleteOfficer(bytes32 id) public onlyManager {
         // check if verifier already exists
         if(officerAddressMap[id]==address(0)){
             revert("officer does not exist");
@@ -249,36 +249,6 @@ contract UserManager {
         // Emit the verifierUpdated event
         emit OfficerDeleted(id);
     }
-
-
-//    function updateOfficer (KdaOfficer memory officer, address officerAddress) public onlyAdmin {
-//        // check is user already does not exist
-//        if(officerAddressMap[officer.id]==address(0)){
-//            revert("Officer does not exist, instead try adding the address");
-//        }
-//        // Update the verifier in the mapping
-//        officerMap[officer.id] = officer;
-//        officerAddressMap[officer.id]=officerAddress;
-//        reverseOfficerMap[officerAddress]=officer.id;
-//
-//
-//        // Emit the verifierAdded event
-//        emit OfficerUpdated(officer.id, officerAddress);
-//    }
-//    function deleteOfficer(bytes32 id) public onlyAdmin {
-//        // check if verifier already exists
-//        if(officerAddressMap[id]==address(0)){
-//            revert("officer does not exist");
-//        }
-//        // Delete the verifier in the mapping
-//        address _address = officerAddressMap[id];
-//        delete(officerMap[id]);
-//        delete(officerAddressMap[id]);
-//        delete(reverseOfficerMap[_address]);
-//
-//        // Emit the verifierUpdated event
-//        emit OfficerDeleted(id);
-//    }
 
 /**
  * @dev Function to add an verifier

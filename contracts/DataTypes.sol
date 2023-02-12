@@ -122,7 +122,7 @@ pragma solidity ^0.8.16;
     }
 
     struct KdaOfficer {
-        bytes32 id;
+        bytes32 userId;
         Role role;
         Department department;
         Zone zone;

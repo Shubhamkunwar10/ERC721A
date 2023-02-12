@@ -368,7 +368,7 @@ contract TDRManager {
             officer.role==Role.VERIFIER ||
             officer.role==Role.VC) {
                 status.verified = true;
-                status.verifierId = officer.id;
+                status.verifierId = officer.userId;
                 status.verifierRole = officer.role;
               // update Application
                 tdrApplication.status = ApplicationStatus.verified;
