@@ -263,74 +263,89 @@ contract TDRManager {
     }
 // This function mark the application as verified
     function verifyApplication(bytes32 applicationId) public{
-    assert(userManager.isVerifier(msg.sender)|| userManager.isAdmin(msg.sender));
-    // get application
-    TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
-    // ensure that the notice is not finalized
-    TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-    if(notice.status == NoticeStatus.issued){
-        revert("DRC already issued against this notice");
-    }
+        assert(userManager.isVerifier(msg.sender)|| userManager.isAdmin(msg.sender));
+        // get application
+        TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
+        // ensure that the notice is not finalized
+        TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
+        if(notice.status == NoticeStatus.issued){
+            revert("DRC already issued against this notice");
+        }
 
-    // set application status as verified
-    tdrApplication.status = ApplicationStatus.verified;
-    // update Application
-    tdrStorage.updateApplication(tdrApplication);
+        // set application status as verified
+        tdrApplication.status = ApplicationStatus.verified;
+        // update Application
+        tdrStorage.updateApplication(tdrApplication);
     }
 
 // This function mark the application as verified
     function rejectApplication(bytes32 applicationId,string memory reason) public {
-    assert(userManager.isApprover(msg.sender)||userManager.isVerifier(msg.sender)||userManager.isIssuer(msg.sender)||userManager.isAdmin(msg.sender)); //what about admin
-    // get application
-    TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
-    // No need to check notice, as application can be rejected even when DRC is issued.
-    // set application status as verified
-    tdrApplication.status = ApplicationStatus.rejected;
-    // update Application
-    tdrStorage.updateApplication(tdrApplication);
-    emit ApplicationRejected(applicationId, reason);
+        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        emit LogOfficer("Officer in action",officer);
+        // Check if notice is issued
+        TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
+        // No need to check notice, as application can be rejected even when DRC is issued.
+        if (officer.role == Role.SUPER_ADMIN || officer.role== Role.ADMIN ||
+        officer.role==Role.APPROVER || officer.role==Role.VC) {
+            // update Application
+            tdrApplication.status = ApplicationStatus.rejected;
+            tdrStorage.updateApplication(tdrApplication);
+            emit ApplicationApproved(officer, applicationId);
+        } else {
+            emit Logger("User not authorized");
+        }
+        // store the reason for rejection of application
+        emit ApplicationRejected(applicationId, reason);
     }
-
+    event ApplicationApproved(KdaOfficer officer, bytes32 applicationId);
    function approveApplication(bytes32 applicationId) public {
-    assert(userManager.isApprover(msg.sender)||userManager.isAdmin(msg.sender));
-    // get application
-    TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
-    // ensure that the notice is not finalized
-    TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-    if(notice.status == NoticeStatus.issued){
-        revert("DRC already issued against this notice");
-    }
-
-    // set application status as verified
-    tdrApplication.status = ApplicationStatus.approved;
-    // update Application
-    tdrStorage.updateApplication(tdrApplication);
+       KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+       emit LogOfficer("Officer in action",officer);
+       // Check if notice is issued
+       TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
+       TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
+       if(notice.status == NoticeStatus.issued){
+           revert("DRC already issued against this notice");
+       }
+       if (officer.role == Role.SUPER_ADMIN || officer.role== Role.ADMIN ||
+            officer.role==Role.APPROVER || officer.role==Role.VC) {
+               // update Application
+               tdrApplication.status = ApplicationStatus.approved;
+               tdrStorage.updateApplication(tdrApplication);
+               emit ApplicationApproved(officer, applicationId);
+       } else {
+           emit Logger("User not authorized");
+       }
     }
 
 // This function mark the application as verified
     function issueDRC(bytes32 applicationId, uint far) public {
-    assert(userManager.isIssuer(msg.sender)|| userManager.isAdmin(msg.sender));
-    // get application
-    TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
-    // ensure that the notice is not finalized
-    TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-    if(notice.status == NoticeStatus.issued){
-        revert("DRC already issued against this notice");
-    }
+        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        emit LogOfficer("Officer in action",officer);
+        // Check if notice is issued
+        TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
+        TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
+        if(notice.status == NoticeStatus.issued){
+            revert("DRC already issued against this notice");
+        }
+        if (officer.role == Role.SUPER_ADMIN || officer.role== Role.ADMIN
+            || officer.role==Role.VC) {
+            // set application status as verified
+            tdrApplication.status = ApplicationStatus.drcIssued;
+            // update FAR in application
+            tdrApplication.farGranted=far;
+            // set notice as issued
+            notice.status = NoticeStatus.issued;
+            tdrStorage.updateNotice(notice);
 
-    // set application status as verified
-    tdrApplication.status = ApplicationStatus.drcIssued;
-    // update FAR in application
-    tdrApplication.farGranted=far;
-    // set notice as issued
-    notice.status = NoticeStatus.issued;
-    tdrStorage.updateNotice(notice);
-
-    // update Application
-    tdrStorage.updateApplication(tdrApplication);
-    // issue DRC
-    // drcManager.issueDRC(tdrApplication, far);
-    // emit events
+            // update Application
+            tdrStorage.updateApplication(tdrApplication);
+            // issue DRC
+            // drcManager.issueDRC(tdrApplication, far);
+            // emit events
+        }else {
+            emit Logger("User not authorised");
+        }
     }
     function getVerificationStatus(bytes32 applicationId) public view returns(bool){
         VerificationStatus memory status = tdrStorage.getVerificationStatus(applicationId);
@@ -342,15 +357,25 @@ contract TDRManager {
         VerificationStatus memory status = tdrStorage.getVerificationStatus(applicationId);
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
         emit LogOfficer("Officer in action",officer);
-
+        // Check if notice is issued
+        TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
+        TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
+        if(notice.status == NoticeStatus.issued){
+            revert("DRC already issued against this notice");
+        }
         if (officer.role == Role.SUPER_ADMIN ||
             officer.role== Role.ADMIN ||
             officer.role==Role.VERIFIER ||
             officer.role==Role.VC) {
-            status.verified = true;
-            status.verifierId = officer.id;
-            status.verifierRole = officer.role;
-            emit ApplicationVerified(officer, applicationId);
+                status.verified = true;
+                status.verifierId = officer.id;
+                status.verifierRole = officer.role;
+              // update Application
+                tdrApplication.status = ApplicationStatus.verified;
+                tdrStorage.updateApplication(tdrApplication);
+                emit ApplicationVerified(officer, applicationId);
+                tdrStorage.storeVerificationStatus(applicationId,status);
+
         } else if (officer.role == Role.SUB_VERIFIER) {
             if (officer.department == Department.LAND) {
                 status.subVerifierStatus.land = true;
@@ -368,13 +393,16 @@ contract TDRManager {
             emit ApplicationVerified(officer, applicationId);
             if (checkIfAllSubverifiersSigned(status)) {
                 status.verified=true;
+                // set application status as verified
+                tdrApplication.status = ApplicationStatus.verified;
+                // update Application
+                tdrStorage.updateApplication(tdrApplication);
                 emit Logger("Appliction verified by all sub verifier");
             }
-            //check all the subverifier
+            tdrStorage.storeVerificationStatus(applicationId,status);
         } else {
             emit Logger("User is not authorized");
         }
-        tdrStorage.storeVerificationStatus(applicationId,status);
     }
     function checkIfAllSubverifiersSigned(VerificationStatus memory verificationStatus) public view returns (bool) {
     bool allSigned = true;
