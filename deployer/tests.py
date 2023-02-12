@@ -5,7 +5,7 @@ import time
 
 PORT = 8000
 HOST = "localhost"
-JWT = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiQUNDRVNTIFRPS0VOIiwiaWQiOiIzNDc0NDlkNDEyYTYxZDg1NjVjNzU4ODZhMzJlMzFmZDMxMGZmNWFlMDBjODIyMWE1ZGE5NjkyNGE3MmE5ZGI1IiwidXNlcm5hbWUiOiJBdmluYXNoIEtoYW4iLCJyb2xlIjoidXNlciIsImV4cCI6MTY3NjExMjM2MiwiaWF0IjoxNjc2MDI1OTYyfQ.7QqJDgtrKI06cJvDlbTpLTl2RLdQkx-druf7jjI8qTI'
+JWT = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiQUNDRVNTIFRPS0VOIiwiaWQiOiIzNDc0NDlkNDEyYTYxZDg1NjVjNzU4ODZhMzJlMzFmZDMxMGZmNWFlMDBjODIyMWE1ZGE5NjkyNGE3MmE5ZGI1IiwidXNlcm5hbWUiOiJBdmluYXNoIEtoYW4iLCJyb2xlIjoidXNlciIsImV4cCI6MTY3NjIwNjA1NywiaWF0IjoxNjc2MTE5NjU3fQ.iBwW2G-U3UF_W7TcepDm8fEM3TWyxa0ICin0POwjLhk'
 
 
 def get_trx_id_from_res(res):
@@ -89,7 +89,7 @@ def create_application_test():
                 "userId": "347449d412a61d8565c75886a32e31fd310ff5ae00c8221a5da96924a72a9db5"
             }
         ],
-        "status": "submitted",
+        "status": "pending",
         "noticeId": "notice"
     })
     headers = {
@@ -101,7 +101,7 @@ def create_application_test():
     return get_trx_id_from_res(res)
 
 
-def create_and_push_applicatin_test():
+def create_and_push_application_test():
     start_time = dt.now()
     trx_id = create_application_test()
     try:
@@ -153,15 +153,31 @@ def sign_and_push_applicatin_test():
     end_time = dt.now()
     t = end_time - start_time
     print("time for application creation ", t.seconds)
+
+
+def user_signed_status_test():
+    conn = http.client.HTTPConnection(HOST, PORT)
+    payload = json.dumps({
+        "applicationId": "app123"
+    })
+    headers = {
+        'Authorization': 'bearer ' + JWT,
+        'Content-Type': 'application/json'
+    }
+    conn.request("POST", "/tdr/getUserSignStatus", payload, headers)
+    res = conn.getresponse()
+    data = res.read()
+    print(data.decode("utf-8"))
 def run_all_test():
     print("adding user to the blockchain")
     add_user_test()
     print("running create and push notice test")
     create_and_push_notice_test()
     print('running create and push application test')
-    create_and_push_applicatin_test()
+    create_and_push_application_test()
     print("runing sign and push application test")
     sign_and_push_applicatin_test()
+    user_signed_status_test()
 
 def main():
     run_all_test()

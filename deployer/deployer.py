@@ -23,7 +23,7 @@ import json
 import solcx
 import os
 import datetime
-from tests import create_and_push_applicatin_test, create_and_push_notice_test, run_all_test
+from tests import create_and_push_application_test, create_and_push_notice_test, run_all_test
 # Set up the loggig services
 # Create a logger
 logger = logging.getLogger()
@@ -85,8 +85,24 @@ FILES_TO_COMPILE = [
 ]
 CONTRACTS = ["DrcTransferApplicationStorage", "DrcStorage", "DRCManager", "TdrStorage", "TDRManager", "UserManager",
              "DuaStorage"]
+SKIPPED_CONTRACTS = ["UserManager"]
+# SKIPPED_CONTRACTS = []
 logger.info('following files would be compiled')
 logger.info(FILES_TO_COMPILE)
+
+def save_compiled_contracts(compiled_contracts):
+    file="../build/compiled_contracts/compiled_contracts.txt"
+    os.system("mkdir -p ../build/compiled_contracts")
+    f=open(file,'w+')
+    f.write(json.dumps(compiled_contracts))
+
+
+def get_previous_contracts():
+    file="../build/compiled_contracts/compiled_contracts.txt"
+    f=open(file,'r')
+    data = f.read()
+    compiled_contracts = json.loads(data)
+    return compiled_contracts
 
 
 def get_compiled_contracts():
@@ -104,13 +120,19 @@ def get_compiled_contracts():
                                               output_values=["abi", "bin"])
     # Formatting dictionary
     compiled_contracts = {}
+    # compiled_contracts = get_previous_contracts()
+    # print("###############################################")
+    # print("WARNING: Using previous contracts, this may lead to error")
+    # print("###############################################")
     for key in _compiled_contracts.keys():
         value = _compiled_contracts.get(key)
-        # print(key)
+        print(key)
         new_key = key.split(":")[1]
         compiled_contracts[new_key] = value
         save_contract(new_key,value)
+    # save_compiled_contracts(compiled_contracts)
     return compiled_contracts
+
 
 
 def log_dict(d, s=1):
@@ -184,8 +206,15 @@ def deploy_all_contracts(compiled_contracts):
     :param compiled_contracts: a dictionary objcet containing all the compiled contracts, with their abi and bytecode
     :return: contract_address: a dictionary containing contract name as key mapped with their address
     """
-    contract_addresses = {}
+    # Getting the old deployment
+    file = "../build/contract_address/addresses.txt"
+    f=open(file,'r')
+    contract_addresses = json.loads(f.read())
+    f.close()
     for contract in CONTRACTS:
+        # skip few contracts
+        if SKIPPED_CONTRACTS.count(contract)!=0:
+            continue
         abi = compiled_contracts.get(contract).get('abi')
         bytecode = compiled_contracts.get(contract).get('bin')
         address = deploy_contract(abi, bytecode)
@@ -267,7 +296,7 @@ def run_test():
   print ("running create and push notice test")
   create_and_push_notice_test()
   print('running create and push application test')
-  create_and_push_applicatin_test()
+  create_and_push_application_test()
 
 def main():
     """
