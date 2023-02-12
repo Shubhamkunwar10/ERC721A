@@ -5,35 +5,10 @@ import time
 
 PORT = 8000
 HOST = "localhost"
-JWT = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiQUNDRVNTIFRPS0VOIiwiaWQiOiIzNDc0NDlkNDEyYTYxZDg1NjVjNzU4ODZhMzJlMzFmZDMxMGZmNWFlMDBjODIyMWE1ZGE5NjkyNGE3MmE5ZGI1IiwidXNlcm5hbWUiOiJBdmluYXNoIEtoYW4iLCJyb2xlIjoidXNlciIsImV4cCI6MTY3NjIwNjA1NywiaWF0IjoxNjc2MTE5NjU3fQ.iBwW2G-U3UF_W7TcepDm8fEM3TWyxa0ICin0POwjLhk'
+JWT = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiQUNDRVNTIFRPS0VOIiwiaWQiOiIzNDc0NDlkNDEyYTYxZDg1NjVjNzU4ODZhMzJlMzFmZDMxMGZmNWFlMDBjODIyMWE1ZGE5NjkyNGE3MmE5ZGI1IiwidXNlcm5hbWUiOiJBdmluYXNoIEtoYW4iLCJyb2xlIjoidXNlciIsImV4cCI6MTY3NjI5NDQ2NywiaWF0IjoxNjc2MjA4MDY3fQ.XdSboRIKpsiAybFVdwqRCHM6zuFUO1UlNqqEO0DbAaQ'
 
 
 def get_trx_id_from_res(res):
-    _data = res.read()
-    print(_data.decode("utf-8"))
-    data = json.loads(_data)
-    trx_id = data.get('data').get('trxId')
-    return trx_id
-
-
-def create_notice_test():
-    conn = http.client.HTTPConnection(HOST, PORT)
-    payload = json.dumps({
-        "noticeId": "notice",
-        "noticeDate": "01/01/2023",
-        "khasraOrPlotNo": "Field is required",
-        "villageOrWard": "Field is required",
-        "Tehsil": "Field is required",
-        "district": "Field is required",
-        "landUse": "Field is required",
-        "masterPlan": "Field is required"
-    })
-    headers = {
-        'Authorization': 'bearer ' + JWT,
-        'Content-Type': 'application/json',
-    }
-    conn.request("POST", "/tdr/notice/create", payload, headers)
-    res = conn.getresponse()
     _data = res.read()
     print(_data.decode("utf-8"))
     data = json.loads(_data)
@@ -59,33 +34,63 @@ def push_trx(trx_id):
     if res.status != 200:
         print("transaction failed")
 
-
-def push(name = None):
-    def decorator(f):
+def push(name=None):
+    print("running "+name)
+    def decorator(func):
         start_time = dt.now()
-        trx_id=f()
-        try:
-            push_trx(trx_id)
-        except Exception as e:
-            print("transaction failed")
-        end_time = dt.now()
-        t = end_time - start_time
-        print("time taken for "+name+": ",t.seconds)
+        def wrapper(*args, **kwargs):
+            trx_id = func(*args, **kwargs)
+            try:
+                push_trx(trx_id)
+            except Exception as e:
+                print("transaction failed")
+            end_time = dt.now()
+            t = end_time - start_time
+            print("time taken for "+name+" : ",t.seconds)
+            return trx_id
+        return wrapper
     return decorator
-def create_and_push_notice_test():
-    start_time = dt.now()
-    trx_id = create_notice_test()
-    try:
-        push_trx(trx_id)
 
-    except Exception as e:
-        print('transaction failed')
-        print(e)
-    end_time = dt.now()
-    t = end_time - start_time
-    print("time for notice creation ", t.seconds)
+@push("Create Notice Test")
+def create_notice_test():
+    conn = http.client.HTTPConnection(HOST, PORT)
+    payload = json.dumps({
+        "noticeId": "notice",
+        "noticeDate": "01/01/2023",
+        "khasraOrPlotNo": "Field is required",
+        "villageOrWard": "Field is required",
+        "Tehsil": "Field is required",
+        "district": "Field is required",
+        "landUse": "Field is required",
+        "masterPlan": "Field is required"
+    })
+    headers = {
+        'Authorization': 'bearer ' + JWT,
+        'Content-Type': 'application/json',
+    }
+    conn.request("POST", "/tdr/notice/create", payload, headers)
+    res = conn.getresponse()
+    _data = res.read()
+    print(_data.decode("utf-8"))
+    data = json.loads(_data)
+    trx_id = data.get('data').get('trxId')
+    return trx_id
 
+#
+# def create_and_push_notice_test():
+#     start_time = dt.now()
+#     trx_id = create_notice_test()
+#     try:
+#         push_trx(trx_id)
+#
+#     except Exception as e:
+#         print('transaction failed')
+#         print(e)
+#     end_time = dt.now()
+#     t = end_time - start_time
+#     print("time for notice creation ", t.seconds)
 
+@push("Create Application Test")
 def create_application_test():
     conn = http.client.HTTPConnection(HOST, PORT)
     payload = json.dumps({
@@ -111,19 +116,19 @@ def create_application_test():
     return get_trx_id_from_res(res)
 
 
-def create_and_push_application_test():
-    start_time = dt.now()
-    trx_id = create_application_test()
-    try:
-        push_trx(trx_id)
-
-    except Exception as e:
-        print('transaction failed')
-        print(e)
-    end_time = dt.now()
-    t = end_time - start_time
-    print("time for application creation ", t.seconds)
-
+# def create_and_push_application_test():
+#     start_time = dt.now()
+#     trx_id = create_application_test()
+#     try:
+#         push_trx(trx_id)
+#
+#     except Exception as e:
+#         print('transaction failed')
+#         print(e)
+#     end_time = dt.now()
+#     t = end_time - start_time
+#     print("time for application creation ", t.seconds)
+#
 
 def add_user_test():
     conn = http.client.HTTPConnection(HOST, PORT)
@@ -138,6 +143,7 @@ def add_user_test():
     data = res.read()
     print(data.decode("utf-8"))
 
+@push("Sign Application Test")
 def signApplication():
     conn = http.client.HTTPConnection(HOST, PORT)
     payload = json.dumps({
@@ -179,7 +185,7 @@ def user_signed_status_test():
     data = res.read()
     print(data.decode("utf-8"))
 
-@push("Verify Application")
+@push("Verify Application Test")
 def verify_application():
     conn = http.client.HTTPConnection(HOST, PORT)
     payload = json.dumps({
@@ -193,33 +199,20 @@ def verify_application():
     res = conn.getresponse()
     return get_trx_id_from_res(res)
 
-def verify_and_push_application():
-    start_time = dt.now()
-    trx_id = verify_application()
-    try:
-        push_trx(trx_id)
 
-    except Exception as e:
-        print('transaction failed')
-        print(e)
-    end_time = dt.now()
-    t = end_time - start_time
-    print("time for application verification ", t.seconds)
 
 
 def run_all_test():
+    # add_user_test()
+    # print("running create and push notice test")
+    # create_and_push_notice_test()
     print("adding user to the blockchain")
     add_user_test()
-    print("running create and push notice test")
-    create_and_push_notice_test()
-    print('running create and push application test')
-    create_and_push_application_test()
-    print("runing sign and push application test")
-    sign_and_push_application_test()
-    user_signed_status_test()
-    print("running verify and push application")
-    # verify_application()
-    verify_and_push_application()
+    create_notice_test()
+    create_application_test()
+    signApplication()
+    verify_application()
+    # verify_and_push_application()
 def main():
     run_all_test()
 

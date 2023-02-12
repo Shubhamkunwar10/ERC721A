@@ -23,7 +23,7 @@ import json
 import solcx
 import os
 import datetime
-from tests import create_and_push_application_test, create_and_push_notice_test, run_all_test
+from tests import run_all_test
 # Set up the loggig services
 # Create a logger
 logger = logging.getLogger()
@@ -292,11 +292,7 @@ def instantiate(contract_address,compiled_contracts):
     print('updating manager in user manager contract')
     execute_contract_method(set_user_manager_method,OWNER_ACCOUNT)
     print("updated manager to ", MANAGER_ACCOUNT.address)
-def run_test():
-  print ("running create and push notice test")
-  create_and_push_notice_test()
-  print('running create and push application test')
-  create_and_push_application_test()
+
 
 def main():
     """
