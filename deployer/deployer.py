@@ -85,8 +85,8 @@ FILES_TO_COMPILE = [
 ]
 CONTRACTS = ["DrcTransferApplicationStorage", "DrcStorage", "DRCManager", "TdrStorage", "TDRManager", "UserManager",
              "DuaStorage"]
-SKIPPED_CONTRACTS = ["UserManager"]
-# SKIPPED_CONTRACTS = []
+# SKIPPED_CONTRACTS = ["UserManager"]
+SKIPPED_CONTRACTS = []
 logger.info('following files would be compiled')
 logger.info(FILES_TO_COMPILE)
 
@@ -323,9 +323,7 @@ def main():
     instantiate(contract_addresses,compiled_contracts)
     print("total execution time: ", end_time - start_time)
     print("last mined block was ",w3.eth.blockNumber)
-
     run_all_test()
-    # run_test()
 
 if __name__ == "__main__":
     main()

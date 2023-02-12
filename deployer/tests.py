@@ -31,7 +31,6 @@ def create_notice_test():
     headers = {
         'Authorization': 'bearer ' + JWT,
         'Content-Type': 'application/json',
-        'Cookie': 'refreshToken=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiUkVGUkVTSCBUT0tFTiIsImlkIjoiMzQ3NDQ5ZDQxMmE2MWQ4NTY1Yzc1ODg2YTMyZTMxZmQzMTBmZjVhZTAwYzgyMjFhNWRhOTY5MjRhNzJhOWRiNSIsInVzZXJuYW1lIjoiQXZpbmFzaCBLaGFuIiwicm9sZSI6InVzZXIiLCJleHAiOjE2NzYwMTM1NjksImlhdCI6MTY3NTQwODc2OSwidG9rZW5faWQiOiJrWm5RaFJLTjEzajdoNTdOUnp4NHBmUGRzYVRLV0szZSJ9.3p1RdbW2g9VwrtiHcfORGLqw_Yo1Ef0hammN_pWMSi8'
     }
     conn.request("POST", "/tdr/notice/create", payload, headers)
     res = conn.getresponse()
@@ -52,7 +51,6 @@ def push_trx(trx_id):
     headers = {
         'Authorization': 'bearer ' + JWT,
         'Content-Type': 'application/json',
-        'Cookie': 'refreshToken=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiUkVGUkVTSCBUT0tFTiIsImlkIjoiMzQ3NDQ5ZDQxMmE2MWQ4NTY1Yzc1ODg2YTMyZTMxZmQzMTBmZjVhZTAwYzgyMjFhNWRhOTY5MjRhNzJhOWRiNSIsInVzZXJuYW1lIjoiQXZpbmFzaCBLaGFuIiwicm9sZSI6InVzZXIiLCJleHAiOjE2NzU5MzI1NzksImlhdCI6MTY3NTMyNzc3OSwidG9rZW5faWQiOiJpZXFaQVh2dXluOHRuTWlJdnJYcnpvbGMyQ25acVE5aiJ9.FoYC78ZqGBK74wIyain1zfN7j4PY7fOuZ-oKjSzqdYc'
     }
     conn.request("POST", "/user/transaction/sign", payload, headers)
     res = conn.getresponse()
@@ -62,6 +60,18 @@ def push_trx(trx_id):
         print("transaction failed")
 
 
+def push(name = None):
+    def decorator(f):
+        start_time = dt.now()
+        trx_id=f()
+        try:
+            push_trx(trx_id)
+        except Exception as e:
+            print("transaction failed")
+        end_time = dt.now()
+        t = end_time - start_time
+        print("time taken for "+name+": ",t.seconds)
+    return decorator
 def create_and_push_notice_test():
     start_time = dt.now()
     trx_id = create_notice_test()
@@ -141,7 +151,7 @@ def signApplication():
     res = conn.getresponse()
     return get_trx_id_from_res(res)
 
-def sign_and_push_applicatin_test():
+def sign_and_push_application_test():
     start_time = dt.now()
     trx_id = signApplication()
     try:
@@ -168,6 +178,35 @@ def user_signed_status_test():
     res = conn.getresponse()
     data = res.read()
     print(data.decode("utf-8"))
+
+@push("Verify Application")
+def verify_application():
+    conn = http.client.HTTPConnection(HOST, PORT)
+    payload = json.dumps({
+        "applicationId": "app123"
+    })
+    headers = {
+        'Authorization': 'bearer ' + JWT,
+        'Content-Type': 'application/json'
+    }
+    conn.request("POST", "/tdr/verifyApplication", payload, headers)
+    res = conn.getresponse()
+    return get_trx_id_from_res(res)
+
+def verify_and_push_application():
+    start_time = dt.now()
+    trx_id = verify_application()
+    try:
+        push_trx(trx_id)
+
+    except Exception as e:
+        print('transaction failed')
+        print(e)
+    end_time = dt.now()
+    t = end_time - start_time
+    print("time for application verification ", t.seconds)
+
+
 def run_all_test():
     print("adding user to the blockchain")
     add_user_test()
@@ -176,9 +215,11 @@ def run_all_test():
     print('running create and push application test')
     create_and_push_application_test()
     print("runing sign and push application test")
-    sign_and_push_applicatin_test()
+    sign_and_push_application_test()
     user_signed_status_test()
-
+    print("running verify and push application")
+    # verify_application()
+    verify_and_push_application()
 def main():
     run_all_test()
 
