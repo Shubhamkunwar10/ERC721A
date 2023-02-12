@@ -93,3 +93,36 @@ pragma solidity ^0.8.16;
         NoticeStatus status;
 
     }
+
+    enum Role {
+        SUPER_ADMIN,
+        ADMIN,
+        VERIFIER,
+        SUB_VERIFIER,
+        VC,
+        APPROVER
+    }
+
+    enum Department {
+        LAND,
+        PLANNING,
+        ENGINEERING,
+        PROPERTY,
+        SALES,
+        LEGAL,
+        ALL,
+        NONE
+    }
+    enum Zone {
+        ZONE_1,
+        ZONE_2,
+        ZONE_3,
+        ZONE_4
+    }
+
+    struct KdaOfficer {
+        bytes32 id;
+        Role role;
+        Department department;
+        Zone zone;
+    }

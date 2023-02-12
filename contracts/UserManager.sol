@@ -6,6 +6,7 @@ UserManager contract is used to map user id to user address, and to manage verif
 The contract owner and admin have the authority to update user, verifier, approver and issuer addresses.
 */
 pragma solidity ^0.8.16;
+import "./DataTypes.sol";
 
 contract UserManager {
     // Mapping from user id to user address
@@ -13,9 +14,13 @@ contract UserManager {
     mapping(address => bytes32) public reverseUserMap;
 
     // List of verifier addresses
+    mapping(bytes32 => KdaOfficer) public officerMap;
+    mapping(bytes32 => address) public officerAddressMap;
+    mapping(address => bytes32) public reverseOfficerMap;
+
+    // List of verifier addresses
     mapping(bytes32 => address) public verifierMap;
     mapping(address => bytes32) public reverseVerifierMap;
-
 
     // List of approver addresses
     mapping(bytes32 => address) public approverMap;
@@ -43,6 +48,13 @@ contract UserManager {
     event UserAdded(bytes32 userId, address userAddress);
     // Event emitted after a user is updated
     event UserUpdated(bytes32 userId, address userAddress);
+
+    // Event emitted after a officer is added
+    event OfficerAdded(bytes32 officerId, address officerAddress);
+    // Event emitted after a officer is updated
+    event OfficerUpdated(bytes32 officerId, address officerAddress);
+    // Event emitted after a officer is deleted
+    event OfficerDeleted(bytes32 officerId);
 
     // Event emitted after a verifier is added   
     event VerifierAdded(bytes32 verifierId, address verifierAddress);
@@ -153,6 +165,120 @@ contract UserManager {
         // Emit the UserUpdated event
         emit UserUpdated(userId, userAddress);
     }
+
+
+//    function addOfficer (KdaOfficer memory officer, address officerAddress) public onlyAdmin {
+//        // check is user already does not exist
+//        if(officerAddressMap[officer.id]!=address(0)){
+//            revert("Officer already exist, instead try updating the address");
+//        }
+//        // Update the verifier in the mapping
+//        officerMap[officer.id] = officer;
+//        officerAddressMap[officer.id]=officerAddress;
+//        reverseOfficerMap[officerAddress]=officer.id;
+//
+//
+//        // Emit the verifierAdded event
+//        emit OfficerAdded(officer.id, officerAddress);
+//    }
+
+    /**
+     * Adds a new Officer to the mapping of KdaOfficers.
+     * @param officer The Officer to add to the mapping.
+     * @param officerAddress The address of the Officer to add to the mapping.
+     * @dev The method will only allow an Admin to add a new Officer. If the Officer already exists in the mapping,
+     * the method will revert with an error message. If the Officer is added successfully, the method will emit
+     * the OfficerAdded event.
+     */
+    function addOfficer (KdaOfficer memory officer, address officerAddress) public onlyAdmin {
+        // check is user already does not exist
+        if(officerAddressMap[officer.id]!=address(0)){
+            revert("Officer already exist, instead try updating the address");
+        }
+        // Update the verifier in the mapping
+        officerMap[officer.id] = officer;
+        officerAddressMap[officer.id]=officerAddress;
+        reverseOfficerMap[officerAddress]=officer.id;
+
+
+        // Emit the verifierAdded event
+        emit OfficerAdded(officer.id, officerAddress);
+    }
+
+    /**
+     * Updates an existing Officer in the mapping of KdaOfficers.
+     * @param officer The Officer to update in the mapping.
+     * @param officerAddress The new address of the Officer to update in the mapping.
+     * @dev The method will only allow an Admin to update an existing Officer. If the Officer does not exist in the
+     * mapping, the method will revert with an error message. If the Officer is updated successfully, the method will
+     * emit the OfficerUpdated event.
+     */
+    function updateOfficer (KdaOfficer memory officer, address officerAddress) public onlyAdmin {
+        // check is user already does not exist
+        if(officerAddressMap[officer.id]==address(0)){
+            revert("Officer does not exist, instead try adding the address");
+        }
+        // Update the verifier in the mapping
+        officerMap[officer.id] = officer;
+        officerAddressMap[officer.id]=officerAddress;
+        reverseOfficerMap[officerAddress]=officer.id;
+
+
+        // Emit the verifierAdded event
+        emit OfficerUpdated(officer.id, officerAddress);
+    }
+
+    /**
+     * Deletes an Officer from the mapping of KdaOfficers.
+     * @param id The ID of the Officer to delete from the mapping.
+     * @dev The method will only allow an Admin to delete an existing Officer. If the Officer does not exist in the
+     * mapping, the method will revert with an error message. If the Officer is deleted successfully, the method will
+     * emit the OfficerDeleted event.
+     */
+    function deleteOfficer(bytes32 id) public onlyAdmin {
+        // check if verifier already exists
+        if(officerAddressMap[id]==address(0)){
+            revert("officer does not exist");
+        }
+        // Delete the verifier in the mapping
+        address _address = officerAddressMap[id];
+        delete(officerMap[id]);
+        delete(officerAddressMap[id]);
+        delete(reverseOfficerMap[_address]);
+
+        // Emit the verifierUpdated event
+        emit OfficerDeleted(id);
+    }
+
+
+//    function updateOfficer (KdaOfficer memory officer, address officerAddress) public onlyAdmin {
+//        // check is user already does not exist
+//        if(officerAddressMap[officer.id]==address(0)){
+//            revert("Officer does not exist, instead try adding the address");
+//        }
+//        // Update the verifier in the mapping
+//        officerMap[officer.id] = officer;
+//        officerAddressMap[officer.id]=officerAddress;
+//        reverseOfficerMap[officerAddress]=officer.id;
+//
+//
+//        // Emit the verifierAdded event
+//        emit OfficerUpdated(officer.id, officerAddress);
+//    }
+//    function deleteOfficer(bytes32 id) public onlyAdmin {
+//        // check if verifier already exists
+//        if(officerAddressMap[id]==address(0)){
+//            revert("officer does not exist");
+//        }
+//        // Delete the verifier in the mapping
+//        address _address = officerAddressMap[id];
+//        delete(officerMap[id]);
+//        delete(officerAddressMap[id]);
+//        delete(reverseOfficerMap[_address]);
+//
+//        // Emit the verifierUpdated event
+//        emit OfficerDeleted(id);
+//    }
 
 /**
  * @dev Function to add an verifier
@@ -389,6 +515,10 @@ contract UserManager {
     }
     function getIssuerId (address _address) view public returns (bytes32){
         return reverseIssuerMap[_address];
+    }
+
+    function getRole(bytes32 id) view public returns(KdaOfficer memory){
+        return officerMap[id];
     }
 
     
