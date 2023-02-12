@@ -95,6 +95,7 @@ pragma solidity ^0.8.16;
     }
 
     enum Role {
+        NONE,
         SUPER_ADMIN,
         ADMIN,
         VERIFIER,
@@ -104,16 +105,16 @@ pragma solidity ^0.8.16;
     }
 
     enum Department {
+        NONE,
         LAND,
         PLANNING,
         ENGINEERING,
         PROPERTY,
         SALES,
-        LEGAL,
-        ALL,
-        NONE
+        LEGAL
     }
     enum Zone {
+        NONE,
         ZONE_1,
         ZONE_2,
         ZONE_3,
@@ -136,7 +137,7 @@ pragma solidity ^0.8.16;
     }
     struct VerificationStatus {
         bool verified;
-        bool verifiedByAdmin;
-        bool verifiedBySuperAdmin;
+        bytes32 verifierId;
+        Role verifierRole;
         SubVerifierStatus subVerifierStatus;
     }

@@ -332,9 +332,73 @@ contract TDRManager {
     // drcManager.issueDRC(tdrApplication, far);
     // emit events
     }
-    function getVerificationStatus(bytes32 applicationid) public view returns(bool){
-        VerificationStatus memory status = tdrStorage.getVerificationStatus(applicationid);
+    function getVerificationStatus(bytes32 applicationId) public view returns(bool){
+        VerificationStatus memory status = tdrStorage.getVerificationStatus(applicationId);
         return status.verified;
     }
+    event LogOfficer(string message, KdaOfficer officer);
+    event ApplicationVerified(KdaOfficer officer, bytes32 applicationId);
+    function verifyTdrApplication(bytes32 applicationId) public {
+        VerificationStatus memory status = tdrStorage.getVerificationStatus(applicationId);
+        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        emit LogOfficer("Officer in action",officer);
 
+        if (officer.role == Role.SUPER_ADMIN ||
+            officer.role== Role.ADMIN ||
+            officer.role==Role.VERIFIER ||
+            officer.role==Role.VC) {
+            status.verified = true;
+            status.verifierId = officer.id;
+            status.verifierRole = officer.role;
+            emit ApplicationVerified(officer, applicationId);
+        } else if (officer.role == Role.SUB_VERIFIER) {
+            if (officer.department == Department.LAND) {
+                status.subVerifierStatus.land = true;
+            } else if (officer.department == Department.PLANNING) {
+                status.subVerifierStatus.planning = true;
+            } else if (officer.department == Department.ENGINEERING) {
+                status.subVerifierStatus.engineering = true;
+            } else if (officer.department == Department.PROPERTY) {
+                status.subVerifierStatus.property = true;
+            } else if (officer.department == Department.SALES) {
+                status.subVerifierStatus.sales = true;
+            } else if (officer.department == Department.LEGAL) {
+                status.subVerifierStatus.legal = true;
+            }
+            emit ApplicationVerified(officer, applicationId);
+            if (checkIfAllSubverifiersSigned(status)) {
+                status.verified=true;
+                emit Logger("Appliction verified by all sub verifier");
+            }
+            //check all the subverifier
+        } else {
+            emit Logger("User is not authorized");
+        }
+        tdrStorage.storeVerificationStatus(applicationId,status);
+    }
+    function checkIfAllSubverifiersSigned(VerificationStatus memory verificationStatus) public view returns (bool) {
+    bool allSigned = true;
+
+    // Check the status of each subverifier
+    if (!verificationStatus.subVerifierStatus.land) {
+        allSigned = false;
+    }
+    if (!verificationStatus.subVerifierStatus.planning) {
+        allSigned = false;
+    }
+    if (!verificationStatus.subVerifierStatus.engineering) {
+        allSigned = false;
+    }
+    if (!verificationStatus.subVerifierStatus.property) {
+        allSigned = false;
+    }
+    if (!verificationStatus.subVerifierStatus.sales) {
+        allSigned = false;
+    }
+    if (!verificationStatus.subVerifierStatus.legal) {
+        allSigned = false;
+    }
+
+    return allSigned;
+    }
 }

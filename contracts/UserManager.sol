@@ -520,6 +520,10 @@ contract UserManager {
     function getRole(bytes32 id) view public returns(KdaOfficer memory){
         return officerMap[id];
     }
+    function getRoleByAddress(address _address) view public returns(KdaOfficer memory){
+        bytes32 id = reverseOfficerMap[_address];
+        return officerMap[id];
+    }
 
     
 
