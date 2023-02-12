@@ -15,7 +15,7 @@ contract TdrStorage {
     mapping(bytes32 => TdrApplication) public applicationMap;
     // Map to store the applications against the notice
     mapping(bytes32 => bytes32[]) public noticeApplicationMap;
-
+    mapping(bytes32 => VerificationStatus) public verificationStatusMap;
     // enum ApplicationStatus {applied, verified, approved, issued,rejected}
     // TDR struct definition
 
@@ -298,4 +298,11 @@ contract TdrStorage {
     emit Logger("application has been created");
       return true;
   }
+    function storeVerificationStatus(bytes32 id, VerificationStatus memory status) public {
+        verificationStatusMap[id] = status;
+    }
+    function getVerificationStatus(bytes32 applicationId) public view returns(VerificationStatus memory) {
+        return verificationStatusMap[applicationId];
+    }
+
 }

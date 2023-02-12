@@ -126,3 +126,17 @@ pragma solidity ^0.8.16;
         Department department;
         Zone zone;
     }
+    struct SubVerifierStatus {
+        bool land;
+        bool planning;
+        bool engineering;
+        bool property;
+        bool sales;
+        bool legal;
+    }
+    struct VerificationStatus {
+        bool verified;
+        bool verifiedByAdmin;
+        bool verifiedBySuperAdmin;
+        SubVerifierStatus subVerifierStatus;
+    }

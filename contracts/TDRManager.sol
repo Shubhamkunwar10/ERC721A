@@ -247,7 +247,10 @@ contract TDRManager {
         emit LogApplication("final status of the application", application);
     }
 
-
+    /**
+    * @dev return whether all the user of the application has signed the application
+    * @param application The application to check signature of all applicants
+    */
     function hasAllUserSignedTdrApplication(TdrApplication memory application) private view returns(bool){
         bool allSignatoriesSign = true;
         for (uint i=0;i<application.applicants.length;i++){
@@ -328,6 +331,10 @@ contract TDRManager {
     // issue DRC
     // drcManager.issueDRC(tdrApplication, far);
     // emit events
+    }
+    function getVerificationStatus(bytes32 applicationid) public view returns(bool){
+        VerificationStatus memory status = tdrStorage.getVerificationStatus(applicationid);
+        return status.verified;
     }
 
 }
