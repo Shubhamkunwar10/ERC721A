@@ -16,7 +16,8 @@ contract TdrStorage {
     // Map to store the applications against the notice
     mapping(bytes32 => bytes32[]) public noticeApplicationMap;
     mapping(bytes32 => VerificationStatus) public verificationStatusMap;
-    // enum ApplicationStatus {applied, verified, approved, issued,rejected}
+    mapping(bytes32 => bytes32[] ) public userApplicationMap;
+    //User application mapping
     // TDR struct definition
 
 
@@ -26,7 +27,7 @@ contract TdrStorage {
 
     event NoticeCreated(bytes32 noticeId);
     event NoticeUpdated(bytes32 noticeId);
-
+    event AppplicationCreatedForUser(bytes32 userId, bytes32 applicationId);
 
     // Event emitted after a TDR is updated
     event TDRUpdated(bytes32 noticeId, bytes32 applicationId);
@@ -86,13 +87,25 @@ contract TdrStorage {
         }
         // add application to the map
         addApplicationToMap(_tdrApplication);
+        storeApplicationForUser(_tdrApplication);
 //        applicationMap[_tdrApplication.applicationId]=_tdrApplication;
         // Create a new TDR and add it to the mapping
 
         // Emit the TDRCreated event
         emit ApplicationCreated(_tdrApplication.noticeId, _tdrApplication.applicationId);
     }
-
+    function storeApplicationForUser(TdrApplication memory application) public onlyManager {
+        for(uint i=0; i<application.applicants.length; i++){
+            bytes32 userId = application.applicants[i].userId;
+            bytes32[] storage applicationIds = userApplicationMap[userId];
+            applicationIds.push(application.applicationId);
+            userApplicationMap[userId]=applicationIds;
+            emit AppplicationCreatedForUser(application.applicants[i].userId,application.applicationId);
+        }
+    }
+    function getApplicationForUser(bytes32 userId) public onlyManager returns (bytes32[] memory){
+        return userApplicationMap[userId];
+    }
     // Function to create a new TDR
     function createNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status) public onlyManager{
         emit Logger("START createNotice");
@@ -147,27 +160,6 @@ contract TdrStorage {
     function updateNotice(TdrNotice memory _tdrNotice) public {
         updateNotice(_tdrNotice.noticeId, _tdrNotice.noticeDate, _tdrNotice.khasraOrPlotNo,_tdrNotice.villageOrWard,_tdrNotice.Tehsil,_tdrNotice.district,_tdrNotice.landUse,_tdrNotice.masterPlan,_tdrNotice.status);
     }
-//        TdrNotice storage tdrNotice = noticeMap[_noticeId];
-//        // if notice is empty, create notice.
-//        if(!isNoticeCreated(tdrNotice)){
-//            revert("no such notice exists, reverting");
-//        }
-//        tdrNotice.noticeId = _noticeId;
-//        tdrNotice.noticeDate = _noticeDate;
-//        tdrNotice.khasraOrPlotNo = _khasraOrPlotNo;
-//        tdrNotice.villageOrWard = _villageOrWard;
-//        tdrNotice.Tehsil = _Tehsil;
-//        tdrNotice.district = _district;
-//        tdrNotice.landUse = _landUse;
-//        tdrNotice.masterPlan = _masterPlan;
-//        tdrNotice.status=_status;
-//        // add application to the map
-//        noticeMap[_noticeId]=tdrNotice;
-//        // Create a new TDR and add it to the mapping
-//
-//        // Emit the TDRCreated event
-//        emit NoticeUpdated(_noticeId);
-//    }
 
     /**
      * @dev Adds an application to a notice specified by its noticeId.

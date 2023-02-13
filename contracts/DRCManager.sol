@@ -26,6 +26,7 @@ contract DRCManager{
     address owner;
     address admin;
     address manager;
+    address tdrManager;
 
 
     // Constructor function to set the initial values of the contract
@@ -49,6 +50,10 @@ contract DRCManager{
     }
 
     modifier onlyManager() {
+        require(msg.sender == manager, "Only the manager, admin, or owner can perform this action.");
+        _;
+    }
+    modifier onlyTdrManager() {
         require(msg.sender == manager, "Only the manager, admin, or owner can perform this action.");
         _;
     }

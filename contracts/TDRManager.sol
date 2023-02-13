@@ -428,4 +428,8 @@ contract TDRManager {
 
     return allSigned;
     }
+
+    function getApplicationForUser(bytes32 userId) public returns (bytes32[] memory){
+        return tdrStorage.getApplicationForUser(userId);
+    }
 }
