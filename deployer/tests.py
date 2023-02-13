@@ -153,7 +153,7 @@ def signApplication():
     'Authorization': 'bearer ' + JWT,
     'Content-Type': 'application/json'
     }
-    conn.request("POST", "/tdr/signApplication", payload, headers)
+    conn.request("POST", "/tdr/application/sign", payload, headers)
     res = conn.getresponse()
     return get_trx_id_from_res(res)
 
@@ -180,7 +180,7 @@ def user_signed_status_test():
         'Authorization': 'bearer ' + JWT,
         'Content-Type': 'application/json'
     }
-    conn.request("POST", "/tdr/getUserSignStatus", payload, headers)
+    conn.request("POST", "/tdr/application/UserSignStatus", payload, headers)
     res = conn.getresponse()
     data = res.read()
     print(data.decode("utf-8"))
@@ -195,7 +195,7 @@ def verify_application():
         'Authorization': 'bearer ' + JWT,
         'Content-Type': 'application/json'
     }
-    conn.request("POST", "/tdr/verifyApplication", payload, headers)
+    conn.request("POST", "/tdr/application/verify", payload, headers)
     res = conn.getresponse()
     return get_trx_id_from_res(res)
 
