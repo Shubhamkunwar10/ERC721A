@@ -261,22 +261,22 @@ contract TDRManager {
         }
         return true;
     }
-// This function mark the application as verified
-    function verifyApplication(bytes32 applicationId) public{
-        assert(userManager.isVerifier(msg.sender)|| userManager.isAdmin(msg.sender));
-        // get application
-        TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
-        // ensure that the notice is not finalized
-        TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-        if(notice.status == NoticeStatus.issued){
-            revert("DRC already issued against this notice");
-        }
-
-        // set application status as verified
-        tdrApplication.status = ApplicationStatus.verified;
-        // update Application
-        tdrStorage.updateApplication(tdrApplication);
-    }
+//// This function mark the application as verified
+//    function verifyApplication(bytes32 applicationId) public{
+//        assert(userManager.isVerifier(msg.sender)|| userManager.isAdmin(msg.sender));
+//        // get application
+//        TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
+//        // ensure that the notice is not finalized
+//        TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
+//        if(notice.status == NoticeStatus.issued){
+//            revert("DRC already issued against this notice");
+//        }
+//
+//        // set application status as verified
+//        tdrApplication.status = ApplicationStatus.verified;
+//        // update Application
+//        tdrStorage.updateApplication(tdrApplication);
+//    }
 
 // This function mark the application as verified
     function rejectApplication(bytes32 applicationId,string memory reason) public {
@@ -290,12 +290,11 @@ contract TDRManager {
             // update Application
             tdrApplication.status = ApplicationStatus.rejected;
             tdrStorage.updateApplication(tdrApplication);
-            emit ApplicationApproved(officer, applicationId);
+            emit ApplicationRejected(applicationId, reason);
         } else {
             emit Logger("User not authorized");
         }
         // store the reason for rejection of application
-        emit ApplicationRejected(applicationId, reason);
     }
     event ApplicationApproved(KdaOfficer officer, bytes32 applicationId);
    function approveApplication(bytes32 applicationId) public {
