@@ -31,6 +31,13 @@ contract DRCManager{
     address manager;
     address tdrManager;
 
+    event Logger(string log);
+    event LogAddress(string addressInfo, address _address);
+    event LogBytes(string messgaeInfo, bytes32 _bytes);
+    event LogBool(string messageInfo, bool message);
+    event LogApplication(string message, TdrApplication application);
+
+
     // Constructor function to set the initial values of the contract
     constructor(address _admin, address _manager) {
         // Set the contract owner to the caller
@@ -129,13 +136,13 @@ contract DRCManager{
             s.hasUserSigned = false;
             dtaSignatories[i]=s;
         }
-        drcTransferApprove(applicationId);
+        signDrcTransferApplication(applicationId);
         dtaStorage.createApplication(applicationId,drcId,far,dtaSignatories, newDrcOwners, ApplicationStatus.pending);
         addApplicationToDrc(drc.id,applicationId,far);
     }
 
     // this function is called by the user to approve the transfer
-    function drcTransferApprove(bytes32 applicationId) public {
+    function signDrcTransferApplication(bytes32 applicationId) public {
         DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
         // make sure the user has not signed the transfer
         for (uint i=0;i<application.signatories.length;i++){
@@ -165,6 +172,35 @@ contract DRCManager{
         dtaStorage.updateApplication(application);
     }
 
+    // this function is called by the admin to approve the transfer
+    function verifyDta(bytes32 applicationId) public {
+//        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+//        emit LogOfficer("Officer in action",officer);
+//        if (officer.role == Role.SUPER_ADMIN ||
+//        officer.role== Role.ADMIN ||
+//        officer.role==Role.VERIFIER ||
+//            officer.role==Role.VC) {
+//            //
+//        }
+
+        require(msg.sender == admin,"Only admin can approve the Transfer");
+        DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
+        require(application.status != ApplicationStatus.approved,"Application already approved");
+        require(application.status == ApplicationStatus.submitted,"Application is not submitted");
+        // change the status of the application
+        application.status = ApplicationStatus.approved;
+        dtaStorage.updateApplication(application);
+        // add the new drc
+        DRC memory drc = drcStorage.getDrc(application.drcId);
+        DRC memory newDrc;
+        newDrc.id = applicationId;
+        newDrc.noticeId = drc.noticeId;
+        newDrc.status = DrcStatus.available;
+        newDrc.farCredited = application.farTransferred;
+        newDrc.farAvailable = application.farTransferred;
+        newDrc.owners = application.newDrcOwner;
+        drcStorage.createDrc(newDrc);
+    }
     // this function is called by the admin to approve the transfer
     function drcTransferApproveAdmin(bytes32 applicationId) public {
         require(msg.sender == admin,"Only admin can approve the Transfer");
