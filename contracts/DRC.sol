@@ -12,9 +12,16 @@ contract DrcStorage {
     // Create a mapping to store the DRC against Drc id
     mapping(bytes32 => DRC) public drcMap; 
     mapping(bytes32 => bytes32[]) public ownerMap;
+    mapping(bytes32 => VerificationStatus) public verificationStatusMap;
+    mapping(bytes32 => bytes32[] ) public userApplicationMap;
 
     // Events
     event DrcCreated(bytes32 drcId);
+    event Logger(string log);
+    event LogAddress(string addressInfo, address _address);
+    event LogBytes(string messgaeInfo, bytes32 _bytes);
+    event LogBool(string messageInfo, bool message);
+    event LogApplication(string message, TdrApplication application);
 
     
     address owner;
@@ -205,6 +212,14 @@ contract DrcStorage {
 
         drcMap[drc.id]=drc;
     }
+
+    function storeVerificationStatus(bytes32 id, VerificationStatus memory status) public {
+        verificationStatusMap[id] = status;
+    }
+    function getVerificationStatus(bytes32 applicationId) public view returns(VerificationStatus memory) {
+        return verificationStatusMap[applicationId];
+    }
+
 }
 
 
