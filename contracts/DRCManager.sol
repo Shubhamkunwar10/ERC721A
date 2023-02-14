@@ -12,22 +12,24 @@ import "./DataTypes.sol";
 @notice Manager contract for TDR storage: It implements the business logic for the TDR storage
  */
 contract DRCManager{
-    // Address of the TDR storage contract
+    // contracts
     DrcStorage public drcStorage;
     UserManager public userManager;
     DrcTransferApplicationStorage public dtaStorage;
     DuaStorage public duaStorage;
 
 
-    // Address of the contract admin
+    // Address of the contracts
     address public drcStorageAddress;
     address public userManagerAddress;
-// Inserts usual admin level stuff
+    address public dtaStorageAddress;
+    address public duaStorageAddress;
+
+// admin address
     address owner;
     address admin;
     address manager;
     address tdrManager;
-
 
     // Constructor function to set the initial values of the contract
     constructor(address _admin, address _manager) {
@@ -54,7 +56,7 @@ contract DRCManager{
         _;
     }
     modifier onlyTdrManager() {
-        require(msg.sender == manager, "Only the manager, admin, or owner can perform this action.");
+        require(msg.sender == tdrManager, "Only the manager, admin, or owner can perform this action.");
         _;
     }
 
@@ -66,6 +68,48 @@ contract DRCManager{
         require (msg.sender == owner ||  msg.sender == admin);
         manager = _manager;
     }
+
+
+    function loadDrcStorage(address _drcStorageAddress) public {
+        drcStorageAddress = _drcStorageAddress;
+        drcStorage = DrcStorage(drcStorageAddress);
+    }
+
+    function updateDrcStorage(address _drcStorageAddress) public {
+        drcStorageAddress = _drcStorageAddress;
+        drcStorage = DrcStorage(drcStorageAddress);
+    }
+
+    function loadUserManager(address _userManagerAddress) public {
+        userManagerAddress = _userManagerAddress;
+        userManager = UserManager(userManagerAddress);
+    }
+
+    function updateUserManager(address _userManagerAddress) public {
+        userManagerAddress = _userManagerAddress;
+        userManager = UserManager(userManagerAddress);
+    }
+
+    function loadDtaStorage(address _dtaStorageAddress) public {
+        dtaStorageAddress = _dtaStorageAddress;
+        dtaStorage = DrcTransferApplicationStorage(dtaStorageAddress);
+    }
+
+    function updateDtaStorage(address _dtaStorageAddress) public {
+        dtaStorageAddress = _dtaStorageAddress;
+        dtaStorage = DrcTransferApplicationStorage(dtaStorageAddress);
+    }
+
+    function loadDuaStorage(address _duaStorageAddress) public {
+        duaStorageAddress = _duaStorageAddress;
+        duaStorage = DuaStorage(duaStorageAddress);
+    }
+
+    function updateDuaStorage(address _duaStorageAddress) public {
+        duaStorageAddress = _duaStorageAddress;
+        duaStorage = DuaStorage(duaStorageAddress);
+    }
+
 
     // This function begins the drd transfer application
     function createTransferApplication(bytes32 drcId,bytes32 applicationId, uint far, DrcOwner[] memory newDrcOwners) public {
@@ -134,12 +178,12 @@ contract DRCManager{
        DRC memory drc = drcStorage.getDrc(application.drcId);
         DRC memory newDrc;
         newDrc.id = applicationId;
-        newDrc.notice = drc.notice;
+        newDrc.noticeId = drc.noticeId;
         newDrc.status = DrcStatus.available;
         newDrc.farCredited = application.farTransferred;
         newDrc.farAvailable = application.farTransferred;
         newDrc.owners = application.newDrcOwner;
-        drcStorage.createDRC(newDrc);
+        drcStorage.createDrc(newDrc);
     }
 
     // this function is called by the admin to reject the transfer

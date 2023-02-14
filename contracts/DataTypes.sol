@@ -23,7 +23,8 @@ pragma solidity ^0.8.16;
     // Everything else, is static data, not to be interpreted by blockchain.
     struct DRC {
         bytes32 id;
-        TdrNotice notice;
+//        TdrNotice notice;
+        bytes32 noticeId;
         DrcStatus status;
         uint farCredited;
         uint farAvailable;

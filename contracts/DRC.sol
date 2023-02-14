@@ -20,6 +20,7 @@ contract DrcStorage {
     address owner;
     address admin;
     address manager;
+    address tdrManager;
 
     // Constructor function to set the initial values of the contract
     constructor(address _admin, address _manager) {
@@ -45,18 +46,25 @@ contract DrcStorage {
         require(msg.sender == manager, "Caller is not the contract admin");
         _;
     }
+    modifier onlyTdrManager() {
+        require(msg.sender == tdrManager, "Only the manager, admin, or owner can perform this action.");
+        _;
+    }
 
-    function changeAdmin(address _newAdmin) onlyOwner public{
+    function setAdmin(address _newAdmin) onlyOwner public{
         admin = _newAdmin;
     }
-    function changeOwner(address _newOwner) onlyOwner public {
+    function setOwner(address _newOwner) onlyOwner public {
         owner = _newOwner;
     }
-    function changeManager(address _newManager) onlyAdmin public {
+    function setManager(address _newManager) onlyAdmin public {
         manager = _newManager;
     }
+    function setTdrManager(address _newTdrManager) onlyAdmin public {
+        tdrManager = _newTdrManager;
+    }
     // Create a function to add a new Drc to the mapping
-    function createDRC(DRC memory _drc) public onlyManager{
+    function createDrc(DRC memory _drc) public onlyTdrManager{
         //check whether the DRC already exists
         require(isDrcCreated(_drc.id),"DRC already exists");
         storeDrcInMap(_drc);
@@ -176,7 +184,7 @@ contract DrcStorage {
         DRC storage drc = drcMap[_drc.id];
         
         drc.id = _drc.id;
-        drc.notice = _drc.notice;
+        drc.noticeId = _drc.noticeId;
         drc.status = _drc.status;
         drc.farAvailable = _drc.farAvailable;
         drc.areaSurrendered = _drc.areaSurrendered;
