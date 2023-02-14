@@ -191,15 +191,16 @@ contract DrcStorage {
         DRC storage drc = drcMap[_drc.id];
         
         drc.id = _drc.id;
+        drc.applicationId = _drc.applicationId;
         drc.noticeId = _drc.noticeId;
         drc.status = _drc.status;
         drc.farAvailable = _drc.farAvailable;
         drc.areaSurrendered = _drc.areaSurrendered;
         drc.circleRateSurrendered = _drc.circleRateSurrendered;
         drc.circleRateUtilization = _drc.circleRateUtilization;
-        for(uint i =0; i<_drc.applications.length; i++){
-            drc.applications[i]= _drc.applications[i];
-        }
+//        for(uint i =0; i<_drc.applications.length; i++){
+//            drc.applications[i]= _drc.applications[i];
+//        }
         for(uint i =0; i<_drc.owners.length; i++){
             drc.owners[i]= _drc.owners[i];
             bytes32[] storage drcList = ownerMap[_drc.owners[i].userId];

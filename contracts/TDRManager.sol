@@ -456,8 +456,9 @@ contract TDRManager {
         drc.areaSurrendered = 0; // change it to get the value from notice
         drc.circleRateSurrendered = 0; // get it from application
         drc.circleRateUtilization = 0; // get from application
-        drc.applications = new bytes32[](1);
-        drc.applications[0]=tdrApplication.applicationId;
+        drc.applicationId = tdrApplication.applicationId;
+//        drc.applications = new bytes32[](1);
+//        drc.applications[0]=tdrApplication.applicationId;
         drc.owners = new DrcOwner[](tdrApplication.applicants.length);
         for (uint i=0; i< tdrApplication.applicants.length; i++){
             DrcOwner memory drcOwner = DrcOwner(tdrApplication.applicants[i].userId,0);

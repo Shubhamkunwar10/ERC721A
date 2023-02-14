@@ -23,6 +23,7 @@ pragma solidity ^0.8.16;
     // Everything else, is static data, not to be interpreted by blockchain.
     struct DRC {
         bytes32 id;
+        bytes32 applicationId; // application that lead to creation of drc
 //        TdrNotice notice;
         bytes32 noticeId;
         DrcStatus status;
@@ -31,7 +32,6 @@ pragma solidity ^0.8.16;
         uint areaSurrendered;
         uint circleRateSurrendered;
         uint circleRateUtilization;
-        bytes32[] applications;  // why can't we have it stored in a map
         DrcOwner[] owners;
 //        Attribute[] attributes; //keep this field for the future attributes
         // string issueDate;
