@@ -267,10 +267,19 @@ def instantiate(contract_address,compiled_contracts):
     tdr_storage_address = contract_address.get('TdrStorage')
     user_manager_address = contract_address.get('UserManager')
     tdr_manager_address = contract_address.get('TDRManager')
+    drc_storage_address = contract_address.get('DrcStorage')
+    drc_manager_address = contract_address.get('DRCManager')
+    dta_storage_address = contract_address.get('DrcTransferApplicationStorage')
+    dua_storage_address = contract_address.get('DuaStorage')
+
     #load tdr manager abi
     tdr_storage_contract = w3.eth.contract(address=tdr_storage_address,abi=compiled_contracts.get('TdrStorage').get('abi'))
     user_manager_contract = w3.eth.contract(address=user_manager_address,abi=compiled_contracts.get('UserManager').get('abi'))
     tdr_manager_contract = w3.eth.contract(address=tdr_manager_address,abi=compiled_contracts.get('TDRManager').get('abi'))
+    drc_storage_contract = w3.eth.contract(address=drc_storage_address,abi=compiled_contracts.get('DrcStorage').get('abi'))
+    drc_manager_contract = w3.eth.contract(address=drc_manager_address,abi=compiled_contracts.get('DRCManager').get('abi'))
+    dta_storage_contract = w3.eth.contract(address=dta_storage_address,abi=compiled_contracts.get('DrcTransferApplicationStorage').get('abi'))
+    dua_storage_contract = w3.eth.contract(address=dua_storage_address,abi=compiled_contracts.get('DuaStorage').get('abi'))
 
     #updating storage in tdr manager 
     update_tdr_storage_method = tdr_manager_contract.functions.updateTdrStorage(tdr_storage_address)
@@ -293,6 +302,30 @@ def instantiate(contract_address,compiled_contracts):
     execute_contract_method(set_user_manager_method,OWNER_ACCOUNT)
     print("updated manager to ", MANAGER_ACCOUNT.address)
 
+    #updating drc storage in tdr manager
+    update_drc_storage_method = tdr_manager_contract.functions.updateDrcStorage(drc_storage_address)
+    logger.debug("updating  drc storage in tdr manager contract")
+    execute_contract_method(update_drc_storage_method,OWNER_ACCOUNT)
+
+    # #updating drc storage in drc manager
+    # update_drc_storage_inDrc_method = drc_manager_contract.functions.updateDrcStorage(drc_storage_address)
+    # logger.debug("updating  drc storage in tdr manager contract")
+    # execute_contract_method(update_drc_storage_method,OWNER_ACCOUNT)
+    #updating drc storage in drc manager
+    set_contract_address(drc_manager_contract,'updateDrcStorage',drc_storage_address,"update drc storage in drc manager")
+
+    #updating user manager in drc manager
+    set_contract_address(drc_manager_contract,'loadUserManager',user_manager_address,"update user manager in drc manager")
+    #updating dta storage in drc manager
+    set_contract_address(drc_manager_contract,'updateDtaStorage',dta_storage_address,"update dta storage in drc manager")
+    #updating dua storage in drc manager
+    set_contract_address(drc_manager_contract,'updateDuaStorage',dua_storage_address,"update dua storage in drc manager")
+
+
+def set_contract_address(contract,_func,address, message):
+    func = getattr(contract.functions,_func)
+    logger.debug("UPDATING: %s", message)
+    execute_contract_method(func(address),OWNER_ACCOUNT)
 
 def main():
     """
