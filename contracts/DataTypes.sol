@@ -31,7 +31,7 @@ pragma solidity ^0.8.16;
         uint areaSurrendered;
         uint circleRateSurrendered;
         uint circleRateUtilization;
-        bytes32[] applications; 
+        bytes32[] applications;  // why can't we have it stored in a map
         DrcOwner[] owners;
 //        Attribute[] attributes; //keep this field for the future attributes
         // string issueDate;

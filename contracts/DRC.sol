@@ -10,10 +10,10 @@ contract DrcStorage {
 
     // Mappings
     // Create a mapping to store the DRC against Drc id
-    mapping(bytes32 => DRC) public drcMap; 
-    mapping(bytes32 => bytes32[]) public ownerMap;
-    mapping(bytes32 => VerificationStatus) public verificationStatusMap;
-    mapping(bytes32 => bytes32[] ) public userApplicationMap;
+    mapping(bytes32 => DRC) public drcMap;  // drcId => drc
+    mapping(bytes32 => bytes32[]) public ownerMap; //ownerId => drcId
+    mapping(bytes32 => bytes32[] ) public userApplicationMap; // onwerid => applicationId[]
+    mapping(bytes32 => bytes32[] ) public drcApplicationMap; // drcId => applicationId []
 
     // Events
     event DrcCreated(bytes32 drcId);
@@ -212,13 +212,25 @@ contract DrcStorage {
 
         drcMap[drc.id]=drc;
     }
+    // add application to drc
+    function addApplicationToDrc(bytes32 drcId,bytes32 applicationId) public {
+        bytes32[] storage applications = drcApplicationMap[drcId];
+        applications.push(applicationId);
+        drcApplicationMap[drcId]=applications;
+//        DRC memory drc = drcStorage.getDrc(drcId);
+//        //        drc.farAvailable = drc.farAvailable - farConsumed;
+//        bytes32[] memory newApplications = new bytes32[](drc.applications.length+1);
+//        for (uint i=0; i< drc.applications.length; i++){
+//            newApplications[i]=drc.applications[i];
+//        }
+//        newApplications[drc.applications.length]=applicationId;
+//        drcStorage.updateDrc(drc.id,drc);
 
-    function storeVerificationStatus(bytes32 id, VerificationStatus memory status) public {
-        verificationStatusMap[id] = status;
     }
-    function getVerificationStatus(bytes32 applicationId) public view returns(VerificationStatus memory) {
-        return verificationStatusMap[applicationId];
+    function getApplicationIdsForDrc(bytes32 drcId) public returns (bytes32[] memory) {
+        return drcApplicationMap[drcId] ;
     }
+
 
 }
 

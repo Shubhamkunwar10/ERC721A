@@ -9,11 +9,19 @@ contract DrcTransferApplicationStorage {
 
 
     mapping(bytes32 => DrcTransferApplication) public applicationMap;
+    mapping(bytes32 => bytes32[] ) public userApplicationMap;
+    mapping(bytes32 => VerificationStatus) public verificationStatusMap;
+
 
 
     address owner;
     address admin;
     address manager;
+    event LogAddress(string addressInfo, address _address);
+    event LogBytes(string messgaeInfo, bytes32 _bytes);
+    event LogBool(string messageInfo, bool message);
+    event LogApplication(string message, TdrApplication application);
+
 
 
     // Constructor function to set the initial values of the contract
@@ -50,7 +58,7 @@ contract DrcTransferApplicationStorage {
         manager = _manager;
     }
 
-    function createApplication(DrcTransferApplication memory dta) public onlyAdmin{
+    function createApplication(DrcTransferApplication memory dta) public onlyManager{
         require(applicationMap[dta.id].id =="","application already exist");
         storeApplicationInMap(dta);
     }
@@ -60,7 +68,7 @@ contract DrcTransferApplicationStorage {
         storeApplicationInMap(DrcTransferApplication(_id, _drcId, _farTransferred, _signatories, _newDrcOwner, _status));
     }
 
-    function updateApplication(DrcTransferApplication memory dta) public onlyAdmin{
+    function updateApplication(DrcTransferApplication memory dta) public onlyManager{
         require(applicationMap[dta.id].id !="","application does not exist");
         storeApplicationInMap(dta);
 
@@ -96,5 +104,13 @@ contract DrcTransferApplicationStorage {
         }
 
         applicationMap[dta.id]=dta;
+    }
+
+
+    function storeVerificationStatus(bytes32 id, VerificationStatus memory status) public {
+        verificationStatusMap[id] = status;
+    }
+    function getVerificationStatus(bytes32 applicationId) public view returns(VerificationStatus memory) {
+        return verificationStatusMap[applicationId];
     }
 }

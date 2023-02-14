@@ -36,6 +36,10 @@ contract DRCManager{
     event LogBytes(string messgaeInfo, bytes32 _bytes);
     event LogBool(string messageInfo, bool message);
     event LogApplication(string message, TdrApplication application);
+    event LogOfficer(string message, KdaOfficer officer);
+    event DtaApplicationVerified(KdaOfficer officer, bytes32 applicationId);
+    event DtaApplicationApproved(KdaOfficer officer, bytes32 applicationId);
+    event DtaApplicationRejected(bytes32 applicationId, string reason);
 
 
     // Constructor function to set the initial values of the contract
@@ -138,7 +142,7 @@ contract DRCManager{
         }
         signDrcTransferApplication(applicationId);
         dtaStorage.createApplication(applicationId,drcId,far,dtaSignatories, newDrcOwners, ApplicationStatus.pending);
-        addApplicationToDrc(drc.id,applicationId,far);
+        drcStorage.addApplicationToDrc(drc.id,applicationId);
     }
 
     // this function is called by the user to approve the transfer
@@ -173,74 +177,124 @@ contract DRCManager{
     }
 
     // this function is called by the admin to approve the transfer
-    function verifyDta(bytes32 applicationId) public {
-//        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
-//        emit LogOfficer("Officer in action",officer);
-//        if (officer.role == Role.SUPER_ADMIN ||
-//        officer.role== Role.ADMIN ||
-//        officer.role==Role.VERIFIER ||
-//            officer.role==Role.VC) {
-//            //
-//        }
+    function verifyDrcApplication(bytes32 applicationId) public {
+        VerificationStatus memory status = dtaStorage.getVerificationStatus(applicationId);
+        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        emit LogOfficer("Officer in action",officer);
+        // fetch application. Reverts if application is not created
+        DrcTransferApplication memory dta = dtaStorage.getApplication(applicationId);
+        require(dta.status == ApplicationStatus.submitted,"Application is not submitted");
+        if (officer.role == Role.SUPER_ADMIN ||
+        officer.role== Role.ADMIN ||
+        officer.role==Role.VERIFIER ||
+            officer.role==Role.VC) {
+            status.verified = true;
+            status.verifierId = officer.userId;
+            status.verifierRole = officer.role;
+            // update Application
+            dta.status = ApplicationStatus.verified;
+            dtaStorage.updateApplication(dta);
+            emit DtaApplicationVerified(officer, applicationId);
+            dtaStorage.storeVerificationStatus(applicationId,status);
 
-        require(msg.sender == admin,"Only admin can approve the Transfer");
-        DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
-        require(application.status != ApplicationStatus.approved,"Application already approved");
-        require(application.status == ApplicationStatus.submitted,"Application is not submitted");
-        // change the status of the application
-        application.status = ApplicationStatus.approved;
-        dtaStorage.updateApplication(application);
-        // add the new drc
-        DRC memory drc = drcStorage.getDrc(application.drcId);
-        DRC memory newDrc;
-        newDrc.id = applicationId;
-        newDrc.noticeId = drc.noticeId;
-        newDrc.status = DrcStatus.available;
-        newDrc.farCredited = application.farTransferred;
-        newDrc.farAvailable = application.farTransferred;
-        newDrc.owners = application.newDrcOwner;
-        drcStorage.createDrc(newDrc);
+        } else {
+            emit Logger("User is not authorized");
+        }
     }
     // this function is called by the admin to approve the transfer
-    function drcTransferApproveAdmin(bytes32 applicationId) public {
-        require(msg.sender == admin,"Only admin can approve the Transfer");
+    function approveDta(bytes32 applicationId) public {
+        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        emit LogOfficer("Officer in action",officer);
+        //fetch the application
         DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
+        //application should not be already approved
         require(application.status != ApplicationStatus.approved,"Application already approved");
-        require(application.status == ApplicationStatus.submitted,"Application is not submitted");
-        // change the status of the application
-        application.status = ApplicationStatus.approved;
-        dtaStorage.updateApplication(application);
-        // add the new drc
-       DRC memory drc = drcStorage.getDrc(application.drcId);
+
+        if (officer.role == Role.SUPER_ADMIN || officer.role== Role.ADMIN ||
+        officer.role==Role.APPROVER || officer.role==Role.VC) {
+            // update Application
+            application.status = ApplicationStatus.approved;
+            dtaStorage.updateApplication(application);
+            emit DtaApplicationApproved(officer, applicationId);
+            // one drc transfer is approved, new drc should be created
+            genNewDrcFromApplication(application);
+        } else {
+            emit Logger("User not authorized");
+        }
+
+//        ///------------------------------------------
+//        require(msg.sender == admin,"Only admin can approve the Transfer");
+//        DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
+//        require(application.status != ApplicationStatus.approved,"Application already approved");
+//        require(application.status == ApplicationStatus.submitted,"Application is not submitted");
+//        // change the status of the application
+//        application.status = ApplicationStatus.approved;
+//        dtaStorage.updateApplication(application);
+//        // add the new drc
+
+    }
+    /**
+    Creates a new DRC from a DRC transfer application
+    @dev The function generates a new DRC from a provided DRC transfer application. The new DRC inherits the noticeId from the original DRC and is set as available with the far credited and far available equal to the transferred far. The newDrcOwner array in the application is assigned to the owners of the new DRC.
+    @param application The DRC transfer application to create a new DRC from
+    */
+
+    function genNewDrcFromApplication(DrcTransferApplication memory application ) private {
+        DRC memory drc = drcStorage.getDrc(application.drcId);
         DRC memory newDrc;
-        newDrc.id = applicationId;
+        newDrc.id = application.id;
         newDrc.noticeId = drc.noticeId;
         newDrc.status = DrcStatus.available;
         newDrc.farCredited = application.farTransferred;
         newDrc.farAvailable = application.farTransferred;
         newDrc.owners = application.newDrcOwner;
         drcStorage.createDrc(newDrc);
-    }
-
-    // this function is called by the admin to reject the transfer
-    function drcTransferReject(bytes32 applicationId) public {
-        require(msg.sender == admin,"Only admin can reject the Transfer");
-        DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
-        require(application.status != ApplicationStatus.approved,"Application is already approved");        
-        require(application.status == ApplicationStatus.submitted,"Application is not yet submitted");
-
-        // change the status of the application
-        application.status = ApplicationStatus.rejected;
-        dtaStorage.updateApplication(application);
-        // applicationMap[applicationId]=application;
-        // change the status of the sub-drc
-        DRC memory drc = drcStorage.getDrc(application.drcId);
-        drc.farAvailable = drc.farAvailable+application.farTransferred;
+        // need to reduce the available area of the old drc
+        drc.farAvailable = drc.farAvailable - application.farTransferred;
         drcStorage.updateDrc(drc.id,drc);
     }
 
+    // this function is called by the admin to reject the transfer
+    function rejectDrcTransfer(bytes32 applicationId, string memory reason) public {
+        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        emit LogOfficer("Officer in action",officer);
+        // Check if notice is issued
+        DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
+        require(application.status != ApplicationStatus.approved,"Application is already approved");
+        require(application.status == ApplicationStatus.submitted,"Application is not yet submitted");
+
+        // No need to check notice, as application can be rejected even when DRC is issued.
+        if (officer.role == Role.SUPER_ADMIN || officer.role== Role.ADMIN ||
+        officer.role==Role.APPROVER || officer.role==Role.VC) {
+            // update Application
+            application.status = ApplicationStatus.rejected;
+            dtaStorage.updateApplication(application);
+            emit DtaApplicationRejected(applicationId, reason);
+            // change the status of sub-drc
+//            DRC memory drc = drcStorage.getDrc(application.drcId);
+//            drc.farAvailable = drc.farAvailable+application.farTransferred;
+//            drcStorage.updateDrc(drc.id,drc);
+        } else {
+            emit Logger("User not authorized");
+        }
+        //------
+//        require(msg.sender == admin,"Only admin can reject the Transfer");
+//        DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
+//        require(application.status != ApplicationStatus.approved,"Application is already approved");
+//        require(application.status == ApplicationStatus.submitted,"Application is not yet submitted");
+//
+//        // change the status of the application
+//        application.status = ApplicationStatus.rejected;
+//        dtaStorage.updateApplication(application);
+//        // applicationMap[applicationId]=application;
+//        // change the status of the sub-drc
+//        DRC memory drc = drcStorage.getDrc(application.drcId);
+//        drc.farAvailable = drc.farAvailable+application.farTransferred;
+//        drcStorage.updateDrc(drc.id,drc);
+    }
+
 // what other details, like building application are needed fro utilization application
- function createUtilizationApplication(bytes32 drcId,bytes32 applicationId, uint far) public {
+    function createUtilizationApplication(bytes32 drcId,bytes32 applicationId, uint far) public {
         // check drc exists or not
         require(drcStorage.isDrcCreated(drcId),"DRC not created");
         DRC memory drc = drcStorage.getDrc(drcId);
@@ -259,10 +313,9 @@ contract DRCManager{
         }
         drcUtilizationApprove(applicationId);
         duaStorage.createApplication(applicationId,drc.id,far,duaSignatories,ApplicationStatus.pending);
-        addApplicationToDrc(drc.id,applicationId,far);
+        drcStorage.addApplicationToDrc(drc.id,applicationId);
     }
-
-   function drcUtilizationApprove(bytes32 applicationId) public {
+    function drcUtilizationApprove(bytes32 applicationId) public {
         DUA  memory application = duaStorage.getApplication(applicationId);
         // make sure the user has not signed the transfer
         for (uint i=0;i<application.signatories.length;i++){
@@ -286,21 +339,22 @@ contract DRCManager{
         if(allSignatoriesSign){
             //all the signatories has signed
             application.status = ApplicationStatus.approved;
+            // reduce drc
         }
         duaStorage.updateApplication(application);
-     
     }
-
-    function addApplicationToDrc(bytes32 drcId,bytes32 applicationId, uint farConsumed) internal {
-        DRC memory drc = drcStorage.getDrc(drcId);
-        drc.farAvailable = drc.farAvailable - farConsumed;
-        bytes32[] memory newApplications = new bytes32[](drc.applications.length+1);
-        for (uint i=0; i< drc.applications.length; i++){
-            newApplications[i]=drc.applications[i];
-        }
-        newApplications[drc.applications.length]=applicationId;
-        drcStorage.updateDrc(drc.id,drc);
-
-    }
+    // This function adds application to drc
+    // also reduced the available area by the area in drc. This need to be removed
+//    function addApplicationToDrc(bytes32 drcId,bytes32 applicationId, uint farConsumed) internal {
+//        DRC memory drc = drcStorage.getDrc(drcId);
+////        drc.farAvailable = drc.farAvailable - farConsumed;
+//        bytes32[] memory newApplications = new bytes32[](drc.applications.length+1);
+//        for (uint i=0; i< drc.applications.length; i++){
+//            newApplications[i]=drc.applications[i];
+//        }
+//        newApplications[drc.applications.length]=applicationId;
+//        drcStorage.updateDrc(drc.id,drc);
+//
+//    }
 
 }
