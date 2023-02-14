@@ -112,9 +112,9 @@ contract DrcStorage {
         DRC storage drc = drcMap[_drcId];
         drc.owners.push(newOwner);
         drcMap[_drcId] = drc;
-        bytes32[] storage drcList = ownerMap[newOwner.id];
+        bytes32[] storage drcList = ownerMap[newOwner.userId];
         drcList.push(_drcId);
-        ownerMap[newOwner.id] = drcList;
+        ownerMap[newOwner.userId] = drcList;
     } 
 
   function addDrcOnwers(bytes32 _drcId, DrcOwner[] memory newOwners)public {
@@ -122,9 +122,9 @@ contract DrcStorage {
     DRC storage drc = drcMap[_drcId];
     for(uint i= 0; i< newOwners.length;i++){
         drc.owners.push(newOwners[i]);
-        bytes32[] storage drcList = ownerMap[newOwners[i].id];
+        bytes32[] storage drcList = ownerMap[newOwners[i].userId];
         drcList.push(_drcId);
-        ownerMap[newOwners[i].id] = drcList;
+        ownerMap[newOwners[i].userId] = drcList;
     }
     drcMap[_drcId] = drc;
   }
@@ -136,7 +136,7 @@ contract DrcStorage {
     // uint count =0;
     uint index=drc.owners.length;
     for(uint i=0; i<drc.owners.length; i++ ){
-        if(ownerId == drc.owners[i].id){
+        if(ownerId == drc.owners[i].userId){
             index = i;
             break;
         }
@@ -172,7 +172,7 @@ contract DrcStorage {
   function getOwnerDetails(bytes32 _drcId, bytes32 ownerId) view public returns (DrcOwner memory) {
     DRC memory drc = drcMap[_drcId];
     for(uint i=0; i< drc.owners.length; i++){
-        if (drc.owners[i].id == ownerId) {
+        if (drc.owners[i].userId == ownerId) {
             return drc.owners[i];
             }
          }
@@ -195,13 +195,13 @@ contract DrcStorage {
         }
         for(uint i =0; i<_drc.owners.length; i++){
             drc.owners[i]= _drc.owners[i];
-            bytes32[] storage drcList = ownerMap[_drc.owners[i].id];
+            bytes32[] storage drcList = ownerMap[_drc.owners[i].userId];
             drcList.push(drc.id);
-            ownerMap[_drc.owners[i].id] = drcList;
+            ownerMap[_drc.owners[i].userId] = drcList;
         }
-        for(uint i =0; i<_drc.attributes.length; i++){
-            drc.attributes[i]= _drc.attributes[i];
-        }
+//        for(uint i =0; i<_drc.attributes.length; i++){
+//            drc.attributes[i]= _drc.attributes[i];
+//        }
 
         drcMap[drc.id]=drc;
     }

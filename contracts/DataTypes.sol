@@ -33,12 +33,12 @@ pragma solidity ^0.8.16;
         uint circleRateUtilization;
         bytes32[] applications; 
         DrcOwner[] owners;
-        Attribute[] attributes; //keep this field for the future attributes
+//        Attribute[] attributes; //keep this field for the future attributes
         // string issueDate;
     }
 
     struct DrcOwner{
-        bytes32 id;
+        bytes32 userId;
         uint area;
     }
 

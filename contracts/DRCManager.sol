@@ -125,7 +125,7 @@ contract DRCManager{
         // no user has signed yet
         for(uint i=0; i<drc.owners.length; i++){
             Signatory memory s;
-            s.userId = drc.owners[i].id;
+            s.userId = drc.owners[i].userId;
             s.hasUserSigned = false;
             dtaSignatories[i]=s;
         }
@@ -217,7 +217,7 @@ contract DRCManager{
         // no user has signed yet
         for(uint i=0; i<drc.owners.length; i++){
             Signatory memory s;
-            s.userId = drc.owners[i].id;
+            s.userId = drc.owners[i].userId;
             s.hasUserSigned = false;
             duaSignatories[i]=s;
         }

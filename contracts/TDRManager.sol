@@ -463,7 +463,7 @@ contract TDRManager {
             DrcOwner memory drcOwner = DrcOwner(tdrApplication.applicants[i].userId,0);
             drc.owners[i] = drcOwner;
         }
-        drc.attributes = new Attribute[](0);
+//        drc.attributes = new Attribute[](0);
         drcStorage.createDrc(drc);
     }
 }
