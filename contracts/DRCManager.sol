@@ -142,7 +142,7 @@ contract DRCManager{
         }
         signDrcTransferApplication(applicationId);
         dtaStorage.createApplication(applicationId,drcId,far,dtaSignatories, newDrcOwners, ApplicationStatus.pending);
-        drcStorage.addApplicationToDrc(drc.id,applicationId);
+        drcStorage.addDtaToDrc(drc.id,applicationId);
     }
 
     // this function is called by the user to approve the transfer
@@ -239,10 +239,10 @@ contract DRCManager{
     @param application The DRC transfer application to create a new DRC from
     */
 
-    function genNewDrcFromApplication(DrcTransferApplication memory application ) private {
+    function genNewDrcFromApplication(DrcTransferApplication memory application ) internal {
         DRC memory drc = drcStorage.getDrc(application.drcId);
         DRC memory newDrc;
-        newDrc.id = application.id;
+        newDrc.id = application.applicationId;
         newDrc.noticeId = drc.noticeId;
         newDrc.status = DrcStatus.available;
         newDrc.farCredited = application.farTransferred;
@@ -277,7 +277,68 @@ contract DRCManager{
         } else {
             emit Logger("User not authorized");
         }
-        //------
+    }
+
+    function hasUserSignedDta(bytes32 _applicationId, address _address) public returns (bool){
+        DrcTransferApplication memory application = dtaStorage.getApplication(_applicationId);
+        require(application.applicationId != "", "Drc transfer application does not exist");
+            // Get the user id by the address
+        bytes32 userId = userManager.getUserId(_address);
+
+            // Loop through all applicants in the TDR application
+        for (uint i = 0; i < application.signatories.length ; i++) {
+            Signatory memory signatory = application.signatories[i];
+            if (signatory.userId == userId) {
+                 return signatory.hasUserSigned;
+            }
+        }
+            // false otherwise
+        return false;
+    }
+
+
+    function hasUserSignedDua(bytes32 applicationId, address _address) public returns (bool){
+        DUA memory application = duaStorage.getApplication(applicationId);
+        require(application.applicationId != "", "Drc transfer application does not exist");
+        // Get the user id by the address
+        bytes32 userId = userManager.getUserId(_address);
+
+        // Loop through all applicants in the TDR application
+        for (uint i = 0; i < application.signatories.length ; i++) {
+            Signatory memory signatory = application.signatories[i];
+            if (signatory.userId == userId) {
+                return signatory.hasUserSigned;
+            }
+        }
+        // false otherwise
+        return false;
+    }
+
+    function getDta(bytes32 _applicationId) public view returns (DrcTransferApplication memory) {
+        // Retrieve the dta from the mapping
+        DrcTransferApplication memory application = dtaStorage.getApplication(_applicationId);
+        return application;
+    }
+    function getDua(bytes32 _applicationId) public view returns (DUA memory) {
+        // Retrieve the dta from the mapping
+        DUA memory application = duaStorage.getApplication(_applicationId);
+        return application;
+    }
+    function getDtaVerificationStatus(bytes32 applicationId) public view returns(bool) {
+        VerificationStatus memory status = dtaStorage.getVerificationStatus(applicationId);
+        return status.verified;
+    }
+    // I need to create two different get application method and then merge it
+    function getDtaForUser(bytes32 userId) public returns (bytes32[] memory){
+        return dtaStorage.getApplicationForUser(userId);
+    }
+    function getDuaForUser(bytes32 userId) public returns (bytes32[] memory){
+        return duaStorage.getApplicationForUser(userId);
+    }
+
+
+
+    //------
 //        require(msg.sender == admin,"Only admin can reject the Transfer");
 //        DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
 //        require(application.status != ApplicationStatus.approved,"Application is already approved");
@@ -291,7 +352,7 @@ contract DRCManager{
 //        DRC memory drc = drcStorage.getDrc(application.drcId);
 //        drc.farAvailable = drc.farAvailable+application.farTransferred;
 //        drcStorage.updateDrc(drc.id,drc);
-    }
+//    }
 
 // what other details, like building application are needed fro utilization application
     function createUtilizationApplication(bytes32 drcId,bytes32 applicationId, uint far) public {
@@ -311,11 +372,11 @@ contract DRCManager{
             s.hasUserSigned = false;
             duaSignatories[i]=s;
         }
-        drcUtilizationApprove(applicationId);
+        signDrcUtilizationApplication(applicationId);
         duaStorage.createApplication(applicationId,drc.id,far,duaSignatories,ApplicationStatus.pending);
-        drcStorage.addApplicationToDrc(drc.id,applicationId);
+        drcStorage.addDuaToDrc(drc.id,applicationId);
     }
-    function drcUtilizationApprove(bytes32 applicationId) public {
+    function signDrcUtilizationApplication(bytes32 applicationId) public {
         DUA  memory application = duaStorage.getApplication(applicationId);
         // make sure the user has not signed the transfer
         for (uint i=0;i<application.signatories.length;i++){

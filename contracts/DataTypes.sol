@@ -49,7 +49,7 @@ pragma solidity ^0.8.16;
     }
 
     struct DrcTransferApplication {
-        bytes32 id;
+        bytes32 applicationId;
         bytes32 drcId;
         uint farTransferred;
         Signatory[] signatories;
@@ -64,7 +64,7 @@ pragma solidity ^0.8.16;
 
 
     struct DUA {
-        bytes32 id;
+        bytes32 applicationId;
         bytes32 drcId;
         uint farUtilized;
         Signatory[] signatories;

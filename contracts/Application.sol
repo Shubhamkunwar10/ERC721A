@@ -17,10 +17,12 @@ contract DrcTransferApplicationStorage {
     address owner;
     address admin;
     address manager;
+    //events
     event LogAddress(string addressInfo, address _address);
     event LogBytes(string messgaeInfo, bytes32 _bytes);
     event LogBool(string messageInfo, bool message);
     event LogApplication(string message, TdrApplication application);
+    event DTACreatedForUser(bytes32 userId, bytes32 applicationId);
 
 
 
@@ -59,28 +61,29 @@ contract DrcTransferApplicationStorage {
     }
 
     function createApplication(DrcTransferApplication memory dta) public onlyManager{
-        require(applicationMap[dta.id].id =="","application already exist");
+        require(applicationMap[dta.applicationId].applicationId=="","application already exist");
         storeApplicationInMap(dta);
+        storeApplicationForUser(dta);
     }
 
     function createApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, DrcOwner[] memory _newDrcOwner, ApplicationStatus _status) public onlyManager{
-        require(applicationMap[_id].id =="","application already exist");
+        require(applicationMap[_id].applicationId =="","application already exist");
         storeApplicationInMap(DrcTransferApplication(_id, _drcId, _farTransferred, _signatories, _newDrcOwner, _status));
     }
 
     function updateApplication(DrcTransferApplication memory dta) public onlyManager{
-        require(applicationMap[dta.id].id !="","application does not exist");
+        require(applicationMap[dta.applicationId].applicationId !="","application does not exist");
         storeApplicationInMap(dta);
 
     }
 
     function updateApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, DrcOwner[] memory _newDrcOwner, ApplicationStatus _status) public onlyManager{
-        require(applicationMap[_id].id !="","application does not exist");
+        require(applicationMap[_id].applicationId !="","application does not exist");
         storeApplicationInMap(DrcTransferApplication(_id, _drcId, _farTransferred, _signatories, _newDrcOwner, _status));
     }
 
     function getApplication(bytes32 _id) view public returns(DrcTransferApplication memory){
-       require(applicationMap[_id].id !="","application does not exist");
+       require(applicationMap[_id].applicationId !="","application does not exist");
        return applicationMap[_id];
     }
 
@@ -90,9 +93,9 @@ contract DrcTransferApplicationStorage {
     }
     // This function just creates a new appliction in the mapping based on the applicaiton in the memory
     function storeApplicationInMap (DrcTransferApplication memory _dta) internal {
-        DrcTransferApplication storage dta = applicationMap[_dta.id];
+        DrcTransferApplication storage dta = applicationMap[_dta.applicationId];
         
-        dta.id = _dta.id;
+        dta.applicationId = _dta.applicationId;
         dta.drcId = _dta.drcId;
         dta.farTransferred = _dta.farTransferred;
         dta.status = _dta.status;
@@ -103,7 +106,7 @@ contract DrcTransferApplicationStorage {
             dta.newDrcOwner[i]=_dta.newDrcOwner[i];
         }
 
-        applicationMap[dta.id]=dta;
+        applicationMap[dta.applicationId]=dta;
     }
 
 
@@ -112,5 +115,17 @@ contract DrcTransferApplicationStorage {
     }
     function getVerificationStatus(bytes32 applicationId) public view returns(VerificationStatus memory) {
         return verificationStatusMap[applicationId];
+    }
+    function getApplicationForUser(bytes32 userId) public onlyManager returns (bytes32[] memory){
+        return userApplicationMap[userId];
+    }
+    function storeApplicationForUser(DrcTransferApplication memory application) public onlyManager {
+        for(uint i=0; i<application.signatories.length; i++){
+            bytes32 userId = application.signatories[i].userId;
+            bytes32[] storage applicationIds = userApplicationMap[userId];
+            applicationIds.push(application.applicationId);
+            userApplicationMap[userId]=applicationIds;
+            emit DTACreatedForUser(application.signatories[i].userId,application.applicationId);
+        }
     }
 }

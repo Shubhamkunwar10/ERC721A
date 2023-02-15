@@ -103,6 +103,7 @@ contract TdrStorage {
             emit AppplicationCreatedForUser(application.applicants[i].userId,application.applicationId);
         }
     }
+
     function getApplicationForUser(bytes32 userId) public onlyManager returns (bytes32[] memory){
         return userApplicationMap[userId];
     }

@@ -12,8 +12,9 @@ contract DrcStorage {
     // Create a mapping to store the DRC against Drc id
     mapping(bytes32 => DRC) public drcMap;  // drcId => drc
     mapping(bytes32 => bytes32[]) public ownerMap; //ownerId => drcId
-    mapping(bytes32 => bytes32[] ) public userApplicationMap; // onwerid => applicationId[]
-    mapping(bytes32 => bytes32[] ) public drcApplicationMap; // drcId => applicationId []
+//    mapping(bytes32 => bytes32[] ) public userApplicationMap; // onwerid => applicationId[]
+    mapping(bytes32 => bytes32[] ) public drcDtaMap; // drcId => applicationId []
+    mapping(bytes32 => bytes32[] ) public drcDuaMap; // drcId => applicationId []
 
     // Events
     event DrcCreated(bytes32 drcId);
@@ -214,10 +215,10 @@ contract DrcStorage {
         drcMap[drc.id]=drc;
     }
     // add application to drc
-    function addApplicationToDrc(bytes32 drcId,bytes32 applicationId) public {
-        bytes32[] storage applications = drcApplicationMap[drcId];
+    function addDtaToDrc(bytes32 drcId,bytes32 applicationId) public {
+        bytes32[] storage applications = drcDtaMap[drcId];
         applications.push(applicationId);
-        drcApplicationMap[drcId]=applications;
+        drcDtaMap[drcId]=applications;
 //        DRC memory drc = drcStorage.getDrc(drcId);
 //        //        drc.farAvailable = drc.farAvailable - farConsumed;
 //        bytes32[] memory newApplications = new bytes32[](drc.applications.length+1);
@@ -228,10 +229,22 @@ contract DrcStorage {
 //        drcStorage.updateDrc(drc.id,drc);
 
     }
-    function getApplicationIdsForDrc(bytes32 drcId) public returns (bytes32[] memory) {
-        return drcApplicationMap[drcId] ;
+    // add application to drc
+    function addDuaToDrc(bytes32 drcId,bytes32 applicationId) public {
+        bytes32[] storage applications = drcDuaMap[drcId];
+        applications.push(applicationId);
+        drcDuaMap[drcId]=applications;
+    }
+    function getDtaIdsForDrc(bytes32 drcId) public returns (bytes32[] memory) {
+        return drcDtaMap[drcId] ;
+    }
+    function getDuaIdsForDrc(bytes32 drcId) public returns (bytes32[] memory) {
+        return drcDuaMap[drcId] ;
     }
 
+//    function getApplicationForUser(bytes32 userId) public onlyManager returns (bytes32[] memory){
+//        return userApplicationMap[userId];
+//    }
 
 }
 
