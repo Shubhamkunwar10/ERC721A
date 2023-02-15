@@ -55,7 +55,7 @@ contract DrcStorage {
         _;
     }
     modifier onlyTdrManager() {
-        require(msg.sender == tdrManager, "Only the manager, admin, or owner can perform this action.");
+        require(msg.sender == tdrManager, "Only the TDR Manager can perform this action.");
         _;
     }
 
@@ -65,10 +65,10 @@ contract DrcStorage {
     function setOwner(address _newOwner) onlyOwner public {
         owner = _newOwner;
     }
-    function setManager(address _newManager) onlyAdmin public {
+    function setManager(address _newManager) onlyOwner public {
         manager = _newManager;
     }
-    function setTdrManager(address _newTdrManager) onlyAdmin public {
+    function setTdrManager(address _newTdrManager) onlyOwner public {
         tdrManager = _newTdrManager;
     }
     // Create a function to add a new Drc to the mapping

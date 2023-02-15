@@ -335,6 +335,16 @@ contract DRCManager{
     function getDuaForUser(bytes32 userId) public returns (bytes32[] memory){
         return duaStorage.getApplicationForUser(userId);
     }
+    function getDtaIdsForDrc(bytes32 drcId) public returns (bytes32[] memory){
+        return dtaStorage.getApplicationForUser(drcId);
+    }
+    function getDuaIdsForDrc(bytes32 drcId) public returns (bytes32[] memory){
+        return duaStorage.getApplicationForUser(drcId);
+    }
+    function getDrc(bytes32 drcId) public returns (DRC memory){
+        return drcStorage.getDrc(drcId);
+    }
+
 
 
 
