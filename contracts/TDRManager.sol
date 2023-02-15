@@ -352,7 +352,8 @@ contract TDRManager {
             // update Application
             tdrStorage.updateApplication(tdrApplication);
             // issue DRC
-            // drcManager.issueDRC(tdrApplication, far);
+            createDrc(tdrApplication,far);
+//             drcManager.issueDRC(tdrApplication, far);
             // emit events
         }else {
             emit Logger("User not authorised");
