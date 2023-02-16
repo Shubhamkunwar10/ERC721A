@@ -74,7 +74,7 @@ contract DrcStorage {
     // Create a function to add a new Drc to the mapping
     function createDrc(DRC memory _drc) public onlyTdrManager{
         //check whether the DRC already exists
-        require(isDrcCreated(_drc.id),"DRC already exists");
+        require(!isDrcCreated(_drc.id),"DRC already exists");
         storeDrcInMap(_drc);
         emit DrcCreated(_drc.id);
     }
@@ -188,31 +188,43 @@ contract DrcStorage {
     return emptyDrcOwner;
     }
 
-    function storeDrcInMap (DRC memory _drc) internal {
+    function storeDrcInMap (DRC memory _drc) public {
+//        drcMap[_drc.id]=_drc;
+//
         DRC storage drc = drcMap[_drc.id];
-        
+//
         drc.id = _drc.id;
         drc.applicationId = _drc.applicationId;
         drc.noticeId = _drc.noticeId;
         drc.status = _drc.status;
+        drc.farCredited=_drc.farCredited;
         drc.farAvailable = _drc.farAvailable;
         drc.areaSurrendered = _drc.areaSurrendered;
         drc.circleRateSurrendered = _drc.circleRateSurrendered;
         drc.circleRateUtilization = _drc.circleRateUtilization;
-//        for(uint i =0; i<_drc.applications.length; i++){
-//            drc.applications[i]= _drc.applications[i];
-//        }
-        for(uint i =0; i<_drc.owners.length; i++){
-            drc.owners[i]= _drc.owners[i];
-            bytes32[] storage drcList = ownerMap[_drc.owners[i].userId];
-            drcList.push(drc.id);
-            ownerMap[_drc.owners[i].userId] = drcList;
-        }
-//        for(uint i =0; i<_drc.attributes.length; i++){
-//            drc.attributes[i]= _drc.attributes[i];
-//        }
+////        for(uint i =0; i<_drc.applications.length; i++){
+////            drc.applications[i]= _drc.applications[i];
+////        }
+        delete drc.owners;
 
-        drcMap[drc.id]=drc;
+//    drc.owners = new DrcOwner[];
+        for(uint i =0; i<_drc.owners.length; i++){
+            drc.owners.push(_drc.owners[i]);
+//            DrcOwner storage d = new ();
+//            d.userId = _drc.owners[i];
+//            d.area = d.area ;
+//            drc.owners.push(owner);
+////            drc.owners[i]= _drc.owners[i];
+//            bytes32[] storage drcList = ownerMap[_drc.owners[i].userId];
+//            drcList.push(drc.id);
+//            ownerMap[_drc.owners[i].userId] = drcList;
+        }
+////        for(uint i =0; i<_drc.attributes.length; i++){
+////            drc.attributes[i]= _drc.attributes[i];
+////        }
+
+        drcMap[_drc.id]=drc;
+        emit Logger("store DRC in map executed");
     }
     // add application to drc
     function addDtaToDrc(bytes32 drcId,bytes32 applicationId) public {

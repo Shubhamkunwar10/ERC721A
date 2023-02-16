@@ -42,6 +42,7 @@ contract TDRManager {
     event LogBytes(string messgaeInfo, bytes32 _bytes);
     event LogBool(string messageInfo, bool message);
     event LogApplication(string message, TdrApplication application);
+    event DrcIssued(DRC drc);
 
 
 
@@ -352,6 +353,7 @@ contract TDRManager {
             // update Application
             tdrStorage.updateApplication(tdrApplication);
             // issue DRC
+            emit Logger("DRC Issue was successful, creating DRC now");
             createDrc(tdrApplication,far);
 //             drcManager.issueDRC(tdrApplication, far);
             // emit events
@@ -449,7 +451,8 @@ contract TDRManager {
     function createDrc(TdrApplication memory tdrApplication, uint far) public {
         // from the approved application, it creates a drc
         DRC memory drc;
-        drc.id = keccak256(abi.encodePacked(tdrApplication.applicationId));
+//        drc.id = keccak256(abi.encodePacked(tdrApplication.applicationId));
+        drc.id = tdrApplication.applicationId;
         drc.noticeId = tdrApplication.noticeId;
         drc.status = DrcStatus.available;
         drc.farCredited = far;
@@ -467,5 +470,7 @@ contract TDRManager {
         }
 //        drc.attributes = new Attribute[](0);
         drcStorage.createDrc(drc);
+        emit Logger("issuing DRC without storing");
+        emit DrcIssued(drc);
     }
 }
