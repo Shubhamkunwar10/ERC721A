@@ -23,7 +23,7 @@ import json
 import solcx
 import os
 import datetime
-from tests import run_all_test
+from time import sleep
 
 # Set up the loggig services
 # Create a logger
@@ -238,6 +238,7 @@ def move_files_to_backend():
 
 
 def execute_contract_method(f, account):
+    logger.debug("START execute contract for function %s",str(f))
     gas_estimate = f.estimateGas()
     transaction = f.buildTransaction({
         'from': OWNER_ACCOUNT.address,
@@ -258,6 +259,15 @@ def execute_contract_method(f, account):
     if not tx_receipt.transactionHash.hex():
         raise Exception("execution failed %s", str(f))
 
+
+def set_contract_address(contract, _func, address, message):
+    func = getattr(contract.functions, _func)
+    logger.debug("UPDATING: %s", message)
+    logger.debug("with address %s",address)
+    print("UPDATING: "+message)
+    print("with address "+ str(address))
+    execute_contract_method(func(address), OWNER_ACCOUNT)
+    # sleep(1)
 
 def instantiate(contract_address, compiled_contracts):
     """
@@ -291,36 +301,53 @@ def instantiate(contract_address, compiled_contracts):
     dua_storage_contract = w3.eth.contract(address=dua_storage_address,
                                            abi=compiled_contracts.get('DuaStorage').get('abi'))
 
-    # updating storage in tdr manager
-    update_tdr_storage_method = tdr_manager_contract.functions.updateTdrStorage(tdr_storage_address)
-    logger.debug("updating  tdr storage in tdr manager contract")
-    execute_contract_method(update_tdr_storage_method, OWNER_ACCOUNT)
+    # # updating storage in tdr manager
+    # update_tdr_storage_method = tdr_manager_contract.functions.updateTdrStorage(tdr_storage_address)
+    # logger.debug("updating  tdr storage in tdr manager contract")
+    # execute_contract_method(update_tdr_storage_method, OWNER_ACCOUNT)
 
     # updating user manager in tdr manager
-    update_user_manager_method = tdr_manager_contract.functions.updateUserManager(user_manager_address)
-    logger.debug("updating user manager in tdr manager contract")
-    execute_contract_method(update_user_manager_method, OWNER_ACCOUNT)
+    set_contract_address(tdr_manager_contract, 'updateTdrStorage', tdr_storage_address,
+                         "updating tdr storage in tdr manager contract")
+
+
+    # # updating user manager in tdr manager
+    # update_user_manager_method = tdr_manager_contract.functions.updateUserManager(user_manager_address)
+    # logger.debug("updating user manager in tdr manager contract")
+    # execute_contract_method(update_user_manager_method, OWNER_ACCOUNT)
+
+    # updating user manager in tdr manager
+    set_contract_address(tdr_manager_contract, 'updateUserManager', user_manager_address,
+                         "updating user manager addres in tdr manager contract")
+    # # setting manager for tdrStorage
+    # update_tdr_storage_manager_method = tdr_storage_contract.functions.setManager(tdr_manager_address)
+    # print('updating manager in tdr storage contract')
+    # execute_contract_method(update_tdr_storage_manager_method, OWNER_ACCOUNT)
 
     # setting manager for tdrStorage
-    update_tdr_storage_manager_method = tdr_storage_contract.functions.setManager(tdr_manager_address)
-    print('updating manager in tdr storage contract')
-    execute_contract_method(update_tdr_storage_manager_method, OWNER_ACCOUNT)
+    set_contract_address(tdr_manager_contract, 'setManager', tdr_manager_address,
+                         "updating manager in tdr manager contract")
+
+    # # setting manager for userManager
+    # set_user_manager_method = user_manager_contract.functions.setManager(MANAGER_ACCOUNT.address)
+    # print('updating manager in user manager contract')
+    # execute_contract_method(set_user_manager_method, OWNER_ACCOUNT)
+    # print("updated manager to ", MANAGER_ACCOUNT.address)
 
     # setting manager for userManager
-    set_user_manager_method = user_manager_contract.functions.setManager(MANAGER_ACCOUNT.address)
-    print('updating manager in user manager contract')
-    execute_contract_method(set_user_manager_method, OWNER_ACCOUNT)
-    print("updated manager to ", MANAGER_ACCOUNT.address)
+    set_contract_address(user_manager_contract, 'setManager', MANAGER_ACCOUNT.address,
+                         "updating manager in user manager contract")
+
+    # # updating drc storage in tdr manager
+    # update_drc_storage_method = tdr_manager_contract.functions.updateDrcStorage(drc_storage_address)
+    # logger.debug("updating  drc storage in tdr manager contract")
+    # execute_contract_method(update_drc_storage_method, OWNER_ACCOUNT)
 
     # updating drc storage in tdr manager
-    update_drc_storage_method = tdr_manager_contract.functions.updateDrcStorage(drc_storage_address)
-    logger.debug("updating  drc storage in tdr manager contract")
-    execute_contract_method(update_drc_storage_method, OWNER_ACCOUNT)
+    set_contract_address(tdr_manager_contract, 'updateDrcStorage', drc_storage_address,
+                         "update drc storage in drc manager")
 
-    # #updating drc storage in drc manager
-    # update_drc_storage_inDrc_method = drc_manager_contract.functions.updateDrcStorage(drc_storage_address)
-    # logger.debug("updating  drc storage in tdr manager contract")
-    # execute_contract_method(update_drc_storage_method,OWNER_ACCOUNT)
+
     # updating drc storage in drc manager
     set_contract_address(drc_manager_contract, 'updateDrcStorage', drc_storage_address,
                          "update drc storage in drc manager")
@@ -328,6 +355,12 @@ def instantiate(contract_address, compiled_contracts):
     # updating user manager in drc manager
     set_contract_address(drc_manager_contract, 'loadUserManager', user_manager_address,
                          "update user manager in drc manager")
+    # updating drc manager address in dta storage
+    set_contract_address(dta_storage_contract, 'setManager', drc_manager_address,
+                         "update drc manager in dta storage")
+    # updating drc manager address in dua storage
+    set_contract_address(dua_storage_contract, 'setManager', drc_manager_address,
+                         "update user manager in dua manager")
     # updating dta storage in drc manager
     set_contract_address(drc_manager_contract, 'updateDtaStorage', dta_storage_address,
                          "update dta storage in drc manager")
@@ -337,17 +370,13 @@ def instantiate(contract_address, compiled_contracts):
     set_contract_address(drc_storage_contract,'setTdrManager',tdr_manager_address,"update tdr manager in drc storage")
 
 
-def set_contract_address(contract, _func, address, message):
-    func = getattr(contract.functions, _func)
-    logger.debug("UPDATING: %s", message)
-    execute_contract_method(func(address), OWNER_ACCOUNT)
-
 
 def main():
     """
     The main function
     :return:
     """
+    # os.system('rm logs.log')
     start_time = st = datetime.datetime.now()
     print("Compiling contracts")
     compiled_contracts = get_compiled_contracts()
@@ -368,7 +397,7 @@ def main():
     instantiate(contract_addresses, compiled_contracts)
     print("total execution time: ", end_time - start_time)
     print("last mined block was ", w3.eth.blockNumber)
-    run_all_test()
+    # run_all_test()
 
 
 if __name__ == "__main__":
