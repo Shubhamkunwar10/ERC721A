@@ -59,6 +59,9 @@ contract DrcTransferApplicationStorage {
         require (msg.sender == owner ||  msg.sender == admin);
         manager = _manager;
     }
+    function setOwner(address _newOwner) onlyOwner public {
+        owner = _newOwner;
+    }
 
     function createApplication(DrcTransferApplication memory dta) public onlyManager{
         require(applicationMap[dta.applicationId].applicationId=="","application already exist");
@@ -66,10 +69,14 @@ contract DrcTransferApplicationStorage {
         storeApplicationForUser(dta);
     }
 
-    function createApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, DrcOwner[] memory _newDrcOwner, ApplicationStatus _status) public onlyManager{
-        require(applicationMap[_id].applicationId =="","application already exist");
-        storeApplicationInMap(DrcTransferApplication(_id, _drcId, _farTransferred, _signatories, _newDrcOwner, _status));
-    }
+        function createApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, bytes32[] memory _buyers, ApplicationStatus _status) public onlyManager{
+            require(applicationMap[_id].applicationId =="","application already exist");
+            storeApplicationInMap(DrcTransferApplication(_id, _drcId, _farTransferred, _signatories, _buyers, _status));
+        }
+//    function createApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, DrcOwner[] memory _newDrcOwner, ApplicationStatus _status) public onlyManager{
+//        require(applicationMap[_id].applicationId =="","application already exist");
+//        storeApplicationInMap(DrcTransferApplication(_id, _drcId, _farTransferred, _signatories, _newDrcOwner, _status));
+//    }
 
     function updateApplication(DrcTransferApplication memory dta) public onlyManager{
         require(applicationMap[dta.applicationId].applicationId !="","application does not exist");
@@ -77,13 +84,13 @@ contract DrcTransferApplicationStorage {
 
     }
 
-    function updateApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, DrcOwner[] memory _newDrcOwner, ApplicationStatus _status) public onlyManager{
-        require(applicationMap[_id].applicationId !="","application does not exist");
-        storeApplicationInMap(DrcTransferApplication(_id, _drcId, _farTransferred, _signatories, _newDrcOwner, _status));
-    }
+//    function updateApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, DrcOwner[] memory _newDrcOwner, ApplicationStatus _status) public onlyManager{
+//        require(applicationMap[_id].applicationId !="","application does not exist");
+//        storeApplicationInMap(DrcTransferApplication(_id, _drcId, _farTransferred, _signatories, _newDrcOwner, _status));
+//    }
 
     function getApplication(bytes32 _id) view public returns(DrcTransferApplication memory){
-       require(applicationMap[_id].applicationId !="","application does not exist");
+//       require(applicationMap[_id].applicationId !="","application does not exist");
        return applicationMap[_id];
     }
 
@@ -99,12 +106,16 @@ contract DrcTransferApplicationStorage {
         dta.drcId = _dta.drcId;
         dta.farTransferred = _dta.farTransferred;
         dta.status = _dta.status;
-        for (uint i =0; i< _dta.signatories.length; i++){
-            dta.signatories[i]=_dta.signatories[i];
+        for (uint i =0; i< _dta.applicants.length; i++){
+            dta.applicants[i]=_dta.applicants[i];
         }
-        for (uint i =0; i< _dta.newDrcOwner.length; i++){
-            dta.newDrcOwner[i]=_dta.newDrcOwner[i];
+        delete dta.buyers;
+        for (uint i=0; i< _dta.buyers.length; i++){
+            dta.buyers.push(dta.buyers[i]);
         }
+//        for (uint i =0; i< _dta.newDrcOwner.length; i++){
+//            dta.newDrcOwner[i]=_dta.newDrcOwner[i];
+//        }
 
         applicationMap[dta.applicationId]=dta;
     }
@@ -120,12 +131,12 @@ contract DrcTransferApplicationStorage {
         return userApplicationMap[userId];
     }
     function storeApplicationForUser(DrcTransferApplication memory application) public onlyManager {
-        for(uint i=0; i<application.signatories.length; i++){
-            bytes32 userId = application.signatories[i].userId;
+        for(uint i=0; i<application.applicants.length; i++){
+            bytes32 userId = application.applicants[i].userId;
             bytes32[] storage applicationIds = userApplicationMap[userId];
             applicationIds.push(application.applicationId);
             userApplicationMap[userId]=applicationIds;
-            emit DTACreatedForUser(application.signatories[i].userId,application.applicationId);
+            emit DTACreatedForUser(application.applicants[i].userId,application.applicationId);
         }
     }
 }

@@ -121,9 +121,8 @@ contract DRCManager{
         duaStorage = DuaStorage(duaStorageAddress);
     }
 
-
     // This function begins the drd transfer application
-    function createTransferApplication(bytes32 drcId,bytes32 applicationId, uint far, DrcOwner[] memory newDrcOwners) public {
+    function createTransferApplication(bytes32 drcId,bytes32 applicationId, uint far, bytes32[] memory buyers) public {
         // check drc exists or not
         require(drcStorage.isDrcCreated(drcId),"DRC not created");
         DRC memory drc = drcStorage.getDrc(drcId);
@@ -131,26 +130,89 @@ contract DRCManager{
         require(far <= drc.farAvailable, "Transfer area is greater than the available area");
         // add all the owners id from the drc to the mapping
 
-        Signatory[] memory dtaSignatories = new Signatory[](drc.owners.length);
+        Signatory[] memory applicants = new Signatory[](drc.owners.length);
 
         // no user has signed yet
         for(uint i=0; i<drc.owners.length; i++){
             Signatory memory s;
-            s.userId = drc.owners[i].userId;
+            s.userId = drc.owners[i];
             s.hasUserSigned = false;
-            dtaSignatories[i]=s;
+            applicants[i]=s;
         }
         signDrcTransferApplication(applicationId);
-        dtaStorage.createApplication(applicationId,drcId,far,dtaSignatories, newDrcOwners, ApplicationStatus.pending);
+        dtaStorage.createApplication(applicationId,drcId,far, applicants, buyers, ApplicationStatus.pending);
         drcStorage.addDtaToDrc(drc.id,applicationId);
     }
+////    // This function begins the drd transfer application
+//    function createTransferApplication(bytes32 drcId,bytes32 applicationId, uint far, DrcOwner[] memory newDrcOwners) public {
+//        // check drc exists or not
+//        require(drcStorage.isDrcCreated(drcId),"DRC not created");
+//        DRC memory drc = drcStorage.getDrc(drcId);
+//        // far should be less than available far.
+//        require(far <= drc.farAvailable, "Transfer area is greater than the available area");
+//        // add all the owners id from the drc to the mapping
+//
+//        Signatory[] memory dtaSignatories = new Signatory[](drc.owners.length);
+//
+//        // no user has signed yet
+//        for(uint i=0; i<drc.owners.length; i++){
+//            Signatory memory s;
+//            s.userId = drc.owners[i].userId;
+//            s.hasUserSigned = false;
+//            dtaSignatories[i]=s;
+//        }
+//        signDrcTransferApplication(applicationId);
+//        dtaStorage.createApplication(applicationId,drcId,far,dtaSignatories, newDrcOwners, ApplicationStatus.pending);
+//        drcStorage.addDtaToDrc(drc.id,applicationId);
+//    }
+//    function createTransferApplication(bytes32 drcId,bytes32 applicationId, uint far) public {
+//    // check drc exists or not
+//    require(drcStorage.isDrcCreated(drcId),"DRC not created");
+//    DRC memory drc = drcStorage.getDrc(drcId);
+//    // far should be less than available far.
+//    require(far <= drc.farAvailable, "Transfer area is greater than the available area");
+//    // add all the owners id from the drc to the mapping
+//
+//    Signatory[] memory dtaSignatories = new Signatory[](drc.owners.length);
+//
+//    // no user has signed yet
+//    for(uint i=0; i<drc.owners.length; i++){
+//        Signatory memory s;
+//        s.userId = drc.owners[i].userId;
+//        s.hasUserSigned = false;
+//        dtaSignatories[i]=s;
+//    }
+//    signDrcTransferApplication(applicationId);
+////    dtaStorage.createApplication(applicationId,drcId,far,dtaSignatories, newDrcOwners, ApplicationStatus.pending);
+//    drcStorage.addDtaToDrc(drc.id,applicationId);
+//    emit Logger("create transfer application was called");
+//}
+//    function createTransferApplication(DrcTransferApplication memory dta) public {
+//        require(drcStorage.isDrcCreated(dta.drcId),"DRC not created");
+//        DRC memory drc = drcStorage.getDrc(dta.drcId);
+//        // far should be less than available far.
+//        require(dta.farTransferred <= drc.farAvailable, "Transfer area is greater than the available area");
+//        dtaStorage.createApplication(dta);
+//        signDrcTransferApplication(dta.applicationId);
+////        dtaStorage.createApplication(applicationId,drcId,far,dtaSignatories, newDrcOwners, ApplicationStatus.pending);
+//        drcStorage.addDtaToDrc(drc.id,dta.applicationId);
+//    }
+//    function createTransferApplication(bytes32 applicationId) public {
+//       emit Logger("Create DRC transfer application was called");
+//    }
+//    function createTransferApplication(DrcOwner memory x) public {
+//        emit Logger("Create DRC transfer application was called");
+//    }
+//    function createTransferApplication(DrcOwner[] memory x) public {
+//        emit Logger("Create DRC transfer application was called");
+//    }
 
     // this function is called by the user to approve the transfer
     function signDrcTransferApplication(bytes32 applicationId) public {
         DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
         // make sure the user has not signed the transfer
-        for (uint i=0;i<application.signatories.length;i++){
-            Signatory memory signatory = application.signatories[i];
+        for (uint i=0;i<application.applicants.length;i++){
+            Signatory memory signatory = application.applicants[i];
             if(signatory.userId == userManager.getUserId(msg.sender)){
                 require(!signatory.hasUserSigned,"User have already signed the application");
                 signatory.hasUserSigned = true;
@@ -159,8 +221,8 @@ contract DRCManager{
         // user signs the application
         // find out whether all the users have signed
         bool allSignatoriesSign = true;
-        for (uint i=0;i<application.signatories.length;i++){
-            Signatory memory s = application.signatories[i];
+        for (uint i=0;i<application.applicants.length;i++){
+            Signatory memory s = application.applicants[i];
             if(!s.hasUserSigned){
                 allSignatoriesSign = false;
                 break;
@@ -247,7 +309,7 @@ contract DRCManager{
         newDrc.status = DrcStatus.available;
         newDrc.farCredited = application.farTransferred;
         newDrc.farAvailable = application.farTransferred;
-        newDrc.owners = application.newDrcOwner;
+        newDrc.owners = application.buyers;
         drcStorage.createDrc(newDrc);
         // need to reduce the available area of the old drc
         drc.farAvailable = drc.farAvailable - application.farTransferred;
@@ -286,8 +348,8 @@ contract DRCManager{
         bytes32 userId = userManager.getUserId(_address);
 
             // Loop through all applicants in the TDR application
-        for (uint i = 0; i < application.signatories.length ; i++) {
-            Signatory memory signatory = application.signatories[i];
+        for (uint i = 0; i < application.applicants.length ; i++) {
+            Signatory memory signatory = application.applicants[i];
             if (signatory.userId == userId) {
                  return signatory.hasUserSigned;
             }
@@ -378,7 +440,7 @@ contract DRCManager{
         // no user has signed yet
         for(uint i=0; i<drc.owners.length; i++){
             Signatory memory s;
-            s.userId = drc.owners[i].userId;
+            s.userId = drc.owners[i];
             s.hasUserSigned = false;
             duaSignatories[i]=s;
         }

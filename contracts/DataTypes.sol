@@ -32,8 +32,9 @@ pragma solidity ^0.8.16;
         uint areaSurrendered;
         uint circleRateSurrendered;
         uint circleRateUtilization;
-        DrcOwner[] owners;
-//        Attribute[] attributes; //keep this field for the future attributes
+        bytes32[] owners;
+//        DrcOwner[] owners;
+//        Attribute[] attribtes; //keep this field for the future attributes
         // string issueDate;
     }
 
@@ -52,8 +53,9 @@ pragma solidity ^0.8.16;
         bytes32 applicationId;
         bytes32 drcId;
         uint farTransferred;
-        Signatory[] signatories;
-        DrcOwner[] newDrcOwner;
+        Signatory[] applicants;
+//        DrcOwner[] newDrcOwner;
+        bytes32[] buyers;
         ApplicationStatus status;
     }
 

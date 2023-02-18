@@ -463,10 +463,12 @@ contract TDRManager {
         drc.applicationId = tdrApplication.applicationId;
 //        drc.applications = new bytes32[](1);
 //        drc.applications[0]=tdrApplication.applicationId;
-        drc.owners = new DrcOwner[](tdrApplication.applicants.length);
+//        drc.owners = new DrcOwner[](tdrApplication.applicants.length);
+        drc.owners = new bytes32[](tdrApplication.applicants.length);
         for (uint i=0; i< tdrApplication.applicants.length; i++){
-            DrcOwner memory drcOwner = DrcOwner(tdrApplication.applicants[i].userId,0);
-            drc.owners[i] = drcOwner;
+//            DrcOwner memory drcOwner = DrcOwner(tdrApplication.applicants[i].userId,0);
+//            drc.owners[i] = drcOwner;
+            drc.owners[i]=tdrApplication.applicants[i].userId;
         }
 //        drc.attributes = new Attribute[](0);
         drcStorage.createDrc(drc);

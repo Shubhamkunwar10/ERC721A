@@ -115,26 +115,27 @@ contract DrcStorage {
             return false;
     }
     // ideally these functions should be moved to manager contract
-    function addDrcOnwer(bytes32 _drcId, DrcOwner memory newOwner)public {
+    function addDrcOnwer(bytes32 _drcId, bytes32  newOwner)public {
         require(isDrcCreated(_drcId),"DRC does not exists");
         DRC storage drc = drcMap[_drcId];
         drc.owners.push(newOwner);
         drcMap[_drcId] = drc;
-        bytes32[] storage drcList = ownerMap[newOwner.userId];
+        bytes32[] storage drcList = ownerMap[newOwner];
         drcList.push(_drcId);
-        ownerMap[newOwner.userId] = drcList;
+        ownerMap[newOwner] = drcList;
     } 
 
   function addDrcOnwers(bytes32 _drcId, DrcOwner[] memory newOwners)public {
     require(isDrcCreated(_drcId),"DRC does not exists");
     DRC storage drc = drcMap[_drcId];
     for(uint i= 0; i< newOwners.length;i++){
-        drc.owners.push(newOwners[i]);
-        bytes32[] storage drcList = ownerMap[newOwners[i].userId];
-        drcList.push(_drcId);
-        ownerMap[newOwners[i].userId] = drcList;
+//        addDrcOnwer(_drcId,newOwners[i]);
+//        drc.owners.push(newOwners[i]);
+//        bytes32[] storage drcList = ownerMap[newOwners[i].userId];
+//        drcList.push(_drcId);
+//        ownerMap[newOwners[i].userId] = drcList;
     }
-    drcMap[_drcId] = drc;
+//    drcMap[_drcId] = drc;
   }
 
   function deleteOwner(bytes32 _drcId, bytes32 ownerId) public{
@@ -144,7 +145,7 @@ contract DrcStorage {
     // uint count =0;
     uint index=drc.owners.length;
     for(uint i=0; i<drc.owners.length; i++ ){
-        if(ownerId == drc.owners[i].userId){
+        if(ownerId == drc.owners[i]){
             index = i;
             break;
         }
@@ -177,15 +178,16 @@ contract DrcStorage {
     ownerMap[ownerId]=drcList;
     }
 
-  function getOwnerDetails(bytes32 _drcId, bytes32 ownerId) view public returns (DrcOwner memory) {
+  function getOwnerDetails(bytes32 _drcId, bytes32 ownerId) view public returns (bytes32) {
     DRC memory drc = drcMap[_drcId];
     for(uint i=0; i< drc.owners.length; i++){
-        if (drc.owners[i].userId == ownerId) {
+        if (drc.owners[i]== ownerId) {
             return drc.owners[i];
             }
          }
-    DrcOwner memory emptyDrcOwner;
-    return emptyDrcOwner;
+      return "";
+//    DrcOwner memory emptyDrcOwner;
+//    return emptyDrcOwner;
     }
 
     function storeDrcInMap (DRC memory _drc) public {

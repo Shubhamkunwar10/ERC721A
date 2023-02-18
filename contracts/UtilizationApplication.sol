@@ -55,6 +55,9 @@ contract DuaStorage {
         require (msg.sender == owner ||  msg.sender == admin);
         manager = _manager;
     }
+    function setOwner(address _newOwner) onlyOwner public {
+        owner = _newOwner;
+    }
 
     function createApplication(DUA memory dta) public onlyAdmin{
         require(applicationMap[dta.applicationId].applicationId =="","application already exist");
