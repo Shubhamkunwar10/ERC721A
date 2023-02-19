@@ -1,11 +1,11 @@
 import http.client
 import json
 from datetime import datetime as dt
-import time
+from time import sleep
 
 PORT = 8000
 HOST = "localhost"
-JWT = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiQUNDRVNTIFRPS0VOIiwiaWQiOiIzNDc0NDlkNDEyYTYxZDg1NjVjNzU4ODZhMzJlMzFmZDMxMGZmNWFlMDBjODIyMWE1ZGE5NjkyNGE3MmE5ZGI1IiwidXNlcm5hbWUiOiJBdmluYXNoIEtoYW4iLCJyb2xlIjoidXNlciIsImV4cCI6MTY3NjY1NDcwMCwiaWF0IjoxNjc2NTY4MzAwfQ.QJteyEJwJ3HspZUjLeIPF1VwET3SoPUIPsAMORS4KWk'
+JWT = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiQUNDRVNTIFRPS0VOIiwiaWQiOiIzNDc0NDlkNDEyYTYxZDg1NjVjNzU4ODZhMzJlMzFmZDMxMGZmNWFlMDBjODIyMWE1ZGE5NjkyNGE3MmE5ZGI1IiwidXNlcm5hbWUiOiJBdmluYXNoIEtoYW4iLCJyb2xlIjoidXNlciIsImV4cCI6MTY3NjgwNzc4NiwiaWF0IjoxNjc2NzIxMzg2fQ.fEiWbJf6aYmOlgSC-8Cvx8BzaOXs22ncE7RsGZRpOyo'
 conn = http.client.HTTPConnection(HOST, PORT)
 headers = {
     'Authorization': 'bearer ' + JWT,
@@ -211,15 +211,15 @@ def issue_drc_test():
     })
     conn.request("POST", "/tdr/application/issueDrc", payload, headers)
     res = conn.getresponse()
-    data = res.read()
-    print(data.decode("utf-8"))
+    # data = res.read()
+    # print(data.decode("utf-8"))
     return get_trx_id_from_res(res)
 
 def run_all_test():
     # add_user_test()
     # print("running create and push notice test")
     # create_and_push_notice_test()
-    print("adding user to the blockchain")
+    # print("adding user to the blockchain")
     add_user_test()
     create_notice_test()
     create_application_test()
