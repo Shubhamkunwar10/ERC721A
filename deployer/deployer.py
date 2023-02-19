@@ -369,6 +369,7 @@ def instantiate(contract_address, compiled_contracts):
     set_contract_address(drc_manager_contract, 'updateDuaStorage', dua_storage_address,
                          "update dua storage in drc manager")
     set_contract_address(drc_storage_contract,'setTdrManager',tdr_manager_address,"update tdr manager in drc storage")
+    set_contract_address(drc_storage_contract,'setManager',drc_manager_address,"update drc manager in drc storage")
 
 
 
@@ -397,8 +398,10 @@ def main():
     print("instantiating")
     instantiate(contract_addresses, compiled_contracts)
     print("total execution time: ", end_time - start_time)
-    print("last mined block was ", w3.eth.blockNumber)
+    b = w3.eth.blockNumber
     run_all_test()
+    print("last mined block after instantiation was ", w3.eth.blockNumber)
+
 
 
 if __name__ == "__main__":
