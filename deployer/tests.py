@@ -218,7 +218,7 @@ def issue_drc_test():
 @push("create dta  Test")
 def create_dta_test():
     payload = json.dumps({
-        "applicationId": "app123",
+        "applicationId": "app1234",
         "drcId": "app123",
         "farTransferred": 50,
         "buyers": [
@@ -227,6 +227,33 @@ def create_dta_test():
         "status": "pending"
     })
     conn.request("POST", "/drc/application/transfer/create", payload, headers)
+    res = conn.getresponse()
+    return get_trx_id_from_res(res)
+
+@push("sign dta")
+def sign_dta():
+    payload = json.dumps({
+        "applicationId": "app1234"
+    })
+    conn.request("POST", "/drc/application/transfer/sign", payload, headers)
+    res = conn.getresponse()
+    return get_trx_id_from_res(res)
+
+@push("verify dta")
+def verify_dta():
+    payload = json.dumps({
+        "applicationId": "app1234"
+    })
+    conn.request("POST", "/drc/application/transfer/verify", payload, headers)
+    res = conn.getresponse()
+    return get_trx_id_from_res(res)
+
+@push("approve dta")
+def approve_dta():
+    payload = json.dumps({
+        "applicationId": "app1234"
+    })
+    conn.request("POST", "/drc/application/transfer/approve", payload, headers)
     res = conn.getresponse()
     return get_trx_id_from_res(res)
 
@@ -242,6 +269,9 @@ def run_all_test():
     user_signed_status_test()
     issue_drc_test()
     create_dta_test()
+    sign_dta()
+    verify_dta()
+    approve_dta()
 def main():
     run_all_test()
 
