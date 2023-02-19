@@ -215,11 +215,22 @@ def issue_drc_test():
     # print(data.decode("utf-8"))
     return get_trx_id_from_res(res)
 
+@push("create dta  Test")
+def create_dta_test():
+    payload = json.dumps({
+        "applicationId": "app123",
+        "drcId": "app123",
+        "farTransferred": 50,
+        "buyers": [
+            "347449d412a61d8565c75886a32e31fd310ff5ae00c8221a5da96924a72a9d23"
+        ],
+        "status": "pending"
+    })
+    conn.request("POST", "/drc/application/transfer/create", payload, headers)
+    res = conn.getresponse()
+    return get_trx_id_from_res(res)
+
 def run_all_test():
-    # add_user_test()
-    # print("running create and push notice test")
-    # create_and_push_notice_test()
-    # print("adding user to the blockchain")
     add_user_test()
     create_notice_test()
     create_application_test()
@@ -230,7 +241,7 @@ def run_all_test():
     approve_applicaiton_test()
     user_signed_status_test()
     issue_drc_test()
-    # verify_and_push_application()
+    create_dta_test()
 def main():
     run_all_test()
 
