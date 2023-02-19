@@ -59,10 +59,10 @@ contract DuaStorage {
         owner = _newOwner;
     }
 
-    function createApplication(DUA memory dta) public onlyAdmin{
-        require(applicationMap[dta.applicationId].applicationId =="","application already exist");
-        storeApplicationInMap(dta);
-        storeApplicationForUser(dta);
+    function createApplication(DUA memory dua) public onlyManager{
+        require(applicationMap[dua.applicationId].applicationId =="","application already exist");
+        storeApplicationInMap(dua);
+        storeApplicationForUser(dua);
     }
 
     function createApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, ApplicationStatus _status) public onlyManager{
@@ -70,7 +70,7 @@ contract DuaStorage {
         storeApplicationInMap(DUA(_id, _drcId, _farTransferred, _signatories, _status));
     }
 
-    function updateApplication(DUA memory dta) public onlyAdmin{
+    function updateApplication(DUA memory dta) public onlyManager{
         require(applicationMap[dta.applicationId].applicationId !="","application does not exist");
         storeApplicationInMap(dta);
 
@@ -91,19 +91,20 @@ contract DuaStorage {
         delete applicationMap[_id];
     }
     // This function just creates a new appliction in the mapping based on the applicaiton in the memory
-    function storeApplicationInMap (DUA memory _dta) internal {
-        DUA storage dta = applicationMap[_dta.applicationId];
+    function storeApplicationInMap (DUA memory _dua) internal {
+        DUA storage dua = applicationMap[_dua.applicationId];
         
-        dta.applicationId = _dta.applicationId;
-        dta.drcId = _dta.drcId;
-        dta.farUtilized = _dta.farUtilized;
-        dta.status = _dta.status;
-        for (uint i =0; i< _dta.signatories.length; i++){
-            dta.signatories[i]=_dta.signatories[i];
+        dua.applicationId = _dua.applicationId;
+        dua.drcId = _dua.drcId;
+        dua.farUtilized = _dua.farUtilized;
+        dua.status = _dua.status;
+        delete dua.signatories;
+        for (uint i =0; i< _dua.signatories.length; i++){
+            dua.signatories.push(_dua.signatories[i]);
         }
 
 
-        applicationMap[dta.applicationId]=dta;
+        applicationMap[dua.applicationId]= dua;
     }
     function getApplicationForUser(bytes32 userId) public onlyManager returns (bytes32[] memory){
         return userApplicationMap[userId];

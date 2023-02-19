@@ -383,8 +383,8 @@ contract DRCManager{
             s.hasUserSigned = false;
             duaSignatories[i]=s;
         }
-        signDrcUtilizationApplication(applicationId);
         duaStorage.createApplication(applicationId,drc.id,far,duaSignatories,ApplicationStatus.pending);
+        signDrcUtilizationApplication(applicationId);
         drcStorage.addDuaToDrc(drc.id,applicationId);
     }
     function signDrcUtilizationApplication(bytes32 applicationId) public {
