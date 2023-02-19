@@ -24,6 +24,7 @@ import solcx
 import os
 import datetime
 from time import sleep
+from tests import run_all_test
 
 # Set up the loggig services
 # Create a logger
@@ -325,7 +326,7 @@ def instantiate(contract_address, compiled_contracts):
     # execute_contract_method(update_tdr_storage_manager_method, OWNER_ACCOUNT)
 
     # setting manager for tdrStorage
-    set_contract_address(tdr_manager_contract, 'setManager', tdr_manager_address,
+    set_contract_address(tdr_storage_contract, 'setManager', tdr_manager_address,
                          "updating manager in tdr manager contract")
 
     # # setting manager for userManager
@@ -397,7 +398,7 @@ def main():
     instantiate(contract_addresses, compiled_contracts)
     print("total execution time: ", end_time - start_time)
     print("last mined block was ", w3.eth.blockNumber)
-    # run_all_test()
+    run_all_test()
 
 
 if __name__ == "__main__":
