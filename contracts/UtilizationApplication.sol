@@ -10,13 +10,14 @@ contract DuaStorage {
     mapping(bytes32 => DUA) public applicationMap;
     mapping(bytes32 => bytes32[] ) public userApplicationMap;
 
-    event DUACreatedForUser(bytes32 userId, bytes32 applicationId);
     //logger events
     event LogAddress(string addressInfo, address _address);
     event LogBytes(string messgaeInfo, bytes32 _bytes);
     event LogBool(string messageInfo, bool message);
     event LogApplication(string message, TdrApplication application);
-    event DTACreatedForUser(bytes32 userId, bytes32 applicationId);
+    event DUACreatedForUser(bytes32 userId, bytes32 applicationId);
+    event DUACreated(bytes32 applicationId);
+    event DUAUpdated(bytes32 applicationId);
 
     address owner;
     address admin;
@@ -63,22 +64,27 @@ contract DuaStorage {
         require(applicationMap[dua.applicationId].applicationId =="","application already exist");
         storeApplicationInMap(dua);
         storeApplicationForUser(dua);
+        emit DUACreated(dua.applicationId);
     }
 
-    function createApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, ApplicationStatus _status) public onlyManager{
-        require(applicationMap[_id].applicationId =="","application already exist");
-        storeApplicationInMap(DUA(_id, _drcId, _farTransferred, _signatories, _status));
+    function createApplication(bytes32 _applicationId, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, ApplicationStatus _status) public onlyManager{
+        require(applicationMap[_applicationId].applicationId =="","application already exist");
+        storeApplicationInMap(DUA(_applicationId, _drcId, _farTransferred, _signatories, _status));
+        storeApplicationForUser(DUA(_applicationId, _drcId, _farTransferred, _signatories, _status));
+        emit DUACreated(_applicationId);
     }
 
-    function updateApplication(DUA memory dta) public onlyManager{
-        require(applicationMap[dta.applicationId].applicationId !="","application does not exist");
-        storeApplicationInMap(dta);
-
+    function updateApplication(DUA memory dua) public onlyManager{
+        require(applicationMap[dua.applicationId].applicationId !="","application does not exist");
+        storeApplicationInMap(dua);
+        emit DUAUpdated(dua.applicationId);
     }
 
-    function updateApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, ApplicationStatus _status) public onlyManager{
-        require(applicationMap[_id].applicationId !="","application does not exist");
-        storeApplicationInMap(DUA(_id, _drcId, _farTransferred, _signatories, _status));
+    function updateApplication(bytes32 _applicationId, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, ApplicationStatus _status) public onlyManager{
+        require(applicationMap[_applicationId].applicationId !="","application does not exist");
+        storeApplicationInMap(DUA(_applicationId, _drcId, _farTransferred, _signatories, _status));
+        emit DUAUpdated(_applicationId);
+
     }
 
     function getApplication(bytes32 _id) view public returns(DUA memory){

@@ -5,7 +5,7 @@ from time import sleep
 
 PORT = 8000
 HOST = "localhost"
-JWT = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiQUNDRVNTIFRPS0VOIiwiaWQiOiIzNDc0NDlkNDEyYTYxZDg1NjVjNzU4ODZhMzJlMzFmZDMxMGZmNWFlMDBjODIyMWE1ZGE5NjkyNGE3MmE5ZGI1IiwidXNlcm5hbWUiOiJBdmluYXNoIEtoYW4iLCJyb2xlIjoidXNlciIsImV4cCI6MTY3NjgwNzc4NiwiaWF0IjoxNjc2NzIxMzg2fQ.fEiWbJf6aYmOlgSC-8Cvx8BzaOXs22ncE7RsGZRpOyo'
+JWT = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiQUNDRVNTIFRPS0VOIiwiaWQiOiIzNDc0NDlkNDEyYTYxZDg1NjVjNzU4ODZhMzJlMzFmZDMxMGZmNWFlMDBjODIyMWE1ZGE5NjkyNGE3MmE5ZGI1IiwidXNlcm5hbWUiOiJBdmluYXNoIEtoYW4iLCJyb2xlIjoidXNlciIsImV4cCI6MTY3NjkxMDIzMywiaWF0IjoxNjc2ODIzODMzfQ.an-P5TAIyXUBGjfThqL_uxOkwRfh7oLvHUHcovcIlC4'
 conn = http.client.HTTPConnection(HOST, PORT)
 headers = {
     'Authorization': 'bearer ' + JWT,
@@ -257,6 +257,17 @@ def approve_dta():
     res = conn.getresponse()
     return get_trx_id_from_res(res)
 
+@push("create dua")
+def create_dua():
+    payload = json.dumps({
+        "drcId": "app123",
+        "farUtilized": 100,
+        "applicationId": "app123"
+    })
+    conn.request("POST", "/drc/application/utilization/create", payload, headers)
+    res = conn.getresponse()
+    return get_trx_id_from_res(res)
+
 def run_all_test():
     add_user_test()
     create_notice_test()
@@ -272,6 +283,7 @@ def run_all_test():
     sign_dta()
     verify_dta()
     approve_dta()
+    create_dua()
 def main():
     run_all_test()
 

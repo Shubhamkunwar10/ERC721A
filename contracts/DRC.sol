@@ -23,6 +23,8 @@ contract DrcStorage {
     event LogBytes(string messgaeInfo, bytes32 _bytes);
     event LogBool(string messageInfo, bool message);
     event LogApplication(string message, TdrApplication application);
+    event DtaAddedToDrc(bytes32 dtaId, bytes32 applicationId);
+    event DuaAddedToDrc(bytes32 dtaId, bytes32 applicationId);
 
     
     address owner;
@@ -232,10 +234,13 @@ contract DrcStorage {
         emit Logger("store DRC in map executed");
     }
     // add application to drc
+    event AllDTaForDrc(bytes32 drcId, bytes32[] applicationIds);
     function addDtaToDrc(bytes32 drcId,bytes32 applicationId) public {
         bytes32[] storage applications = drcDtaMap[drcId];
         applications.push(applicationId);
         drcDtaMap[drcId]=applications;
+        emit DtaAddedToDrc(drcId,applicationId);
+        emit AllDTaForDrc(drcId,applications);
 //        DRC memory drc = drcStorage.getDrc(drcId);
 //        //        drc.farAvailable = drc.farAvailable - farConsumed;
 //        bytes32[] memory newApplications = new bytes32[](drc.applications.length+1);
@@ -247,10 +252,15 @@ contract DrcStorage {
 
     }
     // add application to drc
+    event AllDuaForDrc(bytes32 drcId, bytes32[] applicationIds);
     function addDuaToDrc(bytes32 drcId,bytes32 applicationId) public {
         bytes32[] storage applications = drcDuaMap[drcId];
         applications.push(applicationId);
         drcDuaMap[drcId]=applications;
+        emit DuaAddedToDrc(drcId,applicationId);
+        emit AllDuaForDrc(drcId,applications);
+
+
     }
     function getDtaIdsForDrc(bytes32 drcId) public returns (bytes32[] memory) {
         return drcDtaMap[drcId] ;
