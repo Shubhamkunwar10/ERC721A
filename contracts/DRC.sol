@@ -51,11 +51,14 @@ contract DrcStorage {
         _;
     }
     modifier onlyManager() {
-        require(msg.sender == manager, "Caller is not the contract admin");
+        require(msg.sender == manager, "Caller is not the contract manager");
         _;
     }
-    modifier onlyTdrManager() {
-        require(msg.sender == tdrManager, "Only the TDR Manager can perform this action.");
+    modifier onlyDrcCreator() {
+        // Drc is created only in two ways, either through land acquisition or through transfer.manager
+        // In case of land acquisition, tdr manager would create the drc
+        // in cae of transfer, drc manager would create the drc
+        require(msg.sender == tdrManager|| msg.sender==manager, "Only the TDR Manager can perform this action.");
         _;
     }
 
@@ -72,7 +75,7 @@ contract DrcStorage {
         tdrManager = _newTdrManager;
     }
     // Create a function to add a new Drc to the mapping
-    function createDrc(DRC memory _drc) public onlyTdrManager{
+    function createDrc(DRC memory _drc) public onlyDrcCreator{
         //check whether the DRC already exists
         require(!isDrcCreated(_drc.id),"DRC already exists");
         storeDrcInMap(_drc);
@@ -83,7 +86,7 @@ contract DrcStorage {
         // the drc should exist
         // Update the Drc in the mapping
         require(_id ==_drc.id, "drcid should be same");
-        require(!isDrcCreated(_drc.id),"DRC does not exists");
+        require(isDrcCreated(_drc.id),"DRC does not exists");
         // insertDrc((_drc));
         storeDrcInMap(_drc);
     }

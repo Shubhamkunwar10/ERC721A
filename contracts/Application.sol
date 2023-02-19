@@ -70,11 +70,11 @@ contract DrcTransferApplicationStorage {
         storeApplicationForUser(dta);
     }
 
-        function createApplication(bytes32 _applicationId, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, bytes32[] memory _buyers, ApplicationStatus _status) public onlyManager{
-            require(applicationMap[_applicationId].applicationId =="","application already exist");
-            emit Logger("application created in dta storage");
-            storeApplicationInMap(DrcTransferApplication(_applicationId, _drcId, _farTransferred, _signatories, _buyers, _status));
-        }
+    function createApplication(bytes32 _applicationId, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, bytes32[] memory _buyers, ApplicationStatus _status) public onlyManager{
+        require(applicationMap[_applicationId].applicationId =="","application already exist");
+        emit Logger("application created in dta storage");
+        storeApplicationInMap(DrcTransferApplication(_applicationId, _drcId, _farTransferred, _signatories, _buyers, _status));
+    }
 //    function createApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, DrcOwner[] memory _newDrcOwner, ApplicationStatus _status) public onlyManager{
 //        require(applicationMap[_id].applicationId =="","application already exist");
 //        storeApplicationInMap(DrcTransferApplication(_id, _drcId, _farTransferred, _signatories, _newDrcOwner, _status));
