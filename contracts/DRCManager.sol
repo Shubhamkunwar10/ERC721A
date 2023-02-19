@@ -139,8 +139,8 @@ contract DRCManager{
             s.hasUserSigned = false;
             applicants[i]=s;
         }
-        signDrcTransferApplication(applicationId);
         dtaStorage.createApplication(applicationId,drcId,far, applicants, buyers, ApplicationStatus.pending);
+        signDrcTransferApplication(applicationId);
         drcStorage.addDtaToDrc(drc.id,applicationId);
     }
 ////    // This function begins the drd transfer application

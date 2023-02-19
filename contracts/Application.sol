@@ -18,6 +18,7 @@ contract DrcTransferApplicationStorage {
     address admin;
     address manager;
     //events
+    event Logger(string s);
     event LogAddress(string addressInfo, address _address);
     event LogBytes(string messgaeInfo, bytes32 _bytes);
     event LogBool(string messageInfo, bool message);
@@ -69,9 +70,10 @@ contract DrcTransferApplicationStorage {
         storeApplicationForUser(dta);
     }
 
-        function createApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, bytes32[] memory _buyers, ApplicationStatus _status) public onlyManager{
-            require(applicationMap[_id].applicationId =="","application already exist");
-            storeApplicationInMap(DrcTransferApplication(_id, _drcId, _farTransferred, _signatories, _buyers, _status));
+        function createApplication(bytes32 _applicationId, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, bytes32[] memory _buyers, ApplicationStatus _status) public onlyManager{
+            require(applicationMap[_applicationId].applicationId =="","application already exist");
+            emit Logger("application created in dta storage");
+            storeApplicationInMap(DrcTransferApplication(_applicationId, _drcId, _farTransferred, _signatories, _buyers, _status));
         }
 //    function createApplication(bytes32 _id, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, DrcOwner[] memory _newDrcOwner, ApplicationStatus _status) public onlyManager{
 //        require(applicationMap[_id].applicationId =="","application already exist");
@@ -106,12 +108,16 @@ contract DrcTransferApplicationStorage {
         dta.drcId = _dta.drcId;
         dta.farTransferred = _dta.farTransferred;
         dta.status = _dta.status;
+        delete dta.applicants;
         for (uint i =0; i< _dta.applicants.length; i++){
-            dta.applicants[i]=_dta.applicants[i];
+            dta.applicants.push(_dta.applicants[i]);
         }
+//        for (uint i =0; i< _dta.applicants.length; i++){
+//            dta.applicants[i]=_dta.applicants[i];
+//        }
         delete dta.buyers;
         for (uint i=0; i< _dta.buyers.length; i++){
-            dta.buyers.push(dta.buyers[i]);
+            dta.buyers.push(_dta.buyers[i]);
         }
 //        for (uint i =0; i< _dta.newDrcOwner.length; i++){
 //            dta.newDrcOwner[i]=_dta.newDrcOwner[i];
