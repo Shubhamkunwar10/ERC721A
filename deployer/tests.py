@@ -268,6 +268,31 @@ def create_dua():
     res = conn.getresponse()
     return get_trx_id_from_res(res)
 
+@push("sign dua")
+def sign_dua():
+    payload = json.dumps({
+        "applicationId": "app123"
+    })
+    conn.request("POST", "/drc/application/utilization/sign", payload, headers)
+    res = conn.getresponse()
+    return get_trx_id_from_res(res)
+
+def get_dua():
+    payload = json.dumps({
+        "applicationId": "app123"
+    })
+    conn.request("POST", "/drc/application/utilization/get", payload, headers)
+    res = conn.getresponse()
+    data = res.read()
+    print(data.decode("utf-8"))
+
+def get_dashboard_data():
+    payload = ''
+    conn.request("GET", "/user/getDashboardData", payload, headers)
+    res = conn.getresponse()
+    data = res.read()
+    print(data.decode("utf-8"))
+
 def run_all_test():
     add_user_test()
     create_notice_test()
@@ -284,6 +309,9 @@ def run_all_test():
     verify_dta()
     approve_dta()
     create_dua()
+    sign_dua()
+    get_dua()
+    get_dashboard_data()
 def main():
     run_all_test()
 

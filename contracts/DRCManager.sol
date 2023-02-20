@@ -345,7 +345,9 @@ contract DRCManager{
     function getDrc(bytes32 drcId) public returns (DRC memory){
         return drcStorage.getDrc(drcId);
     }
-
+    function getDrcIdsForUser(bytes32 userId) public returns(bytes32[] memory){
+        return drcStorage.getDrcIdsForUser(userId);
+    }
 
 
 
