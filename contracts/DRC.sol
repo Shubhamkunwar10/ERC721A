@@ -25,6 +25,7 @@ contract DrcStorage {
     event LogApplication(string message, TdrApplication application);
     event DtaAddedToDrc(bytes32 dtaId, bytes32 applicationId);
     event DuaAddedToDrc(bytes32 dtaId, bytes32 applicationId);
+    event DrcAddedToOwner(bytes32 drcId, bytes32 ownerId);
 
     
     address owner;
@@ -80,6 +81,7 @@ contract DrcStorage {
     function createDrc(DRC memory _drc) public onlyDrcCreator{
         //check whether the DRC already exists
         require(!isDrcCreated(_drc.id),"DRC already exists");
+        addDrcToOwners(_drc);
         storeDrcInMap(_drc);
         emit DrcCreated(_drc.id);
     }
@@ -92,6 +94,18 @@ contract DrcStorage {
         // insertDrc((_drc));
         storeDrcInMap(_drc);
     }
+    function addDrcToOwners(DRC memory drc) public {
+        for (uint i=0; i< drc.owners.length; i++){
+            addDrcToOwner(drc.id,drc.owners[i]);
+        }
+    }
+    function addDrcToOwner(bytes32 drcId, bytes32 ownerId) public {
+        bytes32[] storage drcList = ownerMap[ownerId];
+        drcList.push(drcId);
+        ownerMap[ownerId]=drcList;
+        emit DrcAddedToOwner(drcId,ownerId);
+    }
+
 
     // Create a function to retrieve a Drc from the mapping by ID
     function getDrc(bytes32 _id) public view returns (DRC memory) {
@@ -130,18 +144,18 @@ contract DrcStorage {
         ownerMap[newOwner] = drcList;
     } 
 
-  function addDrcOnwers(bytes32 _drcId, DrcOwner[] memory newOwners)public {
-    require(isDrcCreated(_drcId),"DRC does not exists");
-    DRC storage drc = drcMap[_drcId];
-    for(uint i= 0; i< newOwners.length;i++){
-//        addDrcOnwer(_drcId,newOwners[i]);
-//        drc.owners.push(newOwners[i]);
-//        bytes32[] storage drcList = ownerMap[newOwners[i].userId];
-//        drcList.push(_drcId);
-//        ownerMap[newOwners[i].userId] = drcList;
-    }
-//    drcMap[_drcId] = drc;
-  }
+//  function addDrcOnwers(bytes32 _drcId, DrcOwner[] memory newOwners)public {
+//    require(isDrcCreated(_drcId),"DRC does not exists");
+//    DRC storage drc = drcMap[_drcId];
+//    for(uint i= 0; i< newOwners.length;i++){
+////        addDrcOnwer(_drcId,newOwners[i]);
+////        drc.owners.push(newOwners[i]);
+////        bytes32[] storage drcList = ownerMap[newOwners[i].userId];
+////        drcList.push(_drcId);
+////        ownerMap[newOwners[i].userId] = drcList;
+//    }
+////    drcMap[_drcId] = drc;
+//  }
 
   function deleteOwner(bytes32 _drcId, bytes32 ownerId) public{
     // assume singkle occurance of the ownerID
@@ -267,6 +281,9 @@ contract DrcStorage {
     }
     function getDuaIdsForDrc(bytes32 drcId) public returns (bytes32[] memory) {
         return drcDuaMap[drcId] ;
+    }
+    function getDrcIdsForUser(bytes32 userId) public returns(bytes32[] memory) {
+        return ownerMap[userId];
     }
 
 //    function getApplicationForUser(bytes32 userId) public onlyManager returns (bytes32[] memory){
