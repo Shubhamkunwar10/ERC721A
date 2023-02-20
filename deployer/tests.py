@@ -1,12 +1,16 @@
 import http.client
 import json
 from datetime import datetime as dt
-import time
+from time import sleep
 
 PORT = 8000
 HOST = "localhost"
-JWT = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiQUNDRVNTIFRPS0VOIiwiaWQiOiIzNDc0NDlkNDEyYTYxZDg1NjVjNzU4ODZhMzJlMzFmZDMxMGZmNWFlMDBjODIyMWE1ZGE5NjkyNGE3MmE5ZGI1IiwidXNlcm5hbWUiOiJBdmluYXNoIEtoYW4iLCJyb2xlIjoidXNlciIsImV4cCI6MTY3NjI5NDQ2NywiaWF0IjoxNjc2MjA4MDY3fQ.XdSboRIKpsiAybFVdwqRCHM6zuFUO1UlNqqEO0DbAaQ'
-
+JWT = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiQUNDRVNTIFRPS0VOIiwiaWQiOiIzNDc0NDlkNDEyYTYxZDg1NjVjNzU4ODZhMzJlMzFmZDMxMGZmNWFlMDBjODIyMWE1ZGE5NjkyNGE3MmE5ZGI1IiwidXNlcm5hbWUiOiJBdmluYXNoIEtoYW4iLCJyb2xlIjoidXNlciIsImV4cCI6MTY3NjkxMDIzMywiaWF0IjoxNjc2ODIzODMzfQ.an-P5TAIyXUBGjfThqL_uxOkwRfh7oLvHUHcovcIlC4'
+conn = http.client.HTTPConnection(HOST, PORT)
+headers = {
+    'Authorization': 'bearer ' + JWT,
+    'Content-Type': 'application/json'
+}
 
 def get_trx_id_from_res(res):
     _data = res.read()
@@ -116,26 +120,8 @@ def create_application_test():
     return get_trx_id_from_res(res)
 
 
-# def create_and_push_application_test():
-#     start_time = dt.now()
-#     trx_id = create_application_test()
-#     try:
-#         push_trx(trx_id)
-#
-#     except Exception as e:
-#         print('transaction failed')
-#         print(e)
-#     end_time = dt.now()
-#     t = end_time - start_time
-#     print("time for application creation ", t.seconds)
-#
-
 def add_user_test():
-    conn = http.client.HTTPConnection(HOST, PORT)
-    headers = {
-        'Authorization': 'bearer ' + JWT,
-        'Content-Type': 'application/json'
-    }
+
     payload = ''
 
     conn.request("POST", "/tdr/addUser", payload, headers)
@@ -143,32 +129,39 @@ def add_user_test():
     data = res.read()
     print(data.decode("utf-8"))
 
+def add_officer_test():
+
+    payload = json.dumps({
+        "userId": "347449d412a61d8565c75886a32e31fd310ff5ae00c8221a5da96924a72a9db5",
+        "role": "verifier",
+        "department": "land",
+        "zone": "zone_1"
+    })
+    conn.request("POST", "/user/kda/addOfficer", payload, headers)
+    res = conn.getresponse()
+    data = res.read()
+    print(data.decode("utf-8"))
+def update_officer_test():
+
+    payload = json.dumps({
+        "userId": "347449d412a61d8565c75886a32e31fd310ff5ae00c8221a5da96924a72a9db5",
+        "role": "admin",
+        "department": "land",
+        "zone": "zone_1"
+    })
+    conn.request("POST", "/user/kda/updateOfficer", payload, headers)
+    res = conn.getresponse()
+    data = res.read()
+    print(data.decode("utf-8"))
+
 @push("Sign Application Test")
 def signApplication():
-    conn = http.client.HTTPConnection(HOST, PORT)
     payload = json.dumps({
         "applicationId": "app123"
     })
-    headers = {
-    'Authorization': 'bearer ' + JWT,
-    'Content-Type': 'application/json'
-    }
     conn.request("POST", "/tdr/application/sign", payload, headers)
     res = conn.getresponse()
     return get_trx_id_from_res(res)
-
-def sign_and_push_application_test():
-    start_time = dt.now()
-    trx_id = signApplication()
-    try:
-        push_trx(trx_id)
-
-    except Exception as e:
-        print('transaction failed')
-        print(e)
-    end_time = dt.now()
-    t = end_time - start_time
-    print("time for application creation ", t.seconds)
 
 
 def user_signed_status_test():
@@ -199,20 +192,98 @@ def verify_application():
     res = conn.getresponse()
     return get_trx_id_from_res(res)
 
+@push("Approve Application Test")
+def approve_applicaiton_test():
+    payload = json.dumps({
+        "applicationId": "app123"
+    })
+    conn.request("POST", "/tdr/application/approve", payload, headers)
+    res = conn.getresponse()
+    # data = res.read()
+    # print(data.decode("utf-8"))
+    return get_trx_id_from_res(res)
 
+@push("Issue DRC Test")
+def issue_drc_test():
+    payload = json.dumps({
+        "applicationId": "app123",
+        "far": 150
+    })
+    conn.request("POST", "/tdr/application/issueDrc", payload, headers)
+    res = conn.getresponse()
+    # data = res.read()
+    # print(data.decode("utf-8"))
+    return get_trx_id_from_res(res)
 
+@push("create dta  Test")
+def create_dta_test():
+    payload = json.dumps({
+        "applicationId": "app1234",
+        "drcId": "app123",
+        "farTransferred": 50,
+        "buyers": [
+            "347449d412a61d8565c75886a32e31fd310ff5ae00c8221a5da96924a72a9d23"
+        ],
+        "status": "pending"
+    })
+    conn.request("POST", "/drc/application/transfer/create", payload, headers)
+    res = conn.getresponse()
+    return get_trx_id_from_res(res)
+
+@push("sign dta")
+def sign_dta():
+    payload = json.dumps({
+        "applicationId": "app1234"
+    })
+    conn.request("POST", "/drc/application/transfer/sign", payload, headers)
+    res = conn.getresponse()
+    return get_trx_id_from_res(res)
+
+@push("verify dta")
+def verify_dta():
+    payload = json.dumps({
+        "applicationId": "app1234"
+    })
+    conn.request("POST", "/drc/application/transfer/verify", payload, headers)
+    res = conn.getresponse()
+    return get_trx_id_from_res(res)
+
+@push("approve dta")
+def approve_dta():
+    payload = json.dumps({
+        "applicationId": "app1234"
+    })
+    conn.request("POST", "/drc/application/transfer/approve", payload, headers)
+    res = conn.getresponse()
+    return get_trx_id_from_res(res)
+
+@push("create dua")
+def create_dua():
+    payload = json.dumps({
+        "drcId": "app123",
+        "farUtilized": 100,
+        "applicationId": "app123"
+    })
+    conn.request("POST", "/drc/application/utilization/create", payload, headers)
+    res = conn.getresponse()
+    return get_trx_id_from_res(res)
 
 def run_all_test():
-    # add_user_test()
-    # print("running create and push notice test")
-    # create_and_push_notice_test()
-    print("adding user to the blockchain")
     add_user_test()
     create_notice_test()
     create_application_test()
     signApplication()
+    add_officer_test()
+    update_officer_test()
     verify_application()
-    # verify_and_push_application()
+    approve_applicaiton_test()
+    user_signed_status_test()
+    issue_drc_test()
+    create_dta_test()
+    sign_dta()
+    verify_dta()
+    approve_dta()
+    create_dua()
 def main():
     run_all_test()
 

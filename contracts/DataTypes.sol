@@ -23,21 +23,23 @@ pragma solidity ^0.8.16;
     // Everything else, is static data, not to be interpreted by blockchain.
     struct DRC {
         bytes32 id;
-        TdrNotice notice;
+        bytes32 applicationId; // application that lead to creation of drc
+//        TdrNotice notice;
+        bytes32 noticeId;
         DrcStatus status;
         uint farCredited;
         uint farAvailable;
         uint areaSurrendered;
         uint circleRateSurrendered;
         uint circleRateUtilization;
-        bytes32[] applications; 
-        DrcOwner[] owners;
-        Attribute[] attributes; //keep this field for the future attributes
+        bytes32[] owners;
+//        DrcOwner[] owners;
+//        Attribute[] attribtes; //keep this field for the future attributes
         // string issueDate;
     }
 
     struct DrcOwner{
-        bytes32 id;
+        bytes32 userId;
         uint area;
     }
 
@@ -48,11 +50,12 @@ pragma solidity ^0.8.16;
     }
 
     struct DrcTransferApplication {
-        bytes32 id;
+        bytes32 applicationId;
         bytes32 drcId;
         uint farTransferred;
-        Signatory[] signatories;
-        DrcOwner[] newDrcOwner;
+        Signatory[] applicants;
+//        DrcOwner[] newDrcOwner;
+        bytes32[] buyers;
         ApplicationStatus status;
     }
 
@@ -63,7 +66,7 @@ pragma solidity ^0.8.16;
 
 
     struct DUA {
-        bytes32 id;
+        bytes32 applicationId;
         bytes32 drcId;
         uint farUtilized;
         Signatory[] signatories;

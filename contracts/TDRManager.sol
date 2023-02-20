@@ -19,7 +19,7 @@ pragma solidity ^0.8.16;
 
 import "./TDR.sol";
 import "./UserManager.sol";
-
+import "./DRC.sol";
 /**
 @title TDR Manager for TDR storage
 @author Ras Dwivedi
@@ -29,10 +29,12 @@ contract TDRManager {
     // Address of the TDR storage contract
     TdrStorage public tdrStorage;
     UserManager public userManager;
+    DrcStorage public drcStorage;
 
 
     // Address of the contract admin
     address public tdrStorageAddress;
+    address public drcStorageAddress;
     address public userManagerAddress;
     event ApplicationRejected(bytes32 applicationId, string reason);
     event Logger(string log);
@@ -40,6 +42,7 @@ contract TDRManager {
     event LogBytes(string messgaeInfo, bytes32 _bytes);
     event LogBool(string messageInfo, bool message);
     event LogApplication(string message, TdrApplication application);
+    event DrcIssued(DRC drc);
 
 
 
@@ -89,10 +92,20 @@ contract TDRManager {
         tdrStorage = TdrStorage(tdrStorageAddress);
 
     }
+    function loadDrcStorage(address _drcStorageAddress) public {
+        drcStorageAddress = _drcStorageAddress;
+        drcStorage = DrcStorage(drcStorageAddress);
+
+    }
     // function to update tdrStorage
     function updateTdrStorage(address _tdrStorageAddress) public {
         tdrStorageAddress = _tdrStorageAddress;
         tdrStorage = TdrStorage(_tdrStorageAddress);
+
+    }
+    function updateDrcStorage(address _drcStorageAddress) public {
+        drcStorageAddress = _drcStorageAddress;
+        drcStorage = DrcStorage(drcStorageAddress);
 
     }
     // function to add tdrStorage contract 
@@ -340,7 +353,9 @@ contract TDRManager {
             // update Application
             tdrStorage.updateApplication(tdrApplication);
             // issue DRC
-            // drcManager.issueDRC(tdrApplication, far);
+            emit Logger("DRC Issue was successful, creating DRC now");
+            createDrc(tdrApplication,far);
+//             drcManager.issueDRC(tdrApplication, far);
             // emit events
         }else {
             emit Logger("User not authorised");
@@ -431,5 +446,33 @@ contract TDRManager {
 
     function getApplicationForUser(bytes32 userId) public returns (bytes32[] memory){
         return tdrStorage.getApplicationForUser(userId);
+    }
+
+    function createDrc(TdrApplication memory tdrApplication, uint far) public {
+        // from the approved application, it creates a drc
+        DRC memory drc;
+//        drc.id = keccak256(abi.encodePacked(tdrApplication.applicationId));
+        drc.id = tdrApplication.applicationId;
+        drc.noticeId = tdrApplication.noticeId;
+        drc.status = DrcStatus.available;
+        drc.farCredited = far;
+        drc.farAvailable = far;
+        drc.areaSurrendered = 0; // change it to get the value from notice
+        drc.circleRateSurrendered = 0; // get it from application
+        drc.circleRateUtilization = 0; // get from application
+        drc.applicationId = tdrApplication.applicationId;
+//        drc.applications = new bytes32[](1);
+//        drc.applications[0]=tdrApplication.applicationId;
+//        drc.owners = new DrcOwner[](tdrApplication.applicants.length);
+        drc.owners = new bytes32[](tdrApplication.applicants.length);
+        for (uint i=0; i< tdrApplication.applicants.length; i++){
+//            DrcOwner memory drcOwner = DrcOwner(tdrApplication.applicants[i].userId,0);
+//            drc.owners[i] = drcOwner;
+            drc.owners[i]=tdrApplication.applicants[i].userId;
+        }
+//        drc.attributes = new Attribute[](0);
+        drcStorage.createDrc(drc);
+        emit Logger("issuing DRC without storing");
+        emit DrcIssued(drc);
     }
 }
