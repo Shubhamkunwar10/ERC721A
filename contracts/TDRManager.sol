@@ -356,7 +356,7 @@ contract TDRManager {
             // set application status as verified
             tdrApplication.status = ApplicationStatus.drcIssued;
             // update FAR in application
-            tdrApplication.farGranted=far;
+//            tdrApplication.farGranted=far;
             // set notice as issued
             notice.status = NoticeStatus.issued;
             tdrStorage.updateNotice(notice);

@@ -25,8 +25,8 @@ contract TdrStorage {
     event ApplicationCreated(bytes32 noticeId, bytes32 applicationId);
     event ApplicationUpdated(bytes32 noticeId, bytes32 applicationId);
 
-    event NoticeCreated(bytes32 noticeId);
-    event NoticeUpdated(bytes32 noticeId);
+    event NoticeCreated(bytes32 noticeId, TdrNotice notice);
+    event NoticeUpdated(bytes32 noticeId, TdrNotice notice);
     event ApplicationCreatedForUser(bytes32 userId, bytes32 applicationId);
 
     // Event emitted after a TDR is updated
@@ -114,7 +114,7 @@ contract TdrStorage {
             revert("notice already created");
         }
         saveNoticeInMap(tdrNotice);
-
+        emit NoticeCreated(tdrNotice.noticeId, tdrNotice);
     }
 //    function createNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status, uint _areaSurrendered, uint _circleRateSurrendered,uint _roadWidth,AreaType _areaType) public onlyManager{
 ////        emit Logger("START createNotice");
@@ -155,6 +155,7 @@ contract TdrStorage {
 
     function saveNoticeInMap(TdrNotice memory _tdrNotice) public {
         noticeMap[_tdrNotice.noticeId]=_tdrNotice;
+        emit LogBytes("notice saved in map",_tdrNotice.noticeId);
 
 //    TdrNotice storage tdrNotice = noticeMap[_tdrNotice.noticeId];
 //        tdrNotice.noticeId = _tdrNotice.noticeId;
@@ -172,7 +173,6 @@ contract TdrStorage {
 //        tdrNotice.areaType = _tdrNotice.areaType;
 //        // add application to the map
 //        noticeMap[tdrNotice.noticeId]=tdrNotice;
-        emit NoticeCreated(_tdrNotice.noticeId);
     }
 //    function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status, uint _areaSurrendered, uint _circleRateSurrendered,uint _roadWidth, AreaType _areaType) public onlyManager {
 ////        TdrNotice storage tdrNotice = noticeMap[_noticeId];
@@ -211,6 +211,8 @@ contract TdrStorage {
             revert("no such notice exists, reverting");
         }
         saveNoticeInMap(tdrNotice);
+        emit NoticeUpdated(tdrNotice.noticeId,tdrNotice);
+
 //        updateNotice(_tdrNotice.noticeId, _tdrNotice.noticeDate, _tdrNotice.khasraOrPlotNo,_tdrNotice.villageOrWard,_tdrNotice.Tehsil,_tdrNotice.district,_tdrNotice.landUse,_tdrNotice.masterPlan,_tdrNotice.status);
     }
 
@@ -296,7 +298,7 @@ contract TdrStorage {
         application.place = _application.place;
         application.noticeId = _application.noticeId;
         application.farRequested = _application.farRequested;
-        application.farGranted = _application.farGranted;
+//        application.farGranted = _application.farGranted;
         application.status = _application.status;
         delete application.applicants;
 
