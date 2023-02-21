@@ -126,19 +126,22 @@ contract TDRManager {
     //     // Call the TDR storage contract's createNotice function
     //     tdrStorage.createNotice(_tdrNotice);
     // }
-    function createNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan) public {
+//
+//    function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status, uint _areaSurrendered, uint _circleRateSurrendered,uint _roadWidth,AreaType _areaType)
+
+    function createNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan,NoticeStatus _status, uint _areaSurrendered, uint _circleRateSurrendered,uint _roadWidth, AreaType _areaType) public {
         // Call the TDR storage contract's createNotice function
         emit Logger("START: createNotice");
 
-        tdrStorage.createNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, NoticeStatus.pending);
+        tdrStorage.createNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, NoticeStatus.pending, _areaSurrendered,  _circleRateSurrendered, _roadWidth, _areaType);
         // return _tdrNotice;
     }
 
-    function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status) public {
+    function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status, uint _areaSurrendered, uint _circleRateSurrendered,uint _roadWidth,AreaType _areaType) public {
         // Call the TDR storage contract's createNotice function
         emit Logger("START: updateNotice");
 
-        tdrStorage.updateNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, _status);
+        tdrStorage.updateNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, _status, _areaSurrendered,  _circleRateSurrendered, _roadWidth, _areaType);
         // return _tdrNotice;
     }
 

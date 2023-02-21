@@ -19,6 +19,12 @@ pragma solidity ^0.8.16;
 
     enum NoticeStatus{pending, issued}
 
+    enum AreaType {
+                    DEVELOPED,
+                    UNDEVELOPED,
+                    NEWLY_DEVELOPED
+                }
+
     // DRC would be stored in this struct. knowing this DRC one should know the owner of the DRC, area and the status of the DRC
     // Everything else, is static data, not to be interpreted by blockchain.
     struct DRC {
@@ -92,6 +98,11 @@ pragma solidity ^0.8.16;
         bytes32 district;
         bytes32 landUse;
         bytes32 masterPlan;
+
+        uint areaSurrendered;
+        uint circleRateSurrendered;
+        uint roadWidth;
+        AreaType areaType;
 //        bytes32[] applicationIds;
         NoticeStatus status;
 
