@@ -92,20 +92,30 @@ pragma solidity ^0.8.16;
     struct TdrNotice{
         bytes32 noticeId;
         uint noticeDate;
+        LandInfo landInfo;
+        MasterPlanInfo masterPlanInfo;
+//        bytes32 khasraOrPlotNo;
+//        bytes32 villageOrWard;
+//        bytes32 Tehsil;
+//        bytes32 district;
+        uint areaSurrendered;
+        uint circleRateSurrendered;
+
+//        bytes32[] applicationIds;
+        NoticeStatus status;
+
+    }
+    struct LandInfo {
         bytes32 khasraOrPlotNo;
         bytes32 villageOrWard;
         bytes32 Tehsil;
         bytes32 district;
+    }
+    struct MasterPlanInfo {
         bytes32 landUse;
         bytes32 masterPlan;
-
-        uint areaSurrendered;
-        uint circleRateSurrendered;
         uint roadWidth;
         AreaType areaType;
-//        bytes32[] applicationIds;
-        NoticeStatus status;
-
     }
 
     enum Role {
