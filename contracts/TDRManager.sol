@@ -126,21 +126,32 @@ contract TDRManager {
     //     // Call the TDR storage contract's createNotice function
     //     tdrStorage.createNotice(_tdrNotice);
     // }
-    function createNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan) public {
-        // Call the TDR storage contract's createNotice function
+//
+//    function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status, uint _areaSurrendered, uint _circleRateSurrendered,uint _roadWidth,AreaType _areaType)
+
+    function createNotice(TdrNotice memory tdrNotice) public {
         emit Logger("START: createNotice");
-
-        tdrStorage.createNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, NoticeStatus.pending);
-        // return _tdrNotice;
+        tdrStorage.createNotice(tdrNotice);
     }
-
-    function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status) public {
-        // Call the TDR storage contract's createNotice function
+    function updateNotice(TdrNotice memory tdrNotice) public {
         emit Logger("START: updateNotice");
-
-        tdrStorage.updateNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, _status);
-        // return _tdrNotice;
+        tdrStorage.updateNotice(tdrNotice);
     }
+//    function createNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan,NoticeStatus _status, uint _areaSurrendered, uint _circleRateSurrendered,uint _roadWidth, AreaType _areaType) public {
+//        // Call the TDR storage contract's createNotice function
+//        emit Logger("START: createNotice");
+//
+//        tdrStorage.createNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, NoticeStatus.pending, _areaSurrendered,  _circleRateSurrendered, _roadWidth, _areaType);
+//        // return _tdrNotice;
+//    }
+//
+//    function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status, uint _areaSurrendered, uint _circleRateSurrendered,uint _roadWidth,AreaType _areaType) public {
+//        // Call the TDR storage contract's createNotice function
+//        emit Logger("START: updateNotice");
+//
+//        tdrStorage.updateNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, _status, _areaSurrendered,  _circleRateSurrendered, _roadWidth, _areaType);
+//        // return _tdrNotice;
+//    }
 
 
     /**
@@ -345,7 +356,7 @@ contract TDRManager {
             // set application status as verified
             tdrApplication.status = ApplicationStatus.drcIssued;
             // update FAR in application
-            tdrApplication.farGranted=far;
+//            tdrApplication.farGranted=far;
             // set notice as issued
             notice.status = NoticeStatus.issued;
             tdrStorage.updateNotice(notice);
