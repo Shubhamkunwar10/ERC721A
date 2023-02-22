@@ -30,7 +30,6 @@ pragma solidity ^0.8.16;
     struct DRC {
         bytes32 id;
         bytes32 applicationId; // application that lead to creation of drc
-//        TdrNotice notice;
         bytes32 noticeId;
         DrcStatus status;
         uint farCredited;
@@ -39,9 +38,7 @@ pragma solidity ^0.8.16;
         uint circleRateSurrendered;
         uint circleRateUtilization;
         bytes32[] owners;
-//        DrcOwner[] owners;
-//        Attribute[] attribtes; //keep this field for the future attributes
-        // string issueDate;
+        uint timeStamp;
     }
 
     struct DrcOwner{
@@ -63,6 +60,7 @@ pragma solidity ^0.8.16;
 //        DrcOwner[] newDrcOwner;
         bytes32[] buyers;
         ApplicationStatus status;
+        uint timeStamp;
     }
 
     struct Signatory {
@@ -77,31 +75,27 @@ pragma solidity ^0.8.16;
         uint farUtilized;
         Signatory[] signatories;
         ApplicationStatus status;
+        uint timeStamp;
+
     }
 
     struct TdrApplication {
         bytes32 applicationId;
-        uint applicationDate;
+        uint timeStamp;
         bytes32 place;
         bytes32 noticeId;
         uint farRequested;
-//        uint farGranted;
         Signatory[] applicants; // this should be applicants user id and then account should be taken from some mapping
         ApplicationStatus status;
     }
     struct TdrNotice{
         bytes32 noticeId;
-        uint noticeDate;
+        uint timeStamp;
         LandInfo landInfo;
         MasterPlanInfo masterPlanInfo;
-//        bytes32 khasraOrPlotNo;
-//        bytes32 villageOrWard;
-//        bytes32 Tehsil;
-//        bytes32 district;
         uint areaSurrendered;
         uint circleRateSurrendered;
 
-//        bytes32[] applicationIds;
         NoticeStatus status;
 
     }

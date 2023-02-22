@@ -67,10 +67,10 @@ contract DuaStorage {
         emit DUACreated(dua.applicationId);
     }
 
-    function createApplication(bytes32 _applicationId, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, ApplicationStatus _status) public onlyManager{
+    function createApplication(bytes32 _applicationId, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, uint _timeStamp, ApplicationStatus _status) public onlyManager{
         require(applicationMap[_applicationId].applicationId =="","application already exist");
-        storeApplicationInMap(DUA(_applicationId, _drcId, _farTransferred, _signatories, _status));
-        storeApplicationForUser(DUA(_applicationId, _drcId, _farTransferred, _signatories, _status));
+        storeApplicationInMap(DUA(_applicationId, _drcId, _farTransferred, _signatories, _status, _timeStamp));
+        storeApplicationForUser(DUA(_applicationId, _drcId, _farTransferred, _signatories,_status,  _timeStamp));
         emit DUACreated(_applicationId);
     }
 
@@ -80,9 +80,9 @@ contract DuaStorage {
         emit DUAUpdated(dua.applicationId);
     }
 
-    function updateApplication(bytes32 _applicationId, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, ApplicationStatus _status) public onlyManager{
+    function updateApplication(bytes32 _applicationId, bytes32 _drcId, uint _farTransferred, Signatory[] memory _signatories, uint _timeStamp, ApplicationStatus _status) public onlyManager{
         require(applicationMap[_applicationId].applicationId !="","application does not exist");
-        storeApplicationInMap(DUA(_applicationId, _drcId, _farTransferred, _signatories, _status));
+        storeApplicationInMap(DUA(_applicationId, _drcId, _farTransferred, _signatories,_status, _timeStamp));
         emit DUAUpdated(_applicationId);
 
     }
@@ -104,6 +104,7 @@ contract DuaStorage {
         dua.drcId = _dua.drcId;
         dua.farUtilized = _dua.farUtilized;
         dua.status = _dua.status;
+        dua.timeStamp = _dua.timeStamp;
         delete dua.signatories;
         for (uint i =0; i< _dua.signatories.length; i++){
             dua.signatories.push(_dua.signatories[i]);
