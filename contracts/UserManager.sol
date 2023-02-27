@@ -167,21 +167,6 @@ contract UserManager {
     }
 
 
-//    function addOfficer (KdaOfficer memory officer, address officerAddress) public onlyAdmin {
-//        // check is user already does not exist
-//        if(officerAddressMap[officer.id]!=address(0)){
-//            revert("Officer already exist, instead try updating the address");
-//        }
-//        // Update the verifier in the mapping
-//        officerMap[officer.id] = officer;
-//        officerAddressMap[officer.id]=officerAddress;
-//        reverseOfficerMap[officerAddress]=officer.id;
-//
-//
-//        // Emit the verifierAdded event
-//        emit OfficerAdded(officer.id, officerAddress);
-//    }
-
     /**
      * Adds a new Officer to the mapping of KdaOfficers.
      * @param officer The Officer to add to the mapping.

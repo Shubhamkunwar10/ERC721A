@@ -223,6 +223,7 @@ contract DrcStorage {
         drc.areaSurrendered = _drc.areaSurrendered;
         drc.circleRateSurrendered = _drc.circleRateSurrendered;
         drc.circleRateUtilization = _drc.circleRateUtilization;
+        drc.timeStamp = _drc.timeStamp;
 ////        for(uint i =0; i<_drc.applications.length; i++){
 ////            drc.applications[i]= _drc.applications[i];
 ////        }

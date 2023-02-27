@@ -121,14 +121,6 @@ contract TDRManager {
     }
 
 
-    // // Function to create a new TDR notice
-    // function createNotice(TdrNotice memory _tdrNotice) public {
-    //     // Call the TDR storage contract's createNotice function
-    //     tdrStorage.createNotice(_tdrNotice);
-    // }
-//
-//    function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status, uint _areaSurrendered, uint _circleRateSurrendered,uint _roadWidth,AreaType _areaType)
-
     function createNotice(TdrNotice memory tdrNotice) public {
         emit Logger("START: createNotice");
         tdrStorage.createNotice(tdrNotice);
@@ -137,22 +129,6 @@ contract TDRManager {
         emit Logger("START: updateNotice");
         tdrStorage.updateNotice(tdrNotice);
     }
-//    function createNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan,NoticeStatus _status, uint _areaSurrendered, uint _circleRateSurrendered,uint _roadWidth, AreaType _areaType) public {
-//        // Call the TDR storage contract's createNotice function
-//        emit Logger("START: createNotice");
-//
-//        tdrStorage.createNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, NoticeStatus.pending, _areaSurrendered,  _circleRateSurrendered, _roadWidth, _areaType);
-//        // return _tdrNotice;
-//    }
-//
-//    function updateNotice(bytes32 _noticeId,uint _noticeDate,  bytes32 _khasraOrPlotNo,  bytes32 _villageOrWard,  bytes32 _Tehsil,  bytes32 _district,  bytes32 _landUse,  bytes32 _masterPlan, NoticeStatus _status, uint _areaSurrendered, uint _circleRateSurrendered,uint _roadWidth,AreaType _areaType) public {
-//        // Call the TDR storage contract's createNotice function
-//        emit Logger("START: updateNotice");
-//
-//        tdrStorage.updateNotice(_noticeId, _noticeDate,  _khasraOrPlotNo,  _villageOrWard,  _Tehsil,  _district,  _landUse,  _masterPlan, _status, _areaSurrendered,  _circleRateSurrendered, _roadWidth, _areaType);
-//        // return _tdrNotice;
-//    }
-
 
     /**
     @dev Function to create an application
@@ -285,22 +261,6 @@ contract TDRManager {
         }
         return true;
     }
-//// This function mark the application as verified
-//    function verifyApplication(bytes32 applicationId) public{
-//        assert(userManager.isVerifier(msg.sender)|| userManager.isAdmin(msg.sender));
-//        // get application
-//        TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
-//        // ensure that the notice is not finalized
-//        TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-//        if(notice.status == NoticeStatus.issued){
-//            revert("DRC already issued against this notice");
-//        }
-//
-//        // set application status as verified
-//        tdrApplication.status = ApplicationStatus.verified;
-//        // update Application
-//        tdrStorage.updateApplication(tdrApplication);
-//    }
 
 // This function mark the application as verified
     function rejectApplication(bytes32 applicationId,string memory reason) public {
@@ -342,7 +302,7 @@ contract TDRManager {
     }
 
 // This function mark the application as verified
-    function issueDRC(bytes32 applicationId, uint far) public {
+    function issueDRC(bytes32 applicationId, uint farGranted, uint timeStamp) public {
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
         emit LogOfficer("Officer in action",officer);
         // Check if notice is issued
@@ -355,8 +315,6 @@ contract TDRManager {
             || officer.role==Role.VC) {
             // set application status as verified
             tdrApplication.status = ApplicationStatus.drcIssued;
-            // update FAR in application
-//            tdrApplication.farGranted=far;
             // set notice as issued
             notice.status = NoticeStatus.issued;
             tdrStorage.updateNotice(notice);
@@ -365,7 +323,7 @@ contract TDRManager {
             tdrStorage.updateApplication(tdrApplication);
             // issue DRC
             emit Logger("DRC Issue was successful, creating DRC now");
-            createDrc(tdrApplication,far);
+            createDrc(tdrApplication, farGranted, timeStamp);
 //             drcManager.issueDRC(tdrApplication, far);
             // emit events
         }else {
@@ -459,31 +417,34 @@ contract TDRManager {
         return tdrStorage.getApplicationForUser(userId);
     }
 
-    function createDrc(TdrApplication memory tdrApplication, uint far) public {
+    function createDrc(TdrApplication memory tdrApplication, uint farGranted, uint timeStamp) public {
         // from the approved application, it creates a drc
         DRC memory drc;
-//        drc.id = keccak256(abi.encodePacked(tdrApplication.applicationId));
         drc.id = tdrApplication.applicationId;
         drc.noticeId = tdrApplication.noticeId;
         drc.status = DrcStatus.available;
-        drc.farCredited = far;
-        drc.farAvailable = far;
+        drc.farCredited = farGranted;
+        drc.farAvailable = farGranted;
         drc.areaSurrendered = 0; // change it to get the value from notice
         drc.circleRateSurrendered = 0; // get it from application
         drc.circleRateUtilization = 0; // get from application
         drc.applicationId = tdrApplication.applicationId;
-//        drc.applications = new bytes32[](1);
-//        drc.applications[0]=tdrApplication.applicationId;
-//        drc.owners = new DrcOwner[](tdrApplication.applicants.length);
         drc.owners = new bytes32[](tdrApplication.applicants.length);
+        drc.timeStamp = timeStamp;
         for (uint i=0; i< tdrApplication.applicants.length; i++){
-//            DrcOwner memory drcOwner = DrcOwner(tdrApplication.applicants[i].userId,0);
-//            drc.owners[i] = drcOwner;
             drc.owners[i]=tdrApplication.applicants[i].userId;
         }
-//        drc.attributes = new Attribute[](0);
         drcStorage.createDrc(drc);
         emit Logger("issuing DRC without storing");
         emit DrcIssued(drc);
+    }
+    function getTdrNotice(bytes32 noticeId) public returns(TdrNotice memory){
+        return tdrStorage.getNotice(noticeId);
+    }
+    /*
+    Returns the tdrApplicationIds for notice id
+    */
+    function getTdrApplicationsIdsForTdrNotice(bytes32 noticeId) public returns(bytes32[] memory){
+        return tdrStorage.getApplicationsForNotice(noticeId);
     }
 }
