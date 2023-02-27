@@ -267,5 +267,8 @@ contract TdrStorage {
     function getVerificationStatus(bytes32 applicationId) public view returns(VerificationStatus memory) {
         return verificationStatusMap[applicationId];
     }
+    function getApplicationsForNotice(bytes32 noticeId)public returns(bytes32[] memory) {
+        return noticeApplicationMap[noticeId];
+    }
 
 }

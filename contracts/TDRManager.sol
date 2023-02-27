@@ -438,4 +438,13 @@ contract TDRManager {
         emit Logger("issuing DRC without storing");
         emit DrcIssued(drc);
     }
+    function getTdrNotice(bytes32 noticeId) public returns(TdrNotice memory){
+        return tdrStorage.getNotice(noticeId);
+    }
+    /*
+    Returns the tdrApplicationIds for notice id
+    */
+    function getTdrApplicationsIdsForTdrNotice(bytes32 noticeId) public returns(bytes32[] memory){
+        return tdrStorage.getApplicationsForNotice(noticeId);
+    }
 }
