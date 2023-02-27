@@ -22,9 +22,20 @@ pragma solidity ^0.8.16;
     enum AreaType {
                     DEVELOPED,
                     UNDEVELOPED,
-                    NEWLY_DEVELOPED
+                    NEWLY_DEVELOPED,
+                    BUILT
                 }
 
+    enum LandUse {
+        GROUP_HOUSING,
+        OFFICES_INSITITUTIONS_AND_COMMUNITY_FACILITIES,
+        MIXED_USE,
+        COMMERCIAL,
+        AGRICULTURAL,
+        RECREATIONAL,
+        PLOTTED_RESIDENTIAL,
+        INDUSTRIAL
+    }
     // DRC would be stored in this struct. knowing this DRC one should know the owner of the DRC, area and the status of the DRC
     // Everything else, is static data, not to be interpreted by blockchain.
     struct DRC {
@@ -107,7 +118,7 @@ pragma solidity ^0.8.16;
         bytes32 district;
     }
     struct MasterPlanInfo {
-        bytes32 landUse;
+        LandUse landUse;
         bytes32 masterPlan;
         uint roadWidth;
         AreaType areaType;
