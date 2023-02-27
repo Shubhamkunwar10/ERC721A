@@ -420,14 +420,15 @@ contract TDRManager {
     function createDrc(TdrApplication memory tdrApplication, uint farGranted, uint timeStamp) public {
         // from the approved application, it creates a drc
         DRC memory drc;
+        TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
         drc.id = tdrApplication.applicationId;
         drc.noticeId = tdrApplication.noticeId;
         drc.status = DrcStatus.available;
         drc.farCredited = farGranted;
         drc.farAvailable = farGranted;
-        drc.areaSurrendered = 0; // change it to get the value from notice
-        drc.circleRateSurrendered = 0; // get it from application
-        drc.circleRateUtilization = 0; // get from application
+        drc.areaSurrendered = notice.areaSurrendered; // change it to get the value from notice
+        drc.circleRateSurrendered = notice.circleRateSurrendered; // get it from application
+        drc.circleRateUtilization = tdrApplication.circleRateUtilized; // get from application
         drc.applicationId = tdrApplication.applicationId;
         drc.owners = new bytes32[](tdrApplication.applicants.length);
         drc.timeStamp = timeStamp;
