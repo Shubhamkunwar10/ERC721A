@@ -214,6 +214,7 @@ contract TdrStorage {
         application.place = _application.place;
         application.noticeId = _application.noticeId;
         application.farRequested = _application.farRequested;
+        application.circleRateUtilized = _application.circleRateUtilized;
 //        application.farGranted = _application.farGranted;
         application.status = _application.status;
         delete application.applicants;

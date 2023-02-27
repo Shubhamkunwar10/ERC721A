@@ -85,6 +85,7 @@ pragma solidity ^0.8.16;
         bytes32 place;
         bytes32 noticeId;
         uint farRequested;
+        uint circleRateUtilized;
         Signatory[] applicants; // this should be applicants user id and then account should be taken from some mapping
         ApplicationStatus status;
     }
