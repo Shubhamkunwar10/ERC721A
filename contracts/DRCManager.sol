@@ -37,10 +37,16 @@ contract DRCManager{
     event LogBool(string messageInfo, bool message);
     event LogApplication(string message, TdrApplication application);
     event LogOfficer(string message, KdaOfficer officer);
-    event DtaApplicationVerified(KdaOfficer officer, bytes32 applicationId);
-    event DtaApplicationApproved(KdaOfficer officer, bytes32 applicationId);
-    event DtaApplicationRejected(bytes32 applicationId, string reason);
-
+    event DtaApplicationVerified(KdaOfficer officer, bytes32 applicationId, bytes32[] applicants, bytes32[] buyers);
+    event DtaApplicationApproved(KdaOfficer officer, bytes32 applicationId,bytes32[] applicants, bytes32[] buyers);
+    event DtaApplicationRejected(bytes32 applicationId, string reason, bytes32[] applicants, bytes32[] buyers);
+    event DuaSigned(bytes32 applicationId, bytes32 signer, bytes32[] applicants);
+    event DuaApproved(bytes32 applicationId, bytes32[] applicants);
+    event DtaCreated(bytes32 drcId, bytes32 applicationId, uint far, bytes32[] applicants, bytes32[] buyers);
+    event DtaSigned(bytes32 applicationId, bytes32 signer, bytes32[] applicants);
+    event DtaSubmitted (bytes32 applicationId, bytes32[] applicants, bytes32[] buyers);
+    event DrcIssuedByTransfer(bytes32 applicationId, bytes32[] applicants, bytes32[] buyers);
+    event DuaCreated(bytes32 applicationId, uint far, bytes32[] applicants);
 
     // Constructor function to set the initial values of the contract
     constructor(address _admin, address _manager) {
@@ -142,7 +148,9 @@ contract DRCManager{
         dtaStorage.createApplication(applicationId,drcId,far, applicants, buyers, timeStamp, ApplicationStatus.pending);
         signDrcTransferApplication(applicationId);
         drcStorage.addDtaToDrc(drc.id,applicationId);
+        emit DtaCreated(drcId,applicationId,far,getApplicantIdsFromApplicants(applicants),buyers);
     }
+
 
     // this function is called by the user to approve the transfer
     function signDrcTransferApplication(bytes32 applicationId) public {
@@ -153,6 +161,8 @@ contract DRCManager{
             if(signatory.userId == userManager.getUserId(msg.sender)){
                 require(!signatory.hasUserSigned,"User have already signed the application");
                 signatory.hasUserSigned = true;
+                emit DtaSigned(applicationId, signatory.userId, application.buyers );
+
             }
         }
         // user signs the application
@@ -170,6 +180,7 @@ contract DRCManager{
             //all the signatories has signed
             //change the status of the sub-drc
             application.status = ApplicationStatus.submitted;
+            emit DtaSubmitted(applicationId,getApplicantIdsFromApplicants(application.applicants), application.buyers);
             // applicationMap[applicationId]=application;
         }
         dtaStorage.updateApplication(application);
@@ -193,7 +204,7 @@ contract DRCManager{
             // update Application
             dta.status = ApplicationStatus.verified;
             dtaStorage.updateApplication(dta);
-            emit DtaApplicationVerified(officer, applicationId);
+            emit DtaApplicationVerified(officer, applicationId, getApplicantIdsFromApplicants(dta.applicants), dta.buyers);
             dtaStorage.storeVerificationStatus(applicationId,status);
 
         } else {
@@ -214,13 +225,13 @@ contract DRCManager{
             // update Application
             application.status = ApplicationStatus.approved;
             dtaStorage.updateApplication(application);
-            emit DtaApplicationApproved(officer, applicationId);
+            emit DtaApplicationApproved(officer, applicationId,getApplicantIdsFromApplicants(application.applicants), application.buyers );
             // one drc transfer is approved, new drc should be created
             genNewDrcFromApplication(application);
         } else {
             emit Logger("User not authorized");
         }
-
+        emit DrcIssuedByTransfer(applicationId, getApplicantIdsFromApplicants(application.applicants), application.buyers);
     }
     /**
     Creates a new DRC from a DRC transfer application
@@ -260,7 +271,7 @@ contract DRCManager{
             // update Application
             application.status = ApplicationStatus.rejected;
             dtaStorage.updateApplication(application);
-            emit DtaApplicationRejected(applicationId, reason);
+            emit DtaApplicationRejected(applicationId, reason, getApplicantIdsFromApplicants(application.applicants), application.buyers);
         } else {
             emit Logger("User not authorized");
         }
@@ -358,7 +369,9 @@ contract DRCManager{
         duaStorage.createApplication(applicationId,drc.id,far,duaSignatories, timeStamp, ApplicationStatus.pending);
         signDrcUtilizationApplication(applicationId);
         drcStorage.addDuaToDrc(drc.id,applicationId);
+        emit DuaCreated(applicationId,far,getApplicantIdsFromApplicants(duaSignatories));
     }
+
     function signDrcUtilizationApplication(bytes32 applicationId) public {
         DUA  memory application = duaStorage.getApplication(applicationId);
         // make sure the user has not signed the transfer
@@ -367,6 +380,7 @@ contract DRCManager{
             if(signatory.userId == userManager.getUserId(msg.sender)){
                 require(!signatory.hasUserSigned,"User have already signed the application");
                 signatory.hasUserSigned = true;
+                emit DuaSigned(applicationId, signatory.userId, getApplicantIdsFromApplicants(application.signatories));
             }
         }
         // user signs the application
@@ -383,9 +397,19 @@ contract DRCManager{
         if(allSignatoriesSign){
             //all the signatories has signed
             application.status = ApplicationStatus.approved;
+            emit DuaApproved(applicationId, getApplicantIdsFromApplicants(application.signatories));
             // reduce drc
         }
         duaStorage.updateApplication(application);
     }
 
+    function getApplicantIdsFromApplicants(Signatory[] memory applicants)
+                                        internal view returns(bytes32[] memory) {
+        bytes32[] memory applicantList = new bytes32[](applicants.length) ;
+        for(uint i=0; i < applicants.length; i++){
+            applicantList[i]= applicants[i].userId;
+        }
+        return applicantList;
+
+    }
 }
