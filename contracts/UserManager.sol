@@ -151,7 +151,7 @@ contract UserManager {
  * @param userId 12 bit uint id of the user
  * @param userAddress address of the user
  */
-    function updateUser(bytes32 userId, address userAddress) public onlyAdmin {
+    function updateUser(bytes32 userId, address userAddress) public onlyManager {
         // check if user already exists
         if(userMap[userId]==address(0)){
             revert("user does not exist");
@@ -461,8 +461,6 @@ contract UserManager {
     }
     // This method would @return empty address in case address is not found
     function getUserId (address _address) public view returns (bytes32){
-//        emit LogAddress("user manager called for address",_address);
-//        emit LogBytes("returned user id is ",reverseUserMap[_address]);
         return reverseUserMap[_address];
     }
     function getVerifierId (address _address) view public returns (bytes32){

@@ -1,2 +1,4 @@
 build/*
 truffle-config.js
+# solhint 
+.solhint.json

@@ -16,7 +16,7 @@ contract TdrStorage {
     // Map to store the applications against the notice
     mapping(bytes32 => bytes32[]) public noticeApplicationMap; //noticeId => application
     mapping(bytes32 => VerificationStatus) public verificationStatusMap; //app Id => verification
-    mapping(bytes32 => bytes32[] ) public userApplicationMap; // userId => applicaitonId[]
+    mapping(bytes32 => bytes32[] ) public userApplicationMap; // userId => applicationId[]
     //User application mapping
     // TDR struct definition
 
@@ -94,6 +94,7 @@ contract TdrStorage {
         emit ApplicationCreated(_tdrApplication.noticeId, _tdrApplication.applicationId);
     }
     function storeApplicationForUser(TdrApplication memory application) public onlyManager {
+        emit LogApplication("logging the application before saving to users", application);
         for(uint i=0; i<application.applicants.length; i++){
             bytes32 userId = application.applicants[i].userId;
             bytes32[] storage applicationIds = userApplicationMap[userId];
