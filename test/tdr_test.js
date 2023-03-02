@@ -1,23 +1,23 @@
 const TdrStorage = artifacts.require("TdrStorage");
-const DataTypes = artifacts.require("DataTypes");
+// const DataTypes = artifacts.require("DataTypes");
 
 contract("TdrStorage", (accounts) => {
   let storage;
   let dataTypes;
   const owner = accounts[0];
-  const admin = accounts[1];
-  const manager = accounts[2];
+  const admin = accounts[3];
+  const manager = accounts[4];
 
   beforeEach(async () => {
     // dataTypes = await DataTypes.new({ from: owner });
     // storage = await TdrStorage.new(admin, manager,{ from: owner });
-    storage = await TdrStorage.deployed();
+    storage = await TdrStorage.deployed(admin, manager, {from: owner});
     // console.log(storage.address, "address")
     // console.log(await storage.owner(), "owner")
-    await storage.setOwner(owner,{from:owner});
+    // await storage.setOwner(owner,{from:owner});
     // console.log(await storage.owner(), "owner")
-    await storage.setXAdmin(admin,{from:owner});
-    await storage.setXManager(manager,{from:owner});
+    // await storage.setXAdmin(admin,{from:owner});
+    // await storage.setXManager(manager,{from:owner});
   });
 
   describe("TdrStorage", () => {
@@ -53,12 +53,12 @@ contract("TdrStorage", (accounts) => {
         ],
         status: 0
     };
-      console.log(tdrApplication, "tdrApplication")
+      // console.log(tdrApplication, "tdrApplication")
       await storage.createApplication(tdrApplication, { from: manager });
       let result;
-      console.log(result, "result-1")
+      // console.log(result, "result-1")
       result = await storage.getApplication(tdrApplication.applicationId);
-      console.log(result, "result-2")
+      // console.log(result, "result-2")
       assert.equal(result.noticeId, tdrApplication.noticeId, "Notice ID not set correctly");
       assert.equal(result.status, tdrApplication.status, "Status not set correctly");
     });   
@@ -74,16 +74,14 @@ contract("TdrStorage", (accounts) => {
            district:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
       },
          masterPlanInfo:{
-          landUse:"0x636f6d6d65726369616c0a"
-          masterPlan:"0x6d6173746572706c616e"
+          landUse:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+          masterPlan:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
           roadWidth:"100",
-          {
-            areaType:0
-          }
-          areaSurrendered:"100",
-         circleRateSurrendered:"1000"
-         }
-         status:0
+          areaType: "0",
+         },
+         areaSurrendered: "100",
+         circleRateSurrendered: "100",
+         status: 0
 
     }
       await storage.createNotice(tdrNotice, { from: manager });
@@ -93,30 +91,45 @@ contract("TdrStorage", (accounts) => {
 
     it("should update notice", async () => {
       const tdrNotice = {
-        noticeId: "0x9876543210987654321098765432109876543210987654321098765432109876",
-        noticeDate: "1645996800",
-        landInfo : {
-          khasraOrPlotNo: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
-          villageOrWard:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
-          Tehsil:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
-          district:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
-     },
-        masterPlanInfo:{
-         landUse:"0x636f6d6d65726369616c0a"
-         masterPlan:"0x6d6173746572706c616e"
-         roadWidth:"100",
-         {
-           areaType:0
-         }
-         areaSurrendered:"100",
-         circleRateSurrendered:"1000"
-        }
-        status:0
+        noticeId: "0x3132000000000000000000000000000000000000000000000000000000000000",
+         noticeDate: "1645996800",
+         landInfo : {
+           khasraOrPlotNo: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           villageOrWard:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           Tehsil:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           district:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+      },
+         masterPlanInfo:{
+          landUse:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+          masterPlan:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+          roadWidth:"100",
+          areaType: "0",
+         },
+         areaSurrendered: "100",
+         circleRateSurrendered: "100",
+         status: 0
+
       };
       await storage.createNotice(tdrNotice, { from: manager });
       const updatedNotice = {
-        noticeId: "x9876543210987654321098765432109876543210987654321098765432109876",
-        status: 0,
+        noticeId: "0x3132000000000000000000000000000000000000000000000000000000000000",
+         noticeDate: "1645996800",
+         landInfo : {
+           khasraOrPlotNo: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           villageOrWard:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           Tehsil:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           district:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+      },
+         masterPlanInfo:{
+          landUse:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+          masterPlan:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+          roadWidth:"100",
+          areaType: "0",
+         },
+         areaSurrendered: "100",
+         circleRateSurrendered: "100",
+         status: 0
+
       };
       await storage.updateNotice(updatedNotice, { from: manager });
       const result = await storage.getNotice(updatedNotice.noticeId);
@@ -125,29 +138,28 @@ contract("TdrStorage", (accounts) => {
 
     it("should add application to notice", async () => {
       const tdrNotice = {
-        noticeId: "0x9876543210987654321098765432109876543210987654321098765432109876",
-        noticeDate: "1645996800",
-        landInfo : {
-          khasraOrPlotNo: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
-          villageOrWard:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
-          Tehsil:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
-          district:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
-     },
-        masterPlanInfo:{
-         landUse:"0x636f6d6d65726369616c0a"
-         masterPlan:"0x6d6173746572706c616e"
-         roadWidth:"100",
-         {
-           areaType:0
-         }
-         areaSurrendered:"100",
-        circleRateSurrendered:"1000"
-        }
-        status:0
+        noticeId: "0x3133000000000000000000000000000000000000000000000000000000000000",
+         noticeDate: "1645996800",
+         landInfo : {
+           khasraOrPlotNo: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           villageOrWard:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           Tehsil:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           district:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+      },
+         masterPlanInfo:{
+          landUse:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+          masterPlan:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+          roadWidth:"100",
+          areaType: "0",
+         },
+         areaSurrendered: "100",
+         circleRateSurrendered: "100",
+         status: 0
+
       };
       await storage.createNotice(tdrNotice, { from: manager });
       const tdrApplication = {
-        applicationId: "0x1234567890123456789012345678901234567890123456789012345678901234",
+        applicationId: "0x3130320000000000000000000000000000000000000000000000000000000000",
         applicationDate: "1645996800", // equivalent to February 28th, 2022, 12:00:00 AM UTC
         place: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
         noticeId: "0x9876543210987654321098765432109876543210987654321098765432109876",
@@ -166,174 +178,83 @@ contract("TdrStorage", (accounts) => {
       };
       await storage.createApplication(tdrApplication, { from: manager });
       await storage.addApplicationToNotice(tdrNotice.noticeId, tdrApplication.applicationId, { from: manager });
-      const result = await storage.noticeApplicationMap(tdrNotice.noticeId);
-      assert.equal(result[0], tdrApplication.applicationId, "Application not added to notice correctly");
+      const result = await storage.noticeApplicationMap(tdrNotice.noticeId,0);
+      assert.equal(result, tdrApplication.applicationId, "Application not added to notice correctly");
     });
-    it("should update application status", async () => {
-      const tdrApplication = {
-       it("should update application status", async () => {
-      const tdrApplication = {
-       it("should update application status", async () => {
-      const tdrApplication = {
-        applicationId: "0x1234567890123456789012345678901234567890123456789012345678901234",
-        applicationDate: "1645996800", // equivalent to February 28th, 2022, 12:00:00 AM UTC
-        place: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
-        noticeId: "0x9876543210987654321098765432109876543210987654321098765432109876",
-        farRequested: "100000",
-        applicants: [
-             {
-                userId: "0x3100000000000000000000000000000000000000000000000000000000000000",
-                hasUserSigned: true
-            },
-             {
-                userId: "0x3200000000000000000000000000000000000000000000000000000000000000",
-                hasUserSigned: true
-            }
-        ],
-        status: 0
-      };
-      await storage.createApplication(tdrApplication, { from: manager });
-      const updatedApplication = {
-        applicationId: "0x1234567890123456789012345678901234567890123456789012345678901234",
-        applicationDate: "1645996800", // equivalent to February 28th, 2022, 12:00:00 AM UTC
-        place: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
-        noticeId: "0x9876543210987654321098765432109876543210987654321098765432109876",
-        farRequested: "100000",
-        applicants: [
-             {
-                userId: "0x3100000000000000000000000000000000000000000000000000000000000000",
-                hasUserSigned: true
-            },
-             {
-                userId: "0x3200000000000000000000000000000000000000000000000000000000000000",
-                hasUserSigned: true
-            }
-        ],
-        status: 0
-      };
-      await storage.updateApplicationStatus(updatedApplication, { from: manager });
-      const result = await storage.getApplication(tdrApplication.applicationId);
-      assert.equal(result.status, updatedApplication.status, "Status not updated correctly");
-    });
-      };
-      await storage.createApplication(tdrApplication, { from: manager });
-      const updatedApplication = {
-        // noticeId: "notice-1",
-        applicationId: "0x1234567890123456789012345678901234567890123456789012345678901234",
-        applicationDate: "1645996800", // equivalent to February 28th, 2022, 12:00:00 AM UTC
-        place: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
-        noticeId: "0x9876543210987654321098765432109876543210987654321098765432109876",
-        farRequested: "100000",
-        applicants: [
-             {
-                userId: "0x3100000000000000000000000000000000000000000000000000000000000000",
-                hasUserSigned: true
-            },
-             {
-                userId: "0x3200000000000000000000000000000000000000000000000000000000000000",
-                hasUserSigned: true
-            }
-        ],
-        status: 0
-      };
-      await storage.updateApplicationStatus(updatedApplication, { from: manager });
-      const result = await storage.getApplication(tdrApplication.applicationId);
-      assert.equal(result.status, updatedApplication.status, "Status not updated correctly");
-    });
-      };
-      await storage.createApplication(tdrApplication, { from: manager });
-      const updatedApplication = {
-        applicationId: "0x1234567890123456789012345678901234567890123456789012345678901234",
-        applicationDate: "1645996800", // equivalent to February 28th, 2022, 12:00:00 AM UTC
-        place: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
-        noticeId: "0x9876543210987654321098765432109876543210987654321098765432109876",
-        farRequested: "100000",
-        applicants: [
-             {
-                userId: "0x3100000000000000000000000000000000000000000000000000000000000000",
-                hasUserSigned: true
-            },
-             {
-                userId: "0x3200000000000000000000000000000000000000000000000000000000000000",
-                hasUserSigned: true
-            }
-        ],
-        status: 0
-      };
-      await storage.updateApplicationStatus(updatedApplication, { from: manager });
-      const result = await storage.getApplication(tdrApplication.applicationId);
-      assert.equal(result.status, updatedApplication.status, "Status not updated correctly");
-    });
-
+   
+   
     it("should get all notices", async () => {
       const tdrNotice1 = {
-        noticeId: "0x9876543210987654321098765432109876543210987654321098765432109876",
-        noticeDate: "1645996800",
-        landInfo : {
-          khasraOrPlotNo: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
-          villageOrWard:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
-          Tehsil:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
-          district:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
-     },
-        masterPlanInfo:{
-         landUse:"0x636f6d6d65726369616c0a"
-         masterPlan:"0x6d6173746572706c616e"
-         roadWidth:"100",
-         {
-           areaType:0
-         }
-        }
-        status:0
+        noticeId: "0x3134000000000000000000000000000000000000000000000000000000000000",
+         noticeDate: "1645996800",
+         landInfo : {
+           khasraOrPlotNo: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           villageOrWard:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           Tehsil:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           district:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+      },
+         masterPlanInfo:{
+          landUse:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+          masterPlan:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+          roadWidth:"100",
+          areaType: "0",
+         },
+         areaSurrendered: "100",
+         circleRateSurrendered: "100",
+         status: 0
+
       };
       const tdrNotice2 = {
-        noticeId: "0x9876543210987654321098765432109876543210987654321098765432109876",
-        noticeDate: "1645996800",
-        landInfo : {
-          khasraOrPlotNo: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
-          villageOrWard:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
-          Tehsil:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
-          district:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
-     },
-        masterPlanInfo:{
-         landUse:"0x636f6d6d65726369616c0a"
-         masterPlan:"0x6d6173746572706c616e"
-         roadWidth:"100",
-         {
-           areaType:0
-         }
-        }
-        status:0
+        noticeId: "0x3135000000000000000000000000000000000000000000000000000000000000",
+         noticeDate: "1645996800",
+         landInfo : {
+           khasraOrPlotNo: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           villageOrWard:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           Tehsil:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           district:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+      },
+         masterPlanInfo:{
+          landUse:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+          masterPlan:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+          roadWidth:"100",
+          areaType: "0",
+         },
+         areaSurrendered: "100",
+         circleRateSurrendered: "100",
+         status: 0
+
       };
       await storage.createNotice(tdrNotice1, { from: manager });
       await storage.createNotice(tdrNotice2, { from: manager });
-      const result = await storage.getAllNotices();
-      assert.equal(result.length, 2, "Notices not returned correctly");
-      assert.equal(result[0].noticeId, tdrNotice1.noticeId, "Notice ID not returned correctly");
-      assert.equal(result[1].noticeId, tdrNotice2.noticeId, "Notice ID not returned correctly");
+      const result1 = await storage.noticeMap(tdrNotice1.noticeId);
+      const result2 = await storage.noticeMap(tdrNotice2.noticeId);
+      assert.equal(result1.noticeId, tdrNotice1.noticeId, "Notice ID not returned correctly");
+      assert.equal(result2.noticeId, tdrNotice2.noticeId, "Notice ID not returned correctly");
     });
 
     it("should get all applications for notice", async () => {
       const tdrNotice = {
-        noticeId: "0x9876543210987654321098765432109876543210987654321098765432109876",
-        noticeDate: "1645996800",
-        landInfo : {
-          khasraOrPlotNo: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
-          villageOrWard:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
-          Tehsil:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
-          district:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
-     },
-        masterPlanInfo:{
-         landUse:"0x636f6d6d65726369616c0a"
-         masterPlan:"0x6d6173746572706c616e"
-         roadWidth:"100",
-         {
-           areaType:0
-         }
-        }
-        status:0
-      };
+        noticeId: "0x3137000000000000000000000000000000000000000000000000000000000000",
+         noticeDate: "1645996800",
+         landInfo : {
+           khasraOrPlotNo: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           villageOrWard:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           Tehsil:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+           district:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+      },
+         masterPlanInfo:{
+          landUse:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+          masterPlan:"0x4e657720596f726b000000000000000000000000000000000000000000000000",
+          roadWidth:"100",
+          areaType: "0",
+         },
+         areaSurrendered: "100",
+         circleRateSurrendered: "100",
+         status: 0
+
+      }
       const tdrApplication1 = {
-        applicationId: "0x1234567890123456789012345678901234567890123456789012345678901234",
+        applicationId: "0x3130330000000000000000000000000000000000000000000000000000000000",
         applicationDate: "1645996800", // equivalent to February 28th, 2022, 12:00:00 AM UTC
         place: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
         noticeId: "0x9876543210987654321098765432109876543210987654321098765432109876",
@@ -349,9 +270,9 @@ contract("TdrStorage", (accounts) => {
             }
         ],
         status: 0
-      };
+    };
       const tdrApplication2 = {
-        applicationId: "0x1234567890123456789012345678901234567890123456789012345678901234",
+        applicationId: "0x3130340000000000000000000000000000000000000000000000000000000000",
         applicationDate: "1645996800", // equivalent to February 28th, 2022, 12:00:00 AM UTC
         place: "0x4e657720596f726b000000000000000000000000000000000000000000000000",
         noticeId: "0x9876543210987654321098765432109876543210987654321098765432109876",
@@ -367,16 +288,16 @@ contract("TdrStorage", (accounts) => {
             }
         ],
         status: 0
-      };
-      await storage.createNotice(tdrNotice, { from: manager });
+    };
+          await storage.createNotice(tdrNotice, { from: manager });
       await storage.createApplication(tdrApplication1, { from: manager });
       await storage.createApplication(tdrApplication2, { from: manager });
       await storage.addApplicationToNotice(tdrNotice.noticeId, tdrApplication1.applicationId, { from: manager });
       await storage.addApplicationToNotice(tdrNotice.noticeId, tdrApplication2.applicationId, { from: manager });
-      const result = await storage.getApplicationsForNotice(tdrNotice.noticeId);
-      assert.equal(result.length, 2, "Applications not returned correctly");
-      assert.equal(result[0].applicationId, tdrApplication1.applicationId, "Application ID not returned correctly");
-      assert.equal(result[1].applicationId, tdrApplication2.applicationId, "Application ID not returned correctly");
+      const result1 = await storage.noticeApplicationMap(tdrNotice.noticeId, 0);
+      const result2 = await storage.noticeApplicationMap(tdrNotice.noticeId, 1);
+      assert.equal(result1, tdrApplication1.applicationId, "Application ID not returned correctly");
+      assert.equal(result2, tdrApplication2.applicationId, "Application ID not returned correctly");
     });
   });
 });
