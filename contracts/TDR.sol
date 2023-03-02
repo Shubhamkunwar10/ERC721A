@@ -1,3 +1,4 @@
+//SPDX-License-Identifier: MIT
 pragma solidity ^0.8.16;
 import "./DataTypes.sol";
 
@@ -40,9 +41,9 @@ contract TdrStorage {
     event LogApplication(string message, TdrApplication application);
 
 
-    address owner;
-    address admin;
-    address manager;
+    address public owner;
+    address public admin;
+    address public manager;
 
 
     // Constructor function to set the initial values of the contract
