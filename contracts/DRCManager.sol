@@ -245,6 +245,7 @@ contract DRCManager{
         emit LogBytes("id of the application fetched in gen new drc is",application.drcId);
         DRC memory newDrc;
         newDrc.id = application.applicationId;
+        newDrc.applicationId = application.applicationId;
         newDrc.noticeId = drc.noticeId;
         newDrc.status = DrcStatus.available;
         newDrc.farCredited = application.farTransferred;
