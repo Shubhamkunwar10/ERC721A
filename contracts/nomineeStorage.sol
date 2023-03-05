@@ -6,11 +6,21 @@ pragma solidity ^0.8.16;
  * @author Ras Dwivedi
  * Date: 04/03/2023
  */
-contract Nominee {
+import "./DataTypes.sol";
+
+contract NomineeStorage {
     mapping(bytes32 => bytes32[]) private userNominees;
+    mapping(bytes32 => nomineeApplication) public nomineeApplicationMap;
     address owner;
     address admin;
     address manager;
+
+    event Logger(string log);
+    event LogAddress(string addressInfo, address _address);
+    event LogBytes(string messgaeInfo, bytes32 _bytes);
+    event LogBool(string messageInfo, bool message);
+    event LogApplication(string message, TdrApplication application);
+    event LogOfficer(string message, KdaOfficer officer);
 
     /**
     * @dev Constructor function to set the initial values of the contract.
@@ -44,6 +54,10 @@ contract Nominee {
     */
     modifier onlyManager() {
         require(msg.sender == manager, "Caller is not the contract manager");
+//        emit LogAddress("sender is", msg.sender);
+//        emit LogAddress("manager is", manager);
+//        emit LogAddress("admin is", admin);
+//        emit LogAddress("owner is", owner);
         _;
     }
 
@@ -70,6 +84,27 @@ contract Nominee {
     function setManager(address _newManager) onlyOwner public {
         manager = _newManager;
     }
+    /**
+* @dev returns the address of the contract admin.
+     */
+    function getAdmin() public view returns (address){
+        return admin;
+    }
+
+    /**
+     * @dev returns the address of the contract owner.
+     */
+    function getOwner() public view returns (address) {
+        return owner;
+    }
+
+    /**
+     * @dev returns the address of the TDR manager.
+     */
+    function getManager() public view returns (address) {
+        return manager;
+    }
+
 
     // Events emitted when nominee operation is made
     event nomineesAdded(bytes32 user);
@@ -91,7 +126,7 @@ contract Nominee {
      * @param user The user for whom the nominees are being retrieved
      * @return The array of nominees for the user
      */
-    function getNominees(bytes32 user) public view onlyManager returns (bytes32[] memory) {
+    function getNominees(bytes32 user) public onlyManager returns (bytes32[] memory) {
         return userNominees[user];
     }
 
@@ -129,5 +164,42 @@ contract Nominee {
             }
         }
         return arr.length;
+    }
+    event nomineeApplicationAdded(bytes32 applicationId, bytes32 userId);
+    event nomineeApplicationUpdated(bytes32 applicationId, bytes32 userId);
+    event nomineeApplicationDeleted(bytes32 applicationId, bytes32 userId);
+    function createNomineeApplication(nomineeApplication memory application) onlyManager public {
+        // check whether the application exists or not
+        if(isApplicationCreated(application.applicationId)){
+            revert("application already created");
+        }
+        nomineeApplicationMap[application.applicationId] = application;
+        emit nomineeApplicationAdded(application.applicationId, application.userId);
+    }
+    function updateNomineeApplication(nomineeApplication memory application) onlyManager public {
+        // check whether the application exists or not
+        if(!isApplicationCreated(application.applicationId)){
+            revert("application does not exists");
+        }
+        nomineeApplicationMap[application.applicationId] = application;
+        emit nomineeApplicationUpdated(application.applicationId, application.userId);
+    }
+    function deleteNomineeApplication(nomineeApplication memory application) onlyManager public {
+        // check whether the application exists or not
+        if(!isApplicationCreated(application.applicationId)){
+            revert("application does not exist");
+        }
+        delete nomineeApplicationMap[application.applicationId];
+        emit nomineeApplicationDeleted(application.applicationId, application.userId);
+    }
+    function getNomineeApplication(bytes32 applicationId) public returns (nomineeApplication memory) {
+        return nomineeApplicationMap[applicationId];
+    }
+    function isApplicationCreated(bytes32 _applicationId) public view returns (bool) {
+        nomineeApplication memory application = nomineeApplicationMap[_applicationId];
+        if (application.applicationId==""){
+            return false;
+        }
+        return true;
     }
 }

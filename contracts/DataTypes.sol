@@ -171,3 +171,9 @@ pragma solidity ^0.8.16;
         Role verifierRole;
         SubVerifierStatus subVerifierStatus;
     }
+struct nomineeApplication {
+    bytes32 applicationId;
+    bytes32 userId;
+    bytes32[] nominees;
+    ApplicationStatus status;
+}

@@ -5,6 +5,7 @@ import "./UserManager.sol";
 import "./Application.sol";
 import "./UtilizationApplication.sol";
 import "./DataTypes.sol";
+import "./nomineeManager.sol";
 
 /**
 @title TDR Manager for TDR storage
@@ -17,6 +18,7 @@ contract DRCManager{
     UserManager public userManager;
     DrcTransferApplicationStorage public dtaStorage;
     DuaStorage public duaStorage;
+    NomineeManager public nomineeManager;
 
 
     // Address of the contracts
@@ -24,6 +26,7 @@ contract DRCManager{
     address public userManagerAddress;
     address public dtaStorageAddress;
     address public duaStorageAddress;
+    address public nomineeManagerAddress;
 
 // admin address
     address owner;
@@ -126,7 +129,15 @@ contract DRCManager{
         duaStorageAddress = _duaStorageAddress;
         duaStorage = DuaStorage(duaStorageAddress);
     }
+    function loadNomineeManager(address _nomineeManagerAddress) public {
+        nomineeManagerAddress = _nomineeManagerAddress;
+        nomineeManager = NomineeManager(nomineeManagerAddress);
+    }
 
+    function updateNomineeManager(address _nomineeManagerAddress) public {
+        nomineeManagerAddress = _nomineeManagerAddress;
+        nomineeManager = NomineeManager(nomineeManagerAddress);
+    }
     // This function begins the drd transfer application
     function createTransferApplication(bytes32 drcId,bytes32 applicationId, uint far, uint timeStamp,bytes32[] memory buyers) public {
         // check drc exists or not
@@ -413,4 +424,76 @@ contract DRCManager{
         return applicantList;
 
     }
+    function transferAllDrcToNominees(bytes32 userId) public {
+        // check whether the role is admin or application
+        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        emit LogOfficer("Officer in action",officer);
+        if (officer.role == Role.SUPER_ADMIN || officer.role== Role.ADMIN ||
+        officer.role==Role.APPROVER || officer.role==Role.VC) {
+            // fetch all replaceUserByNominees
+            bytes32[] memory nominees = nomineeManager.getNominees(userId);
+            // fetch all drc id
+            bytes32[] memory drcIds = drcStorage.getDrcIdsForUser(userId);
+            for (uint i=0; i < drcIds.length; i++){
+                transferDrcToNominee(drcIds[i], userId, nominees);
+            }
+        }else {
+            revert("user not authorized");
+        }
+        emit Logger("All drc successfully transferred to nominees");
+    }
+    event DrcTransferredToNominees(bytes32 drcId, bytes32 userId, bytes32[] nominees);
+    function transferDrcToNominee(bytes32 drcId, bytes32 userId, bytes32[] memory nominees) public {
+        //fetch the drc
+        DRC memory drc = drcStorage.getDrc(drcId);
+        // replace the user with the nominee
+        drc.owners = replaceUserByNominees(drc.owners, userId,nominees);
+        drcStorage.updateDrc(drcId, drc);
+        emit DrcTransferredToNominees(drcId, userId, nominees);
+    }
+    function replaceUserByNominees(bytes32[] memory owners, bytes32 user, bytes32[] memory nominees) public returns (bytes32[] memory){
+        bytes32[] memory ownersWithoutUser = deleteUserFromList(owners,user);
+        bytes32[] memory ownersWithNominees = mergeArrays(ownersWithoutUser, nominees);
+//        bytes32[] memory ownersWithNominees = mergeArrays(owners, nominees);
+        return ownersWithNominees;
+    }
+    function mergeArrays(bytes32[] memory arr1, bytes32[] memory arr2) public pure returns (bytes32[] memory) {
+        uint256 arr1Len = arr1.length;
+        uint256 arr2Len = arr2.length;
+        bytes32[] memory result = new bytes32[](arr1Len + arr2Len);
+        uint256 i;
+        for (i = 0; i < arr1Len; i++) {
+            result[i] = arr1[i];
+        }
+        for (i = 0; i < arr2Len; i++) {
+            result[arr1Len + i] = arr2[i];
+        }
+        return result;
+    }
+    function deleteUserFromList(bytes32[] memory owners, bytes32 user) public returns (bytes32[] memory){
+        uint index = findIndex(owners, user);
+        if (index == owners.length){
+            revert("user not found in owner list");
+        }
+        for (uint i=index; i< owners.length-1; i++){
+            owners[i]= owners[i+1];
+        }
+        return deleteLastElement(owners);
+    }
+    function findIndex(bytes32[] memory arr, bytes32 element) public pure returns(uint) {
+        for (uint i = 0; i < arr.length; i++) {
+            if (arr[i] == element) {
+                return i;
+            }
+        }
+        return arr.length;
+    }
+    function deleteLastElement(bytes32[] memory arr) public pure returns (bytes32[] memory){
+        bytes32[] memory tempArray = new bytes32[](arr.length -1);
+        for (uint i=0; i< tempArray.length; i++){
+            tempArray[i]=arr[i];
+        }
+        return tempArray;
+    }
+
 }

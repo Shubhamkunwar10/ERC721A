@@ -5,7 +5,7 @@ from time import sleep
 
 PORT = 8000
 HOST = "localhost"
-JWT = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiQUNDRVNTIFRPS0VOIiwiaWQiOiIzNDc0NDlkNDEyYTYxZDg1NjVjNzU4ODZhMzJlMzFmZDMxMGZmNWFlMDBjODIyMWE1ZGE5NjkyNGE3MmE5ZGI1IiwidXNlcm5hbWUiOiJBdmluYXNoIEtoYW4iLCJyb2xlIjoidXNlciIsImV4cCI6MTY3NzQ4ODEwNywiaWF0IjoxNjc3NDg0NTA3fQ.se9byj5XNQ6hLabwpfBPIxdj9B3imP_SghJ8tFFl5Rc'
+JWT = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0eXBlIjoiQUNDRVNTIFRPS0VOIiwiaWQiOiJLREFVU0VSMDAwNDIiLCJ1c2VybmFtZSI6IlJhcyBEd2l2ZWRpIiwicm9sZSI6InVzZXIiLCJleHAiOjE2Nzc3NTU0ODUsImlhdCI6MTY3NzY2OTA4NX0.t44DQVaAr4EojZzrGUAAmeEqButKFOaUyccVlH3VEgU'
 conn = http.client.HTTPConnection(HOST, PORT)
 headers = {
     'Authorization': 'bearer ' + JWT,
@@ -80,7 +80,7 @@ def create_notice_test():
             "district": "0x1234567890123456789012345678901234567890123456789012345678901234"
         },
         "masterPlanInfo": {
-            "landUse": "0x1234567890123456789012345678901234567890123456789012345678901234",
+            "landUse": "GROUP_HOUSING",
             "masterPlan": "0x1234567890123456789012345678901234567890123456789012345678901234",
             "roadWidth": 20,
             "areaType": "UNDEVELOPED"
@@ -115,7 +115,7 @@ def create_application_test():
             "circleRateUtilized": 2,
             "applicants": [
                 {
-                    "userId": "347449d412a61d8565c75886a32e31fd310ff5ae00c8221a5da96924a72a9db5"
+                    "userId": "KDAUSER00042"
                 }
             ],
             "status": "pending",
@@ -154,7 +154,7 @@ def add_user_test():
 
 def add_officer_test():
     payload = json.dumps({
-        "userId": "347449d412a61d8565c75886a32e31fd310ff5ae00c8221a5da96924a72a9db5",
+        "userId": "KDAUSER00042",
         "role": "verifier",
         "department": "land",
         "zone": "zone_1"
@@ -167,7 +167,7 @@ def add_officer_test():
 
 def update_officer_test():
     payload = json.dumps({
-        "userId": "347449d412a61d8565c75886a32e31fd310ff5ae00c8221a5da96924a72a9db5",
+        "userId": "KDAUSER00042",
         "role": "admin",
         "department": "land",
         "zone": "zone_1"
@@ -346,7 +346,7 @@ def get_dashboard_data():
 
 
 def run_all_test():
-    # add_user_test()
+    add_user_test()
     create_notice_test()
     create_application_test()
     signApplication()
