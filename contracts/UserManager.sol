@@ -170,12 +170,18 @@ contract UserManager {
     /**
      * Adds a new Officer to the mapping of KdaOfficers.
      * @param officer The Officer to add to the mapping.
-     * @param officerAddress The address of the Officer to add to the mapping.
-     * @dev The method will only allow an Admin to add a new Officer. If the Officer already exists in the mapping,
+     * @dev The method will only allow an Admin to add a new Officer. If the Officer already exists in the mapping,address
      * the method will revert with an error message. If the Officer is added successfully, the method will emit
      * the OfficerAdded event.
      */
-    function addOfficer (KdaOfficer memory officer, address officerAddress) public onlyManager {
+    function addOfficer (KdaOfficer memory officer) public {
+        address officerAddress = userMap[officer.userId];
+        // check role of the user should be admin only if not manager
+        if(msg.sender != manager){
+            require(officerMap[reverseOfficerMap[tx.origin]].role == Role.ADMIN, "Officer is not an admin");
+            // check for user role is not admin or super admin
+            require(officer.role != Role.ADMIN || officer.role != Role.SUPER_ADMIN, "Officer role is not valid");
+        }
         // check is user already does not exist
         if(officerAddressMap[officer.userId]!=address(0)){
             revert("Officer already exist, instead try updating the address");
@@ -193,12 +199,17 @@ contract UserManager {
     /**
      * Updates an existing Officer in the mapping of KdaOfficers.
      * @param officer The Officer to update in the mapping.
-     * @param officerAddress The new address of the Officer to update in the mapping.
      * @dev The method will only allow an Admin to update an existing Officer. If the Officer does not exist in the
      * mapping, the method will revert with an error message. If the Officer is updated successfully, the method will
      * emit the OfficerUpdated event.
      */
-    function updateOfficer (KdaOfficer memory officer, address officerAddress) public onlyManager {
+    function updateOfficer (KdaOfficer memory officer) public {
+        address officerAddress = userMap[officer.userId];
+        // check role of the user should be admin only
+        if(msg.sender != manager){
+            require(officerMap[reverseOfficerMap[tx.origin]].role == Role.ADMIN, "Officer is not an admin");
+            require(officer.role != Role.ADMIN || officer.role != Role.SUPER_ADMIN, "Officer role is not valid");
+        }
         // check is user already does not exist
         if(officerAddressMap[officer.userId]==address(0)){
             revert("Officer does not exist, instead try adding the address");
@@ -220,7 +231,11 @@ contract UserManager {
      * mapping, the method will revert with an error message. If the Officer is deleted successfully, the method will
      * emit the OfficerDeleted event.
      */
-    function deleteOfficer(bytes32 id) public onlyManager {
+    function deleteOfficer(bytes32 id) public {
+        // check role of the user should be admin only
+        if(msg.sender != manager){
+            require(officerMap[reverseOfficerMap[tx.origin]].role == Role.ADMIN, "Officer is not an admin");
+        }
         // check if verifier already exists
         if(officerAddressMap[id]==address(0)){
             revert("officer does not exist");
