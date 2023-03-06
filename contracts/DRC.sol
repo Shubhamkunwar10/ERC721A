@@ -94,17 +94,6 @@ contract DrcStorage {
         // insertDrc((_drc));
         storeDrcInMap(_drc);
     }
-    function addDrcToOwners(DRC memory drc) public {
-        for (uint i=0; i< drc.owners.length; i++){
-            addDrcToOwner(drc.id,drc.owners[i]);
-        }
-    }
-    function addDrcToOwner(bytes32 drcId, bytes32 ownerId) public {
-        bytes32[] storage drcList = ownerMap[ownerId];
-        drcList.push(drcId);
-        ownerMap[ownerId]=drcList;
-        emit DrcAddedToOwner(drcId,ownerId);
-    }
 
 
     // Create a function to retrieve a Drc from the mapping by ID
@@ -124,6 +113,52 @@ contract DrcStorage {
         delete drcMap[_id];
     }
 
+    function addDrcToOwners(DRC memory drc) public {
+        for (uint i=0; i< drc.owners.length; i++){
+            addDrcToOwner(drc.id,drc.owners[i]);
+        }
+    }
+    function addDrcToOwner(bytes32 drcId, bytes32 ownerId) public {
+        bytes32[] storage drcList = ownerMap[ownerId];
+        drcList.push(drcId);
+        ownerMap[ownerId]=drcList;
+        emit DrcAddedToOwner(drcId,ownerId);
+    }
+
+    /**
+    CRUD operations on the owner map
+    */
+    event DrcIdsAdded(bytes32 ownerId, bytes32[] drcList);
+    function addDrcIdsToOwner(bytes32[] memory drcList, bytes32 ownerId) public onlyManager{
+        if(isOwnerinOwnerMap(ownerId)){
+            revert("owner already exist, try updating list");
+        }
+        ownerMap[ownerId] = drcList;
+        emit DrcIdsAdded(ownerId, drcList);
+    }
+
+    event DrcIdsUpdated(bytes32 ownerId, bytes32[] drcList);
+    function updateDrcIdsToOwner(bytes32[] memory drcList, bytes32 ownerId) public onlyManager{
+        if(!isOwnerinOwnerMap(ownerId)){
+            revert("owner does not exist, try creating list");
+        }
+        ownerMap[ownerId] = drcList;
+        emit DrcIdsUpdated(ownerId, drcList);
+    }
+
+    event DrcIdsDeleted(bytes32 ownerId);
+    /**
+    Removes the owner from owner map, deleting all drcIds of owner in map
+    WARNING: does not deletes owner from DRC, that has to be done separately
+    */
+    function deleteDrcIdsOfOwner(bytes32 ownerId) public onlyManager{
+        delete ownerMap[ownerId];
+        emit DrcIdsDeleted(ownerId);
+    }
+    function getDrcIdsForUser(bytes32 userId) public returns(bytes32[] memory) {
+        return ownerMap[userId];
+    }
+
 
 
     function isDrcCreated (bytes32 _drcId) public view returns (bool) {
@@ -134,14 +169,18 @@ contract DrcStorage {
             return false;
     }
     // ideally these functions should be moved to manager contract
+    /**
+    This function add an owner to drc
+    */
     function addDrcOnwer(bytes32 _drcId, bytes32  newOwner)public {
         require(isDrcCreated(_drcId),"DRC does not exists");
         DRC storage drc = drcMap[_drcId];
         drc.owners.push(newOwner);
         drcMap[_drcId] = drc;
-        bytes32[] storage drcList = ownerMap[newOwner];
-        drcList.push(_drcId);
-        ownerMap[newOwner] = drcList;
+        addDrcToOwner(_drcId,newOwner);
+//        bytes32[] storage drcList = ownerMap[newOwner];
+//        drcList.push(_drcId);
+//        ownerMap[newOwner] = drcList;
     } 
 
 //  function addDrcOnwers(bytes32 _drcId, DrcOwner[] memory newOwners)public {
@@ -157,7 +196,11 @@ contract DrcStorage {
 ////    drcMap[_drcId] = drc;
 //  }
 
-  function deleteOwner(bytes32 _drcId, bytes32 ownerId) public{
+    /**
+    Deletes the owner from drc.
+    Also deletes the drc from ownerMap
+    */
+  function removeOwnerFromDrc(bytes32 _drcId, bytes32 ownerId) public{
     // assume singkle occurance of the ownerID
     // Funtion searches for owners and deletes it. Assume that there are multiple owner with same owner id.
     DRC storage drc = drcMap[_drcId];
@@ -197,6 +240,10 @@ contract DrcStorage {
     ownerMap[ownerId]=drcList;
     }
 
+    /**
+    This function is outdated.
+    It was used earlier when owner percentage were there in DRC
+    */
   function getOwnerDetails(bytes32 _drcId, bytes32 ownerId) view public returns (bytes32) {
     DRC memory drc = drcMap[_drcId];
     for(uint i=0; i< drc.owners.length; i++){
@@ -256,16 +303,39 @@ contract DrcStorage {
         drcDtaMap[drcId]=applications;
         emit DtaAddedToDrc(drcId,applicationId);
         emit AllDTaForDrc(drcId,applications);
-//        DRC memory drc = drcStorage.getDrc(drcId);
-//        //        drc.farAvailable = drc.farAvailable - farConsumed;
-//        bytes32[] memory newApplications = new bytes32[](drc.applications.length+1);
-//        for (uint i=0; i< drc.applications.length; i++){
-//            newApplications[i]=drc.applications[i];
-//        }
-//        newApplications[drc.applications.length]=applicationId;
-//        drcStorage.updateDrc(drc.id,drc);
 
     }
+
+    /**
+CRUD operations on the drc DTA Map
+*/
+    event DtaIdsAdded(bytes32 drcId, bytes32[] dtaList);
+    function addDtaIdsToDrc(bytes32[] memory dtaList, bytes32 drcId) public onlyManager{
+        if(isDrcinDtaMap(drcId)){
+            revert("drc already exist, try updating list");
+        }
+        drcDtaMap[drcId] = dtaList;
+        emit DtaIdsAdded(drcId, dtaList);
+    }
+
+    event DtaIdsUpdated(bytes32 drcId, bytes32[] dtaList);
+    function updateDtaIdsToDrc(bytes32[] memory dtaList, bytes32 drcId) public onlyManager{
+        if(!isDrcinDtaMap(drcId)){
+            revert("drc does not exist, try adding list");
+        }
+        drcDtaMap[drcId] = dtaList;
+        emit DtaIdsUpdated(drcId, dtaList);
+    }
+
+    event DtaIdsDeleted(bytes32 drcId);
+    function deleteDtaIdsOfDrc(bytes32 drcId) public onlyManager{
+        delete drcDtaMap[drcId];
+        emit DtaIdsDeleted(drcId);
+    }
+    function getDtaIdsForDrc(bytes32 drcId) public returns (bytes32[] memory) {
+        return drcDtaMap[drcId] ;
+    }
+
     // add application to drc
     event AllDuaForDrc(bytes32 drcId, bytes32[] applicationIds);
     function addDuaToDrc(bytes32 drcId,bytes32 applicationId) public {
@@ -277,19 +347,68 @@ contract DrcStorage {
 
 
     }
-    function getDtaIdsForDrc(bytes32 drcId) public returns (bytes32[] memory) {
-        return drcDtaMap[drcId] ;
+    // CRUD operations for drc dua map
+    event DuaIdsAdded(bytes32 drcId, bytes32[] duaList);
+    function addDuaIdsToDrc(bytes32[] memory duaList, bytes32 drcId) public onlyManager{
+        if(isDrcinDuaMap(drcId)){
+            revert("drc already exist, try updating list");
+        }
+        drcDuaMap[drcId] = duaList;
+        emit DuaIdsAdded(drcId, duaList);
     }
+
+    event DuaIdsUpdated(bytes32 drcId, bytes32[] duaList);
+    function updateDuaIdsToDrc(bytes32[] memory duaList, bytes32 drcId) public onlyManager{
+        if(!isDrcinDuaMap(drcId)){
+            revert("drc does not exist, try adding list");
+        }
+        drcDuaMap[drcId] = duaList;
+        emit DuaIdsUpdated(drcId, duaList);
+    }
+
+    event DuaIdsDeleted(bytes32 drcId);
+    function deleteDuaIdsOfDrc(bytes32 drcId) public onlyManager{
+        delete drcDuaMap[drcId];
+        emit DuaIdsDeleted(drcId);
+    }
+
+//    function getDtaIdsForDrc(bytes32 drcId) public returns (bytes32[] memory) {
+//        return drcDtaMap[drcId] ;
+//    }
     function getDuaIdsForDrc(bytes32 drcId) public returns (bytes32[] memory) {
         return drcDuaMap[drcId] ;
     }
-    function getDrcIdsForUser(bytes32 userId) public returns(bytes32[] memory) {
-        return ownerMap[userId];
+//    function getDrcIdsForUser(bytes32 userId) public returns(bytes32[] memory) {
+//        return ownerMap[userId];
+//    }
+
+    function isDrcinDuaMap(bytes32 drcId) public view returns(bool) {
+        if(drcDuaMap[drcId].length == 0) {
+        return false;
+        }
+    return true;
+    }
+    function isDrcinDtaMap(bytes32 drcId) public view returns(bool) {
+        if(drcDtaMap[drcId].length == 0) {
+            return false;
+        }
+        return true;
+    }
+    function isOwnerinOwnerMap(bytes32 ownerId) public view returns(bool) {
+        if(ownerMap[ownerId].length == 0) {
+            return false;
+        }
+        return true;
+    }
+    function isDrcExists(bytes32 drcId) public view returns(bool) {
+
+        if(drcMap[drcId].id == "") {
+            return false;
+        }
+        return true;
     }
 
-//    function getApplicationForUser(bytes32 userId) public onlyManager returns (bytes32[] memory){
-//        return userApplicationMap[userId];
-//    }
+
 
 }
 
