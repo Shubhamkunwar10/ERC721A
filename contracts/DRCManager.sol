@@ -424,6 +424,10 @@ contract DRCManager{
         return applicantList;
 
     }
+    /**
+    transfers all drc to the nominee of the user
+    deletes the owner from  owner map
+    */
     function transferAllDrcToNominees(bytes32 userId) public {
         // check whether the role is admin or application
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
@@ -440,9 +444,13 @@ contract DRCManager{
         }else {
             revert("user not authorized");
         }
+        drcStorage.deleteDrcIdsOfOwner(userId);
         emit Logger("All drc successfully transferred to nominees");
     }
     event DrcTransferredToNominees(bytes32 drcId, bytes32 userId, bytes32[] nominees);
+    /**
+    WARNING: This function does not delete the drc from original owner list
+    */
     function transferDrcToNominee(bytes32 drcId, bytes32 userId, bytes32[] memory nominees) public {
         //fetch the drc
         DRC memory drc = drcStorage.getDrc(drcId);
