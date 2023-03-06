@@ -7,8 +7,8 @@ contract DuaStorage {
 
 
 
-    mapping(bytes32 => DUA) public applicationMap;
-    mapping(bytes32 => bytes32[] ) public userApplicationMap;
+    mapping(bytes32 => DUA) public applicationMap;  // applicaton id => dua application
+    mapping(bytes32 => bytes32[] ) public userApplicationMap; //userId => application id list
 
     //logger events
     event LogAddress(string addressInfo, address _address);
@@ -124,5 +124,27 @@ contract DuaStorage {
             userApplicationMap[userId]=applicationIds;
             emit DUACreatedForUser(application.signatories[i].userId,application.applicationId);
         }
+    }
+
+    event addedDuaListToUser(bytes32[]  applicationList, bytes32 userId);
+    function addApplicationListToUser(bytes32[] memory applicationList, bytes32 userId) public onlyManager {
+        if(userApplicationMap[userId].length !=0){
+            revert("An application list already exist, try updating it");
+        }
+        userApplicationMap[userId]=applicationList;
+        emit addedDuaListToUser(applicationList,userId);
+    }
+    event updatedDuaListToUser(bytes32[]  applicationList, bytes32 userId);
+    function updateApplicationListToUser(bytes32[] memory applicationList, bytes32 userId) public onlyManager {
+        if(userApplicationMap[userId].length !=0){
+            revert("An application list does not exist, try adding it");
+        }
+        userApplicationMap[userId]=applicationList;
+        emit updatedDuaListToUser(applicationList,userId);
+    }
+    event deletedDuaListForUser(bytes32 userId);
+    function deleteUserApplicationList(bytes32 userId) public onlyManager {
+        delete userApplicationMap[userId];
+        emit deletedDuaListForUser(userId);
     }
 }
