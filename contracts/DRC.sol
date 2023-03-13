@@ -28,10 +28,10 @@ contract DrcStorage {
     event DrcAddedToOwner(bytes32 drcId, bytes32 ownerId);
 
     
-    address owner;
-    address admin;
-    address manager;
-    address tdrManager;
+    address public owner;
+    address public admin;
+    address  public manager;
+    address public tdrManager;
 
     // Constructor function to set the initial values of the contract
     constructor(address _admin, address _manager) {
