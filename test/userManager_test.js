@@ -4,8 +4,8 @@ const truffleAssert = require(`truffle-assertions`);
 contract(`UserManager`, async (accounts) => {
   let userManagerInstance;
   let ownerAddress = accounts[0];
-  let adminAddress = accounts[6];
-  let managerAddress = accounts[7];
+  let adminAddress = accounts[1];
+  let managerAddress = accounts[2];
   let userAddress = accounts[8];
   let newUserAddress = accounts[9];
   let officerAddress = accounts[1];
