@@ -398,17 +398,28 @@ contract DRCManager{
 
     // Utilize DRC
     function utilizeDrc(bytes32 applicationId) public {
-        // msg.sender should be the owner of the drc
-        require(userManager.getUserId(msg.sender) == drcStorage.getDrcOwner(applicationId), "User is not the owner of the DRC");
         DUA memory application = duaStorage.getApplication(applicationId);
+        // msg.sender should be in the owner list of the drc
+        require(isOwnerOfDrc(application.drcId, userManager.getUserId(msg.sender)), "User is not the owner of the DRC");
         DRC memory drc = drcStorage.getDrc(application.drcId);
         // check if the drc is approved
-        require(application.status == ApplicationStatus.approved, "DRC is not approved");
+        require(application.status == ApplicationStatus.approved, "DRC Utilization Application is not approved");
         require(drc.status != DrcStatus.locked_for_utilization, "DRC is not locked for utilization");
         // change the status of the drc to utilized
         drc.status = DrcStatus.utilized;
         // update the drc
         drcStorage.updateDrc(application.drcId,drc);
         emit DrcUtilized(application.drcId,application.farUtilized);
+    }
+
+    // check if given user is one of the owner of the drc
+    function isOwnerOfDrc(bytes32 drcId, bytes32 userId) internal view returns(bool){
+        DRC memory drc = drcStorage.getDrc(drcId);
+        for(uint i=0;i<drc.owners.length;i++){
+            if(drc.owners[i] == userId){
+                return true;
+            }
+        }
+        return false;
     }
 }
