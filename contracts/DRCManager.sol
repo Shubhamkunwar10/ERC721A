@@ -384,7 +384,10 @@ contract DRCManager{
         if(allSignatoriesSign){
             //all the signatories has signed
             application.status = ApplicationStatus.approved;
-            // reduce drc
+            // reduce drc once Application is approved, and update the drc
+            DRC memory drc = drcStorage.getDrc(application.drcId);
+            drc.farAvailable = drc.farAvailable - application.farUtilized;
+            drcStorage.updateDrc(application.drcId,drc);
         }
         duaStorage.updateApplication(application);
     }
