@@ -41,6 +41,7 @@ contract DRCManager{
     event DtaApplicationVerified(KdaOfficer officer, bytes32 applicationId);
     event DtaApplicationApproved(KdaOfficer officer, bytes32 applicationId);
     event DtaApplicationRejected(bytes32 applicationId, string reason);
+    event DrcUtilized(bytes32 applicationId, uint farUtilized);
 
 
     // Constructor function to set the initial values of the contract
@@ -362,6 +363,8 @@ contract DRCManager{
     }
     function signDrcUtilizationApplication(bytes32 applicationId) public {
         DUA  memory application = duaStorage.getApplication(applicationId);
+        // require application Signatories.length != 0 
+        require(application.signatories.length != 0, "No signatories found");
         // make sure the user has not signed the transfer
         for (uint i=0;i<application.signatories.length;i++){
             Signatory memory signatory = application.signatories[i];
@@ -371,7 +374,7 @@ contract DRCManager{
             }
         }
         // user signs the application
-        // find out whether all the users have signed
+        // find out whether all the users have signed 
         bool allSignatoriesSign = true;
         for (uint i=0;i<application.signatories.length;i++){
             Signatory memory s = application.signatories[i];
@@ -387,9 +390,25 @@ contract DRCManager{
             // reduce drc once Application is approved, and update the drc
             DRC memory drc = drcStorage.getDrc(application.drcId);
             drc.farAvailable = drc.farAvailable - application.farUtilized;
+            drc.status = DrcStatus.locked_for_utilization;
             drcStorage.updateDrc(application.drcId,drc);
         }
         duaStorage.updateApplication(application);
     }
 
+    // Utilize DRC
+    function utilizeDrc(bytes32 applicationId) public {
+        // msg.sender should be the owner of the drc
+        require(userManager.getUserId(msg.sender) == drcStorage.getDrcOwner(applicationId), "User is not the owner of the DRC");
+        DUA memory application = duaStorage.getApplication(applicationId);
+        DRC memory drc = drcStorage.getDrc(application.drcId);
+        // check if the drc is approved
+        require(application.status == ApplicationStatus.approved, "DRC is not approved");
+        require(drc.status != DrcStatus.locked_for_utilization, "DRC is not locked for utilization");
+        // change the status of the drc to utilized
+        drc.status = DrcStatus.utilized;
+        // update the drc
+        drcStorage.updateDrc(application.drcId,drc);
+        emit DrcUtilized(application.drcId,application.farUtilized);
+    }
 }
