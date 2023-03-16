@@ -67,7 +67,7 @@ contract TdrStorage {
     }
 
     modifier onlyManager() {
-       require(msg.sender == manager, "Only the manager, admin, or owner can perform this action.");
+       require(msg.sender == manager, "Only the manager can perform this action.");
         _;
     }
 
@@ -223,7 +223,7 @@ contract TdrStorage {
     * @param applicationId The bytes32 identifier of the application to be added to the notice.
     * @dev Revert if no notice exists with the given noticeId.
     */
-    function addApplicationToNotice(bytes32 noticeId, bytes32 applicationId) public {
+    function addApplicationToNotice(bytes32 noticeId, bytes32 applicationId) public onlyManager{
         TdrNotice storage tdrNotice = noticeMap[noticeId];
         // notice should exist
         if(tdrNotice.noticeId==""){
@@ -275,7 +275,7 @@ contract TdrStorage {
         emit TDRUpdated(application.noticeId,application.applicationId);
     }
 
-    function updateApplication(TdrApplication memory _application) public {
+    function updateApplication(TdrApplication memory _application) public onlyManager {
         emit LogBytes("begin update application",_application.applicationId);
         TdrApplication storage application = applicationMap[_application.applicationId];
         if(! isApplicationCreated(_application.applicationId)){
@@ -289,7 +289,7 @@ contract TdrStorage {
     * @dev Adds an application to the applicationMap.
     * @param _application The TdrApplication memory object to be added to the applicationMap.
     */
-    function addApplicationToMap(TdrApplication memory _application) public {
+    function addApplicationToMap(TdrApplication memory _application) internal {
         emit Logger("Adding application to map");
         // Retrieve the application in storage using its applicationId
         TdrApplication storage application = applicationMap[_application.applicationId];
