@@ -135,35 +135,35 @@ contract DRCManager {
         bytes32[] memory buyers
         ) public {
             emit Logger("Create tra");
-        // require(drcStorage.isDrcCreated(drcId), "DRC not created");
-        // DRC memory drc = drcStorage.getDrc(drcId);
-        // // far should be less than available far.
-        // require(
-        //     far <= drc.farAvailable,
-        //     "Transfer area is greater than the available area"
-        // );
-        // // add all the owners id from the drc to the mapping
+        require(drcStorage.isDrcCreated(drcId), "DRC not created");
+        DRC memory drc = drcStorage.getDrc(drcId);
+        // far should be less than available far.
+        require(
+            far <= drc.farAvailable,
+            "Transfer area is greater than the available area"
+        );
+        // add all the owners id from the drc to the mapping
 
-        // Signatory[] memory applicants = new Signatory[](drc.owners.length);
+        Signatory[] memory applicants = new Signatory[](drc.owners.length);
 
-        // // no user has signed yet
-        // for (uint i = 0; i < drc.owners.length; i++) {
-        //     Signatory memory s;
-        //     s.userId = drc.owners[i];
-        //     s.hasUserSigned = false;
-        //     applicants[i] = s;
-        // }
-        // dtaStorage.createApplication(
-        //     applicationId,
-        //     drcId,
-        //     far,
-        //     applicants,
-        //     buyers,
-        //     ApplicationStatus.pending
-        // );
-        // // signs the drc transfer application and checks whether all owners have signed it or not
-        // signDrcTransferApplication(applicationId);
-        // drcStorage.addDtaToDrc(drc.id, applicationId);
+        // no user has signed yet
+        for (uint i = 0; i < drc.owners.length; i++) {
+            Signatory memory s;
+            s.userId = drc.owners[i];
+            s.hasUserSigned = false;
+            applicants[i] = s;
+        }
+        dtaStorage.createApplication(
+            applicationId,
+            drcId,
+            far,
+            applicants,
+            buyers,
+            ApplicationStatus.pending
+        );
+        // signs the drc transfer application and checks whether all owners have signed it or not
+        signDrcTransferApplication(applicationId);
+        drcStorage.addDtaToDrc(drc.id, applicationId);
     }
 
     // this function is called by the user to approve the transfer
