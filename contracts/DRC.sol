@@ -277,13 +277,13 @@ contract DrcStorage {
 
 
     }
-    function getDtaIdsForDrc(bytes32 drcId) public returns (bytes32[] memory) {
+    function getDtaIdsForDrc(bytes32 drcId) public view returns (bytes32[] memory) {
         return drcDtaMap[drcId] ;
     }
-    function getDuaIdsForDrc(bytes32 drcId) public returns (bytes32[] memory) {
+    function getDuaIdsForDrc(bytes32 drcId) public view returns (bytes32[] memory) {
         return drcDuaMap[drcId] ;
     }
-    function getDrcIdsForUser(bytes32 userId) public returns(bytes32[] memory) {
+    function getDrcIdsForUser(bytes32 userId) public view returns(bytes32[] memory) {
         return ownerMap[userId];
     }
 

@@ -126,7 +126,7 @@ contract DrcTransferApplicationStorage {
     function getVerificationStatus(bytes32 applicationId) public view returns(VerificationStatus memory) {
         return verificationStatusMap[applicationId];
     }
-    function getApplicationForUser(bytes32 userId) public onlyManager returns (bytes32[] memory){
+    function getApplicationForUser(bytes32 userId) public view onlyManager returns (bytes32[] memory){
         return userApplicationMap[userId];
     }
     function storeApplicationForUser(DrcTransferApplication memory application) public onlyManager {

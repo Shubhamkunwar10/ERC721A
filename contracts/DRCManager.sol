@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.16;
 
 import "./DRC.sol";
@@ -266,7 +267,7 @@ contract DRCManager{
         }
     }
 
-    function hasUserSignedDta(bytes32 _applicationId, address _address) public returns (bool){
+    function hasUserSignedDta(bytes32 _applicationId, address _address) public view returns (bool){
         DrcTransferApplication memory application = dtaStorage.getApplication(_applicationId);
         require(application.applicationId != "", "Drc transfer application does not exist");
             // Get the user id by the address
@@ -284,7 +285,7 @@ contract DRCManager{
     }
 
 
-    function hasUserSignedDua(bytes32 applicationId, address _address) public returns (bool){
+    function hasUserSignedDua(bytes32 applicationId, address _address) public view returns (bool){
         DUA memory application = duaStorage.getApplication(applicationId);
         require(application.applicationId != "", "Drc transfer application does not exist");
         // Get the user id by the address
@@ -316,22 +317,22 @@ contract DRCManager{
         return status.verified;
     }
     // I need to create two different get application method and then merge it
-    function getDtaForUser(bytes32 userId) public returns (bytes32[] memory){
+    function getDtaForUser(bytes32 userId) public view returns (bytes32[] memory){
         return dtaStorage.getApplicationForUser(userId);
     }
-    function getDuaForUser(bytes32 userId) public returns (bytes32[] memory){
+    function getDuaForUser(bytes32 userId) public view returns (bytes32[] memory){
         return duaStorage.getApplicationForUser(userId);
     }
-    function getDtaIdsForDrc(bytes32 drcId) public returns (bytes32[] memory){
+    function getDtaIdsForDrc(bytes32 drcId) public view returns (bytes32[] memory){
         return drcStorage.getDtaIdsForDrc(drcId);
     }
-    function getDuaIdsForDrc(bytes32 drcId) public returns (bytes32[] memory){
+    function getDuaIdsForDrc(bytes32 drcId) public view returns (bytes32[] memory){
         return drcStorage.getDuaIdsForDrc(drcId);
     }
-    function getDrc(bytes32 drcId) public returns (DRC memory){
+    function getDrc(bytes32 drcId) public view returns (DRC memory){
         return drcStorage.getDrc(drcId);
     }
-    function getDrcIdsForUser(bytes32 userId) public returns(bytes32[] memory){
+    function getDrcIdsForUser(bytes32 userId) public view returns(bytes32[] memory){
         return drcStorage.getDrcIdsForUser(userId);
     }
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.16;
 import "./DataTypes.sol";
 
@@ -103,7 +104,7 @@ contract TdrStorage {
         }
     }
 
-    function getApplicationForUser(bytes32 userId) public onlyManager returns (bytes32[] memory){
+    function getApplicationForUser(bytes32 userId) public view onlyManager returns (bytes32[] memory){
         return userApplicationMap[userId];
     }
     // Function to create a new TDR
@@ -267,7 +268,7 @@ contract TdrStorage {
     function getVerificationStatus(bytes32 applicationId) public view returns(VerificationStatus memory) {
         return verificationStatusMap[applicationId];
     }
-    function getApplicationsForNotice(bytes32 noticeId)public returns(bytes32[] memory) {
+    function getApplicationsForNotice(bytes32 noticeId) public view returns(bytes32[] memory) {
         return noticeApplicationMap[noticeId];
     }
 

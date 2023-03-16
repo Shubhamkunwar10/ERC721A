@@ -162,7 +162,7 @@ contract TDRManager {
      * @param adrs Address of the user to check
      * @return Boolean indicating if the user has signed the application
      */
-    function hasUserSignedApplication(bytes32 _applicationId, address adrs) public returns(bool) {
+    function hasUserSignedApplication(bytes32 _applicationId, address adrs) public view returns(bool) {
         // Get the TDR application by its id
         TdrApplication memory application = tdrStorage.getApplication(_applicationId);
         require(application.applicationId != "", "TDR application does not exist");
@@ -251,7 +251,7 @@ contract TDRManager {
     * @dev return whether all the user of the application has signed the application
     * @param application The application to check signature of all applicants
     */
-    function hasAllUserSignedTdrApplication(TdrApplication memory application) private view returns(bool){
+    function hasAllUserSignedTdrApplication(TdrApplication memory application) private pure returns(bool){
         bool allSignatoriesSign = true;
         for (uint i=0;i<application.applicants.length;i++){
             Signatory memory s = application.applicants[i];
@@ -387,7 +387,7 @@ contract TDRManager {
             emit Logger("User is not authorized");
         }
     }
-    function checkIfAllSubverifiersSigned(VerificationStatus memory verificationStatus) public view returns (bool) {
+    function checkIfAllSubverifiersSigned(VerificationStatus memory verificationStatus) public pure returns (bool) {
     bool allSigned = true;
 
     // Check the status of each subverifier
@@ -413,7 +413,7 @@ contract TDRManager {
     return allSigned;
     }
 
-    function getApplicationForUser(bytes32 userId) public returns (bytes32[] memory){
+    function getApplicationForUser(bytes32 userId) public view returns (bytes32[] memory){
         return tdrStorage.getApplicationForUser(userId);
     }
 
@@ -438,13 +438,13 @@ contract TDRManager {
         emit Logger("issuing DRC without storing");
         emit DrcIssued(drc);
     }
-    function getTdrNotice(bytes32 noticeId) public returns(TdrNotice memory){
+    function getTdrNotice(bytes32 noticeId) public view returns(TdrNotice memory){
         return tdrStorage.getNotice(noticeId);
     }
     /*
     Returns the tdrApplicationIds for notice id
     */
-    function getTdrApplicationsIdsForTdrNotice(bytes32 noticeId) public returns(bytes32[] memory){
+    function getTdrApplicationsIdsForTdrNotice(bytes32 noticeId) public view returns(bytes32[] memory){
         return tdrStorage.getApplicationsForNotice(noticeId);
     }
 }

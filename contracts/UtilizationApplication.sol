@@ -113,7 +113,7 @@ contract DuaStorage {
 
         applicationMap[dua.applicationId]= dua;
     }
-    function getApplicationForUser(bytes32 userId) public onlyManager returns (bytes32[] memory){
+    function getApplicationForUser(bytes32 userId) public view onlyManager returns (bytes32[] memory){
         return userApplicationMap[userId];
     }
     function storeApplicationForUser(DUA memory application) public onlyManager {
