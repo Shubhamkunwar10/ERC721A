@@ -95,7 +95,7 @@ CONTRACTS = ["DrcTransferApplicationStorage", "DrcStorage", "DRCManager", "TdrSt
 #                      "DrcStorage",
 #                      "DRCManager",
 #                      "TdrStorage",
-#                      "TDRManager",
+#                      # "TDRManager",
 #                      "UserManager",
 #                      "DuaStorage",
 #                      "NomineeStorage",

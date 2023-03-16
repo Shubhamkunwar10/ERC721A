@@ -44,7 +44,7 @@ contract TDRManager {
     event LogBool(string messageInfo, bool message);
     event LogApplication(string message, TdrApplication application);
     event DrcIssued(DRC drc, bytes32[] owners);
-
+    event TdrApplicationSubmitted(bytes32 applicationId, bytes32[] applicants);
 
 
     address owner;
@@ -75,6 +75,15 @@ contract TDRManager {
     modifier onlyManager() {
         require(msg.sender == manager, "Only the manager, admin, or owner can perform this action.");
         _;
+    }
+    modifier onlyNoticeCreator() {
+        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        emit LogOfficer("Officer in action",officer);
+        if (officer.role != Role.SUPER_ADMIN && officer.role!= Role.ADMIN) {
+        revert("Only user with role admin can create notice");
+        }
+        _;
+
     }
 
     function setAdmin(address _admin) public onlyOwner {
@@ -121,17 +130,25 @@ contract TDRManager {
         userManager = UserManager(_userManagerAddress);
     }
 
-
-    function createNotice(TdrNotice memory tdrNotice) public {
+    /**
+    @dev Function to create tdr notice
+    @param tdrNotice: notice to be created
+    @dev Revert if user is not authorized to create notice
+    */
+    function createNotice(TdrNotice memory tdrNotice) public onlyNoticeCreator{
         emit Logger("START: createNotice");
         tdrStorage.createNotice(tdrNotice);
     }
-    function updateNotice(TdrNotice memory tdrNotice) public {
+    /**
+    @dev Function to create notice
+    @param tdrNotice notice to be updated
+    @dev Revert if user is not authorized to create notice
+    */
+    function updateNotice(TdrNotice memory tdrNotice) public onlyNoticeCreator{
         emit Logger("START: updateNotice");
         tdrStorage.updateNotice(tdrNotice);
     }
 
-    event TdrApplicationCreated(bytes32 applicationId, bytes32[] applicants);
     /**
     @dev Function to create an application
     @param _tdrApplication TdrApplication memory object representing the application to be created
@@ -155,9 +172,6 @@ contract TDRManager {
 //        // add user signature to the appliction
         signTdrApplication(_tdrApplication.applicationId);
         emit Logger("application signed by creator");
-        emit TdrApplicationCreated(_tdrApplication.applicationId,
-            getApplicantIdsFromTdrApplication(_tdrApplication));
-        // who is signing this application
     }
 
     /**
@@ -253,6 +267,7 @@ contract TDRManager {
             emit Logger("All signatories signed");
             // Mark the TdrApplication as submitted if all signatories have signed
             application.status = ApplicationStatus.submitted;
+            emit TdrApplicationSubmitted(_applicationId, getApplicantIdsFromTdrApplication(application));
         }
         // Update the TdrApplication in the tdrStorage
         tdrStorage.updateApplication(application);

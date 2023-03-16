@@ -22,7 +22,7 @@ contract TdrStorage {
 
 
     // Event emitted after a TDR is created
-    event ApplicationCreated(bytes32 noticeId, bytes32 applicationId);
+    event TdrApplicationCreated(bytes32 noticeId, bytes32 applicationId, bytes32[] applicants);
     event ApplicationUpdated(bytes32 noticeId, bytes32 applicationId);
 
     event NoticeCreated(bytes32 noticeId, TdrNotice notice);
@@ -91,7 +91,7 @@ contract TdrStorage {
         // Create a new TDR and add it to the mapping
 
         // Emit the TDRCreated event
-        emit ApplicationCreated(_tdrApplication.noticeId, _tdrApplication.applicationId);
+        emit TdrApplicationCreated(_tdrApplication.noticeId, _tdrApplication.applicationId,getApplicantIdsFromTdrApplication(_tdrApplication));
     }
     function storeApplicationForUser(TdrApplication memory application) public onlyManager {
         emit LogApplication("logging the application before saving to users", application);
@@ -336,6 +336,15 @@ contract TdrStorage {
             }
         }
         return arr.length;
+    }
+    function getApplicantIdsFromTdrApplication(TdrApplication memory _tdrApplication )
+    internal view returns(bytes32[] memory) {
+        bytes32[] memory applicantList = new bytes32[](_tdrApplication.applicants.length) ;
+        for(uint i=0; i < _tdrApplication.applicants.length; i++){
+            applicantList[i]= _tdrApplication.applicants[i].userId;
+        }
+        return applicantList;
+
     }
     // delete applicatiion from user
 
