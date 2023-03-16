@@ -157,9 +157,10 @@ contract DRCManager{
             applicants[i]=s;
         }
         dtaStorage.createApplication(applicationId,drcId,far, applicants, buyers, timeStamp, ApplicationStatus.pending);
+        // signs the drc transfer application and checks whether all owners have signed it or not
         signDrcTransferApplication(applicationId);
         drcStorage.addDtaToDrc(drc.id,applicationId);
-        emit DtaCreated(drcId,applicationId,far,getApplicantIdsFromApplicants(applicants),buyers);
+//        emit DtaCreated(drcId,applicationId,far,getApplicantIdsFromApplicants(applicants),buyers);
     }
 
 

@@ -17,7 +17,7 @@ contract DrcStorage {
     mapping(bytes32 => bytes32[] ) public drcDuaMap; // drcId => applicationId []
 
     // Events
-    event DrcCreated(bytes32 drcId);
+    event DrcCreated(bytes32 drcId, bytes32[] owners);
     event Logger(string log);
     event LogAddress(string addressInfo, address _address);
     event LogBytes(string messgaeInfo, bytes32 _bytes);
@@ -83,7 +83,7 @@ contract DrcStorage {
         require(!isDrcCreated(_drc.id),"DRC already exists");
         addDrcToOwners(_drc);
         storeDrcInMap(_drc);
-        emit DrcCreated(_drc.id);
+        emit DrcCreated(_drc.id, _drc.owners);
     }
     // Create a function to update a Drc in the mapping
     function updateDrc(bytes32 _id, DRC memory _drc) public onlyManager {
