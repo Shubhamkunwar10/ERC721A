@@ -39,6 +39,8 @@ contract DRCManager {
     event DtaApplicationVerified(KdaOfficer officer, bytes32 applicationId);
     event DtaApplicationApproved(KdaOfficer officer, bytes32 applicationId);
     event DtaApplicationRejected(bytes32 applicationId, string reason);
+    event genDRCFromApplication(DrcTransferApplication application);
+
 
     // Constructor function to set the initial values of the contract
     constructor(address _admin, address _manager) {
@@ -283,6 +285,7 @@ contract DRCManager {
     @param application The DRC transfer application to create a new DRC from
     */
 
+
     function genNewDrcFromApplication(
         DrcTransferApplication memory application
     ) internal {
@@ -303,6 +306,7 @@ contract DRCManager {
         // need to reduce the available area of the old drc
         drc.farAvailable = drc.farAvailable - application.farTransferred;
         drcStorage.updateDrc(drc.id, drc);
+        emit genDRCFromApplication(newDrc);
     }
 
     // this function is called by the admin to reject the transfer

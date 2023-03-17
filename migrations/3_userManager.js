@@ -1,5 +1,5 @@
-const UserManager = artifacts.require("UserManager");
+const userManager = artifacts.require("UserManager");
 
-module.exports = function (deployer, network, accounts) {
-  deployer.deploy(UserManager, accounts[1], accounts[2], { from: accounts[0] });
-};
+module.exports = function(deployer, network, accounts) {
+    deployer.deploy(userManager, accounts[1], accounts[2], { from: accounts[0] });
+}
