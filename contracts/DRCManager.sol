@@ -128,11 +128,7 @@ contract DRCManager {
     }
 
     // This function begins the drd transfer application
-<<<<<<< HEAD
-    function createTransferApplication(bytes32 drcId,bytes32 applicationId, uint far, uint timeStamp,bytes32[] memory buyers) public {
-        // check drc exists or not
-        require(drcStorage.isDrcCreated(drcId),"DRC not created");
-=======
+
     function createTransferApplication(
         bytes32 drcId,
         bytes32 applicationId,
@@ -141,7 +137,6 @@ contract DRCManager {
         ) public {
             emit Logger("Create tra");
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
->>>>>>> KDA-228
         DRC memory drc = drcStorage.getDrc(drcId);
         // far should be less than available far.
         require(
@@ -159,9 +154,6 @@ contract DRCManager {
             s.hasUserSigned = false;
             applicants[i] = s;
         }
-<<<<<<< HEAD
-        dtaStorage.createApplication(applicationId,drcId,far, applicants, buyers, timeStamp, ApplicationStatus.pending);
-=======
         dtaStorage.createApplication(
             applicationId,
             drcId,
@@ -171,7 +163,6 @@ contract DRCManager {
             ApplicationStatus.pending
         );
         // signs the drc transfer application and checks whether all owners have signed it or not
->>>>>>> KDA-228
         signDrcTransferApplication(applicationId);
         drcStorage.addDtaToDrc(drc.id, applicationId);
     }
@@ -273,11 +264,8 @@ contract DRCManager {
             // one drc transfer is approved, new drc should be created
             genNewDrcFromApplication(application);
         } else {
-            emit Logger("User not authorized");
         }
 
-<<<<<<< HEAD
-=======
         //        ///------------------------------------------
         //        require(msg.sender == admin,"Only admin can approve the Transfer");
         //        DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
@@ -287,7 +275,6 @@ contract DRCManager {
         //        application.status = ApplicationStatus.approved;
         //        dtaStorage.updateApplication(application);
         //        // add the new drc
->>>>>>> KDA-228
     }
 
     /**
@@ -349,13 +336,9 @@ contract DRCManager {
             application.status = ApplicationStatus.rejected;
             dtaStorage.updateApplication(application);
             emit DtaApplicationRejected(applicationId, reason);
-<<<<<<< HEAD
-=======
-            // change the status of sub-drc
             //            DRC memory drc = drcStorage.getDrc(application.drcId);
             //            drc.farAvailable = drc.farAvailable+application.farTransferred;
             //            drcStorage.updateDrc(drc.id,drc);
->>>>>>> KDA-228
         } else {
             emit Logger("User not authorized");
         }
@@ -461,12 +444,8 @@ contract DRCManager {
         return drcStorage.getDrcIdsForUser(userId);
     }
 
-<<<<<<< HEAD
 
 
-// what other details, like building application are needed fro utilization application
-    function createUtilizationApplication(bytes32 drcId,bytes32 applicationId, uint far, uint timeStamp) public {
-=======
     //------
     //        require(msg.sender == admin,"Only admin can reject the Transfer");
     //        DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
@@ -489,7 +468,6 @@ contract DRCManager {
         bytes32 applicationId,
         uint far
     ) public {
->>>>>>> KDA-228
         // check drc exists or not
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
         DRC memory drc = drcStorage.getDrc(drcId);
@@ -509,9 +487,6 @@ contract DRCManager {
             s.hasUserSigned = false;
             duaSignatories[i] = s;
         }
-<<<<<<< HEAD
-        duaStorage.createApplication(applicationId,drc.id,far,duaSignatories, timeStamp, ApplicationStatus.pending);
-=======
         duaStorage.createApplication(
             applicationId,
             drc.id,
@@ -519,7 +494,6 @@ contract DRCManager {
             duaSignatories,
             ApplicationStatus.pending
         );
->>>>>>> KDA-228
         signDrcUtilizationApplication(applicationId);
         drcStorage.addDuaToDrc(drc.id, applicationId);
     }
@@ -555,10 +529,7 @@ contract DRCManager {
         }
         duaStorage.updateApplication(application);
     }
-<<<<<<< HEAD
 
-=======
-    // This function adds application to drc
     // also reduced the available area by the area in drc. This need to be removed
     //    function addApplicationToDrc(bytes32 drcId,bytes32 applicationId, uint farConsumed) internal {
     //        DRC memory drc = drcStorage.getDrc(drcId);
@@ -571,5 +542,4 @@ contract DRCManager {
     //        drcStorage.updateDrc(drc.id,drc);
     //
     //    }
->>>>>>> KDA-228
 }
