@@ -92,7 +92,7 @@ contract DuaStorage {
        return applicationMap[_id];
     }
 
-    function deleteApplication(bytes32 _id) public onlyManager {
+    function deleteApplication(bytes32 _id) public onlyAdmin {
         require(msg.sender == admin, "Only the admin can delete applications.");
         delete applicationMap[_id];
     }

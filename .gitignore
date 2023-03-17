@@ -1,4 +1,9 @@
 build/*
 truffle-config.js
+<<<<<<< HEAD
 node_modules
 
+=======
+.env
+node_modules
+>>>>>>> KDA-228

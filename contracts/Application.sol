@@ -94,7 +94,7 @@ contract DrcTransferApplicationStorage {
        return applicationMap[_id];
     }
 
-    function deleteApplication(bytes32 _id) public onlyManager {
+    function deleteApplication(bytes32 _id) public onlyAdmin {
         require(msg.sender == admin, "Only the admin can delete applications.");
         delete applicationMap[_id];
     }
@@ -120,7 +120,7 @@ contract DrcTransferApplicationStorage {
     }
 
 
-    function storeVerificationStatus(bytes32 id, VerificationStatus memory status) public {
+    function storeVerificationStatus(bytes32 id, VerificationStatus memory status) public onlyManager {
         verificationStatusMap[id] = status;
     }
     function getVerificationStatus(bytes32 applicationId) public view returns(VerificationStatus memory) {
@@ -129,7 +129,7 @@ contract DrcTransferApplicationStorage {
     function getApplicationForUser(bytes32 userId) public onlyManager returns (bytes32[] memory){
         return userApplicationMap[userId];
     }
-    function storeApplicationForUser(DrcTransferApplication memory application) public onlyManager {
+    function storeApplicationForUser(DrcTransferApplication memory application) internal {
         for(uint i=0; i<application.applicants.length; i++){
             bytes32 userId = application.applicants[i].userId;
             bytes32[] storage applicationIds = userApplicationMap[userId];

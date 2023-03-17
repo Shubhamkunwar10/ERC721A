@@ -151,7 +151,7 @@ contract UserManager {
  * @param userId 12 bit uint id of the user
  * @param userAddress address of the user
  */
-    function updateUser(bytes32 userId, address userAddress) public onlyAdmin {
+    function updateUser(bytes32 userId, address userAddress) public onlyManager {
         // check if user already exists
         if(userMap[userId]==address(0)){
             revert("user does not exist");
