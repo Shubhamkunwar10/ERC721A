@@ -259,6 +259,7 @@ contract TdrStorage {
         emit Logger("application has not been created");
         return false;
         }
+    require(_applicationId > 0, "Applicant must be greater than 0");
     emit Logger("application has been created");
       return true;
   }
