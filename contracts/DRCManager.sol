@@ -41,7 +41,6 @@ contract DRCManager {
     event DtaApplicationRejected(bytes32 applicationId, string reason);
     event genDRCFromApplication(DrcTransferApplication application);
 
-
     // Constructor function to set the initial values of the contract
     constructor(address _admin, address _manager) {
         // Set the contract owner to the caller
@@ -136,8 +135,8 @@ contract DRCManager {
         bytes32 applicationId,
         uint far,
         bytes32[] memory buyers
-        ) public {
-            emit Logger("Create tra");
+    ) public {
+        emit Logger("Create tra");
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
         DRC memory drc = drcStorage.getDrc(drcId);
         // far should be less than available far.
@@ -148,6 +147,12 @@ contract DRCManager {
         // add all the owners id from the drc to the mapping
 
         Signatory[] memory applicants = new Signatory[](drc.owners.length);
+
+        if (drc.owners.length <= 0) {
+            revert("DRC has 0 owners");
+        } else if (buyers.length <= 0) {
+            revert("Number of buyers should be greater than 0");
+        }
 
         // no user has signed yet
         for (uint i = 0; i < drc.owners.length; i++) {
@@ -265,8 +270,7 @@ contract DRCManager {
             emit DtaApplicationApproved(officer, applicationId);
             // one drc transfer is approved, new drc should be created
             genNewDrcFromApplication(application);
-        } else {
-        }
+        } else {}
 
         //        ///------------------------------------------
         //        require(msg.sender == admin,"Only admin can approve the Transfer");
@@ -284,7 +288,6 @@ contract DRCManager {
     @dev The function generates a new DRC from a provided DRC transfer application. The new DRC inherits the noticeId from the original DRC and is set as available with the far credited and far available equal to the transferred far. The newDrcOwner array in the application is assigned to the owners of the new DRC.
     @param application The DRC transfer application to create a new DRC from
     */
-
 
     function genNewDrcFromApplication(
         DrcTransferApplication memory application
@@ -447,8 +450,6 @@ contract DRCManager {
     ) public returns (bytes32[] memory) {
         return drcStorage.getDrcIdsForUser(userId);
     }
-
-
 
     //------
     //        require(msg.sender == admin,"Only admin can reject the Transfer");
