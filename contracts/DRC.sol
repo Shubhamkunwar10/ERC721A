@@ -79,6 +79,9 @@ contract DrcStorage {
     }
     // Create a function to add a new Drc to the mapping
     function createDrc(DRC memory _drc) public onlyManager{
+        if (_drc.owners.length <= 0) {
+            revert("DRC has 0 owners");
+        } 
         //check whether the DRC already exists
         require(!isDrcCreated(_drc.id),"DRC already exists");
         addDrcToOwners(_drc);
