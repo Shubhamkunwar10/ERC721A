@@ -167,7 +167,7 @@ contract DRCManager {
             far,
             applicants,
             buyers,
-            ApplicationStatus.pending
+            ApplicationStatus.PENDING
         );
         // signs the drc transfer application and checks whether all owners have signed it or not
         signDrcTransferApplication(applicationId);
@@ -222,7 +222,7 @@ contract DRCManager {
         if (allSignatoriesSign) {
             //all the signatories has signed
             //change the status of the sub-drc
-            application.status = ApplicationStatus.submitted;
+            application.status = ApplicationStatus.SUBMITTED;
             // applicationMap[applicationId]=application;
         }
         dtaStorage.updateApplication(application);
@@ -240,7 +240,7 @@ contract DRCManager {
             applicationId
         );
         require(
-            dta.status == ApplicationStatus.submitted,
+            dta.status == ApplicationStatus.SUBMITTED,
             "Application is not submitted"
         );
         if (
@@ -253,7 +253,7 @@ contract DRCManager {
             status.verifierId = officer.userId;
             status.verifierRole = officer.role;
             // update Application
-            dta.status = ApplicationStatus.verified;
+            dta.status = ApplicationStatus.VERIFIED;
             dtaStorage.updateApplication(dta);
             emit DtaApplicationVerified(officer, applicationId);
             dtaStorage.storeVerificationStatus(applicationId, status);
@@ -272,7 +272,7 @@ contract DRCManager {
         );
         //application should not be already approved
         require(
-            application.status != ApplicationStatus.approved,
+            application.status != ApplicationStatus.APPROVED,
             "Application already approved"
         );
 
@@ -283,7 +283,7 @@ contract DRCManager {
             officer.role == Role.VC
         ) {
             // update Application
-            application.status = ApplicationStatus.approved;
+            application.status = ApplicationStatus.APPROVED;
             dtaStorage.updateApplication(application);
             emit DtaApplicationApproved(officer, applicationId);
             // one drc transfer is approved, new drc should be created
@@ -319,7 +319,7 @@ contract DRCManager {
         DRC memory newDrc;
         newDrc.id = application.applicationId;
         newDrc.noticeId = drc.noticeId;
-        newDrc.status = DrcStatus.available;
+        newDrc.status = DrcStatus.AVAILABLE;
         newDrc.farCredited = application.farTransferred;
         newDrc.farAvailable = application.farTransferred;
         newDrc.owners = application.buyers;
@@ -342,11 +342,11 @@ contract DRCManager {
             applicationId
         );
         require(
-            application.status != ApplicationStatus.approved,
+            application.status != ApplicationStatus.APPROVED,
             "Application is already approved"
         );
         require(
-            application.status == ApplicationStatus.submitted,
+            application.status == ApplicationStatus.SUBMITTED,
             "Application is not yet submitted"
         );
 
@@ -358,7 +358,7 @@ contract DRCManager {
             officer.role == Role.VC
         ) {
             // update Application
-            application.status = ApplicationStatus.rejected;
+            application.status = ApplicationStatus.REJECTED;
             dtaStorage.updateApplication(application);
             emit DtaApplicationRejected(applicationId, reason);
 
@@ -519,7 +519,7 @@ contract DRCManager {
             drc.id,
             far,
             duaSignatories,
-            ApplicationStatus.pending
+            ApplicationStatus.PENDING
         );
         signDrcUtilizationApplication(applicationId);
         drcStorage.addDuaToDrc(drc.id, applicationId);
@@ -551,7 +551,7 @@ contract DRCManager {
         // if all the signatories has not signed
         if (allSignatoriesSign) {
             //all the signatories has signed
-            application.status = ApplicationStatus.approved;
+            application.status = ApplicationStatus.APPROVED;
             // reduce drc
         }
         duaStorage.updateApplication(application);

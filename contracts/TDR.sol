@@ -181,9 +181,9 @@ contract TdrStorage {
         // Update the application in the mapping
         applicationMap[_applicationId] = application;
         // check for the notice
-        if(_status == ApplicationStatus.drcIssued){
+        if(_status == ApplicationStatus.DRCISSUED){
             TdrNotice storage notice = noticeMap[application.noticeId];
-            notice.status= NoticeStatus.issued;
+            notice.status= NoticeStatus.ISSUED;
             noticeMap[application.noticeId]=notice;
         }
 
