@@ -138,7 +138,7 @@ contract DRCManager {
     ) public {
         emit Logger("Create tra");
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
-        DRC memory drc = drcStorage.getDrc(drcId);
+
         // far should be less than available far.
         require(
             far <= drc.farAvailable,
@@ -146,7 +146,7 @@ contract DRCManager {
         );
         // add all the owners id from the drc to the mapping
 
-        Signatory[] memory applicants = new Signatory[](drc.owners.length);
+        // Signatory[] memory applicants = new Signatory[](drc.owners.length);
 
         if (drc.owners.length <= 0) {
             revert("DRC has 0 owners");
@@ -171,7 +171,25 @@ contract DRCManager {
         );
         // signs the drc transfer application and checks whether all owners have signed it or not
         signDrcTransferApplication(applicationId);
-        drcStorage.addDtaToDrc(drc.id, applicationId);
+        drcStorage.addDtaToDrc(drc.id,applicationId);
+        // // no user has signed yet
+        // for (uint i = 0; i < drc.owners.length; i++) {
+        //     Signatory memory s;
+        //     s.userId = drc.owners[i];
+        //     s.hasUserSigned = false;
+        //     applicants[i] = s;
+        // }
+        // dtaStorage.createApplication(
+        //     applicationId,
+        //     drcId,
+        //     far,
+        //     applicants,
+        //     buyers,
+        //     ApplicationStatus.pending
+        // );
+        // // signs the drc transfer application and checks whether all owners have signed it or not
+        // signDrcTransferApplication(applicationId);
+        // drcStorage.addDtaToDrc(drc.id, applicationId);
     }
 
     // this function is called by the user to approve the transfer
@@ -343,6 +361,8 @@ contract DRCManager {
             application.status = ApplicationStatus.rejected;
             dtaStorage.updateApplication(application);
             emit DtaApplicationRejected(applicationId, reason);
+
+            // change the status of sub-drc
             //            DRC memory drc = drcStorage.getDrc(application.drcId);
             //            drc.farAvailable = drc.farAvailable+application.farTransferred;
             //            drcStorage.updateDrc(drc.id,drc);
@@ -467,6 +487,8 @@ contract DRCManager {
     //        drcStorage.updateDrc(drc.id,drc);
     //    }
 
+
+
     // what other details, like building application are needed fro utilization application
     function createUtilizationApplication(
         bytes32 drcId,
@@ -535,6 +557,7 @@ contract DRCManager {
         duaStorage.updateApplication(application);
     }
 
+    // This function adds application to drc
     // also reduced the available area by the area in drc. This need to be removed
     //    function addApplicationToDrc(bytes32 drcId,bytes32 applicationId, uint farConsumed) internal {
     //        DRC memory drc = drcStorage.getDrc(drcId);
