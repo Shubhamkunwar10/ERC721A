@@ -123,6 +123,9 @@ contract DrcTransferApplicationStorage {
     function storeVerificationStatus(bytes32 id, VerificationStatus memory status) public {
         verificationStatusMap[id] = status;
     }
+    function deleteVerificationStatus(bytes32 id, VerificationStatus memory status) public {
+        delete verificationStatusMap[id];
+    }
     function getVerificationStatus(bytes32 applicationId) public view returns(VerificationStatus memory) {
         return verificationStatusMap[applicationId];
     }
@@ -137,5 +140,26 @@ contract DrcTransferApplicationStorage {
             userApplicationMap[userId]=applicationIds;
             emit DTACreatedForUser(application.applicants[i].userId,application.applicationId);
         }
+    }
+    event addedDtaListToUser(bytes32[]  applicationList, bytes32 userId);
+    function addApplicationListToUser(bytes32[] memory applicationList, bytes32 userId) public onlyManager {
+        if(userApplicationMap[userId].length !=0){
+            revert("An application list already exist, try updating it");
+        }
+        userApplicationMap[userId]=applicationList;
+        emit addedDtaListToUser(applicationList,userId);
+    }
+    event updatedDtaListToUser(bytes32[]  applicationList, bytes32 userId);
+    function updateApplicationListToUser(bytes32[] memory applicationList, bytes32 userId) public onlyManager {
+        if(userApplicationMap[userId].length !=0){
+            revert("An application list does not exist, try adding it");
+        }
+        userApplicationMap[userId]=applicationList;
+        emit updatedDtaListToUser(applicationList,userId);
+    }
+    event deletedDtaListForUser(bytes32 userId);
+    function deleteUserApplicationList(bytes32 userId) public onlyManager {
+        delete userApplicationMap[userId];
+        emit deletedDtaListForUser(userId);
     }
 }

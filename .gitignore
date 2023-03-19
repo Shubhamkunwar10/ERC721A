@@ -1,5 +1,7 @@
 build/*
 truffle-config.js
+# solhint 
+.solhint.json
 contracts/artifacts/*
 deployer/__pycache__/*
 *.pyc

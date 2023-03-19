@@ -43,8 +43,8 @@ contract UserManager {
     // Address of the Vice-chairman
     address public vc;
 
-     
-    // Event emitted after a user is updated   
+
+    // Event emitted after a user is updated
     event UserAdded(bytes32 userId, address userAddress);
     // Event emitted after a user is updated
     event UserUpdated(bytes32 userId, address userAddress);
@@ -56,7 +56,7 @@ contract UserManager {
     // Event emitted after a officer is deleted
     event OfficerDeleted(bytes32 officerId);
 
-    // Event emitted after a verifier is added   
+    // Event emitted after a verifier is added
     event VerifierAdded(bytes32 verifierId, address verifierAddress);
     // Event emitted after a verifier is updated
     event VerifierUpdated(bytes32 verifierId, address verifierAddress);
@@ -64,7 +64,7 @@ contract UserManager {
     event VerifierDeleted(bytes32 verifierId);
 
 
-    // Event emitted after a approver is added   
+    // Event emitted after a approver is added
     event ApproverAdded(bytes32 approverId, address approverAddress);
     // Event emitted after a approver is updated
     event ApproverUpdated(bytes32 approverId, address approverAddress);
@@ -72,7 +72,7 @@ contract UserManager {
     event ApproverDeleted(bytes32 approverId);
 
 
-    // Event emitted after a issuer is added   
+    // Event emitted after a issuer is added
     event IssuerAdded(bytes32 issuerId, address issuerAddress);
     // Event emitted after a issuer is updated
     event IssuerUpdated(bytes32 issuerId, address issuerAddress);
@@ -151,7 +151,7 @@ contract UserManager {
  * @param userId 12 bit uint id of the user
  * @param userAddress address of the user
  */
-    function updateUser(bytes32 userId, address userAddress) public onlyAdmin {
+    function updateUser(bytes32 userId, address userAddress) public onlyManager {
         // check if user already exists
         if(userMap[userId]==address(0)){
             revert("user does not exist");
@@ -476,8 +476,6 @@ contract UserManager {
     }
     // This method would @return empty address in case address is not found
     function getUserId (address _address) public view returns (bytes32){
-//        emit LogAddress("user manager called for address",_address);
-//        emit LogBytes("returned user id is ",reverseUserMap[_address]);
         return reverseUserMap[_address];
     }
     function getVerifierId (address _address) view public returns (bytes32){
@@ -495,6 +493,6 @@ contract UserManager {
         return officerMap[id];
     }
 
-    
+
 
 }
