@@ -42,7 +42,8 @@ contract TDRManager {
     event LogBytes(string messgaeInfo, bytes32 _bytes);
     event LogBool(string messageInfo, bool message);
     event LogApplication(string message, TdrApplication application);
-    event DrcIssued(DRC drc);
+    event DrcIssued(bytes32 drcId);
+    event DrcSubmitted(bytes32 drcId);
 
 
 
@@ -240,6 +241,7 @@ contract TDRManager {
             emit Logger("All signatories signed");
             // Mark the TdrApplication as submitted if all signatories have signed
             application.status = ApplicationStatus.submitted;
+            emit DrcSubmitted(_applicationId);
         }
         // Update the TdrApplication in the tdrStorage
         tdrStorage.updateApplication(application);
@@ -436,7 +438,7 @@ contract TDRManager {
         }
         drcStorage.createDrc(drc);
         emit Logger("issuing DRC without storing");
-        emit DrcIssued(drc);
+        emit DrcIssued(drc.id);
     }
     function getTdrNotice(bytes32 noticeId) public returns(TdrNotice memory){
         return tdrStorage.getNotice(noticeId);
