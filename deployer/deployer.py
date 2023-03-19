@@ -83,11 +83,24 @@ FILES_TO_COMPILE = [
     "../contracts/DRCManager.sol",
     "../contracts/TDRManager.sol",
     "../contracts/UserManager.sol",
-    "../contracts/UtilizationApplication.sol"
+    "../contracts/UtilizationApplication.sol",
+    "../contracts/nomineeStorage.sol",
+    "../contracts/nomineeManager.sol"
 ]
 CONTRACTS = ["DrcTransferApplicationStorage", "DrcStorage", "DRCManager", "TdrStorage", "TDRManager", "UserManager",
-             "DuaStorage"]
+             "DuaStorage", "NomineeStorage", "NomineeManager"]
 # SKIPPED_CONTRACTS = ["UserManager"]
+# SKIPPED_CONTRACTS = [
+#                     "DrcTransferApplicationStorage",
+#                      "DrcStorage",
+#                      "DRCManager",
+#                      "TdrStorage",
+#                      # "TDRManager",
+#                      "UserManager",
+#                      "DuaStorage",
+#                      "NomineeStorage",
+#                      "NomineeManager"
+#                      ]
 SKIPPED_CONTRACTS = []
 logger.info('following files would be compiled')
 logger.info(FILES_TO_COMPILE)
@@ -244,7 +257,7 @@ def move_files_to_backend():
 
 
 def execute_contract_method(f, account):
-    logger.debug("START execute contract for function %s",str(f))
+    logger.debug("START execute contract for function %s", str(f))
     gas_estimate = f.estimateGas()
     transaction = f.buildTransaction({
         'from': OWNER_ACCOUNT.address,
@@ -269,11 +282,12 @@ def execute_contract_method(f, account):
 def set_contract_address(contract, _func, address, message):
     func = getattr(contract.functions, _func)
     logger.debug("UPDATING: %s", message)
-    logger.debug("with address %s",address)
-    print("UPDATING: "+message)
-    print("with address "+ str(address))
+    logger.debug("with address %s", address)
+    print("UPDATING: " + message)
+    print("with address " + str(address))
     execute_contract_method(func(address), OWNER_ACCOUNT)
     # sleep(1)
+
 
 def instantiate(contract_address, compiled_contracts):
     """
@@ -290,6 +304,8 @@ def instantiate(contract_address, compiled_contracts):
     drc_manager_address = contract_address.get('DRCManager')
     dta_storage_address = contract_address.get('DrcTransferApplicationStorage')
     dua_storage_address = contract_address.get('DuaStorage')
+    nominee_storage_address = contract_address.get('NomineeStorage')
+    nominee_manager_address = contract_address.get('NomineeManager')
 
     # load tdr manager abi
     tdr_storage_contract = w3.eth.contract(address=tdr_storage_address,
@@ -306,6 +322,10 @@ def instantiate(contract_address, compiled_contracts):
                                            abi=compiled_contracts.get('DrcTransferApplicationStorage').get('abi'))
     dua_storage_contract = w3.eth.contract(address=dua_storage_address,
                                            abi=compiled_contracts.get('DuaStorage').get('abi'))
+    nominee_storage_contract = w3.eth.contract(address=nominee_storage_address,
+                                           abi=compiled_contracts.get('NomineeStorage').get('abi'))
+    nominee_manager_contract = w3.eth.contract(address=nominee_manager_address,
+                                           abi=compiled_contracts.get('NomineeManager').get('abi'))
 
     # # updating storage in tdr manager
     # update_tdr_storage_method = tdr_manager_contract.functions.updateTdrStorage(tdr_storage_address)
@@ -315,7 +335,6 @@ def instantiate(contract_address, compiled_contracts):
     # updating user manager in tdr manager
     set_contract_address(tdr_manager_contract, 'updateTdrStorage', tdr_storage_address,
                          "updating tdr storage in tdr manager contract")
-
 
     # # updating user manager in tdr manager
     # update_user_manager_method = tdr_manager_contract.functions.updateUserManager(user_manager_address)
@@ -353,7 +372,6 @@ def instantiate(contract_address, compiled_contracts):
     set_contract_address(tdr_manager_contract, 'updateDrcStorage', drc_storage_address,
                          "update drc storage in drc manager")
 
-
     # updating drc storage in drc manager
     set_contract_address(drc_manager_contract, 'updateDrcStorage', drc_storage_address,
                          "update drc storage in drc manager")
@@ -373,9 +391,13 @@ def instantiate(contract_address, compiled_contracts):
     # updating dua storage in drc manager
     set_contract_address(drc_manager_contract, 'updateDuaStorage', dua_storage_address,
                          "update dua storage in drc manager")
-    set_contract_address(drc_storage_contract,'setTdrManager',tdr_manager_address,"update tdr manager in drc storage")
-    set_contract_address(drc_storage_contract,'setManager',drc_manager_address,"update drc manager in drc storage")
-
+    set_contract_address(drc_storage_contract, 'setTdrManager', tdr_manager_address,
+                         "update tdr manager in drc storage")
+    set_contract_address(drc_storage_contract, 'setManager', drc_manager_address, "update drc manager in drc storage")
+    set_contract_address(drc_manager_contract, 'loadNomineeManager', nominee_manager_address, "update nominee manager in drc manager")
+    set_contract_address(nominee_manager_contract, 'loadNomineeStorage', nominee_storage_address, "update nominee storage in nominee manager")
+    set_contract_address(nominee_manager_contract, 'loadUserManager', user_manager_address, "update user manager in nominee manager")
+    set_contract_address(nominee_storage_contract, 'setManager', nominee_manager_address, "update nominee manager in nominee storage")
 
 
 def main():
@@ -406,7 +428,6 @@ def main():
     b = w3.eth.blockNumber
     # run_all_test()
     print("last mined block after instantiation was ", w3.eth.blockNumber)
-
 
 
 if __name__ == "__main__":
