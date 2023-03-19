@@ -209,9 +209,14 @@ def deploy_all_contracts(compiled_contracts):
     """
     # Getting the old deployment
     file = "../build/contract_address/addresses.txt"
-    f = open(file, 'r')
-    contract_addresses = json.loads(f.read())
-    f.close()
+    if os.path.isfile(file):
+        f = open(file, 'r')
+        contract_addresses = json.loads(f.read())
+        f.close()
+    else:
+        if os.path.isdir("../build/contract_address") is False:
+            os.system("mkdir -p ../build/contract_address")
+        contract_addresses = {}
     for contract in CONTRACTS:
         # skip few contracts
         logger.debug("deploying contract: %s", contract)
@@ -399,7 +404,7 @@ def main():
     instantiate(contract_addresses, compiled_contracts)
     print("total execution time: ", end_time - start_time)
     b = w3.eth.blockNumber
-    run_all_test()
+    # run_all_test()
     print("last mined block after instantiation was ", w3.eth.blockNumber)
 
 
