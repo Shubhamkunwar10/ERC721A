@@ -2,13 +2,13 @@
 pragma solidity ^0.8.16;
 import "./TDR.sol";
 import "./DataTypes.sol";
-import "./lib/Counters.sol";
-import "./lib/SafeMath.sol";
+//import "./lib/Counters.sol";
+//import "./lib/SafeMath.sol";
 
 contract DrcStorage {
 
-    using SafeMath for uint256;
-    using Counters for Counters.Counter;
+//    using SafeMath for uint256;
+//    using Counters for Counters.Counter;
 
     // Define the struct that we will be using for our CRUD operations
 
@@ -85,8 +85,6 @@ contract DrcStorage {
     }
     // Create a function to add a new Drc to the mapping
     function createDrc(DRC memory _drc) public onlyDrcCreator{
-        //generate and update DRC id
-        _drc.id = generateDRCId();
         //check whether the DRC already exists
         require(!isDrcCreated(_drc.id),"DRC already exists");
         addDrcToOwners(_drc);
@@ -299,26 +297,26 @@ contract DrcStorage {
 //        return userApplicationMap[userId];
 //    }
 
-    //Generate DRCId
-    Counters.Counter private _drcIdCounter;
-    uint256 private constant _maxDrcCount = 99999;
-    string private counterPrefix = "DRC";
+//    //Generate DRCId
+//    Counters.Counter private _drcIdCounter;
+//    uint256 private constant _maxDrcCount = 99999;
+//    string private counterPrefix = "DRC";
 
-    function generateDRCId() internal returns (bytes32) {
-        require (_drcIdCounter.current() < _maxDrcCount, "DRC ID counter has reached maximum value");
-        uint256 drcId = _drcIdCounter.current();
-        _drcIdCounter.increment();
-        bytes memory drcCountBytes = new bytes(5);
-        for (uint256 i = 0; i < 5; i++) {
-            drcCountBytes[4-i] = bytes1(uint8(48 + (drcId % 10)));
-            drcId /= 10;
-        }
-        return keccak256(abi.encodePacked(counterPrefix, drcId));
-    }
-    // Get latest DRC ID
-    function getLatestDRCId() public view returns (bytes32) {
-        return keccak256(abi.encodePacked(counterPrefix, _drcIdCounter.current()));
-    }
+//    function generateDRCId() internal returns (bytes32) {
+//        require (_drcIdCounter.current() < _maxDrcCount, "DRC ID counter has reached maximum value");
+//        uint256 drcId = _drcIdCounter.current();
+//        _drcIdCounter.increment();
+//        bytes memory drcCountBytes = new bytes(5);
+//        for (uint256 i = 0; i < 5; i++) {
+//            drcCountBytes[4-i] = bytes1(uint8(48 + (drcId % 10)));
+//            drcId /= 10;
+//        }
+//        return keccak256(abi.encodePacked(counterPrefix, drcId));
+//    }
+//    // Get latest DRC ID
+//    function getLatestDRCId() public view returns (bytes32) {
+//        return keccak256(abi.encodePacked(counterPrefix, _drcIdCounter.current()));
+//    }
 
 }
 

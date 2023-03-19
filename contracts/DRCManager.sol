@@ -203,7 +203,7 @@ contract DRCManager{
         }
     }
     // this function is called by the admin to approve the transfer
-    function approveDta(bytes32 applicationId) public {
+    function approveDta(bytes32 applicationId, bytes32  newDrcId) public {
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
         emit LogOfficer("Officer in action",officer);
         //fetch the application
@@ -218,7 +218,7 @@ contract DRCManager{
             dtaStorage.updateApplication(application);
             emit DtaApplicationApproved(officer, applicationId);
             // one drc transfer is approved, new drc should be created
-            genNewDrcFromApplication(application);
+            genNewDrcFromApplication(application, newDrcId);
         } else {
             emit Logger("User not authorized");
         }
@@ -230,20 +230,27 @@ contract DRCManager{
     @param application The DRC transfer application to create a new DRC from
     */
 
-    function genNewDrcFromApplication(DrcTransferApplication memory application ) internal {
+    function genNewDrcFromApplication(DrcTransferApplication memory application, bytes32 newDrcId) internal {
         DRC memory drc = drcStorage.getDrc(application.drcId);
         emit LogBytes("id of the drc fetched in gen new drc is",drc.id);
         emit LogBytes("id of the application fetched in gen new drc is",application.drcId);
         DRC memory newDrc;
-        newDrc.id = application.applicationId;
+        newDrc.id = newDrcId;
         newDrc.noticeId = drc.noticeId;
         newDrc.status = DrcStatus.available;
         newDrc.farCredited = application.farTransferred;
         newDrc.farAvailable = application.farTransferred;
         newDrc.owners = application.buyers;
+        newDrc.applicationId = application.applicationId;
+        newDrc.areaSurrendered = drc.areaSurrendered;
+        newDrc.circleRateSurrendered= drc.circleRateSurrendered;
+        newDrc.circleRateUtilization = drc.circleRateUtilization;
         drcStorage.createDrc(newDrc);
         // need to reduce the available area of the old drc
         drc.farAvailable = drc.farAvailable - application.farTransferred;
+        if(drc.farAvailable==0){
+            drc.status=DrcStatus.transferred;
+        }
         drcStorage.updateDrc(drc.id,drc);
     }
 

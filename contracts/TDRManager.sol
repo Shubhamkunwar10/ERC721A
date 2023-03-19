@@ -304,7 +304,7 @@ contract TDRManager {
     }
 
 // This function mark the application as verified
-    function issueDRC(bytes32 applicationId, uint farGranted, uint timeStamp) public {
+    function issueDRC(bytes32 applicationId, bytes32 newDrcId, uint farGranted, uint timeStamp) public {
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
         emit LogOfficer("Officer in action",officer);
         // Check if notice is issued
@@ -325,7 +325,7 @@ contract TDRManager {
             tdrStorage.updateApplication(tdrApplication);
             // issue DRC
             emit Logger("DRC Issue was successful, creating DRC now");
-            createDrc(tdrApplication, farGranted, timeStamp);
+            createDrc(tdrApplication, farGranted, newDrcId,timeStamp);
 //             drcManager.issueDRC(tdrApplication, far);
             // emit events
         }else {
@@ -419,10 +419,10 @@ contract TDRManager {
         return tdrStorage.getApplicationForUser(userId);
     }
 
-    function createDrc(TdrApplication memory tdrApplication, uint farGranted, uint timeStamp) public {
+    function createDrc(TdrApplication memory tdrApplication, uint farGranted, bytes32 newDrcId, uint timeStamp) public {
         // from the approved application, it creates a drc
         DRC memory drc;
-        drc.id = tdrApplication.applicationId;
+        drc.id = newDrcId;
         drc.noticeId = tdrApplication.noticeId;
         drc.status = DrcStatus.available;
         drc.farCredited = farGranted;
