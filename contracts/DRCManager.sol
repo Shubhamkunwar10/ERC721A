@@ -145,6 +145,13 @@ contract DRCManager {
             far <= drc.farAvailable,
             "Transfer area is greater than the available area"
         );
+
+        if((drc.owners).length <= 0){
+            revert("DRC owners should be greater than 0");
+        } else if(buyers.length <= 0){
+            revert("Buyers should be greater than 0");
+        }
+
         // add all the owners id from the drc to the mapping
 
         Signatory[] memory applicants = new Signatory[](drc.owners.length);
