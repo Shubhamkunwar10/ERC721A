@@ -239,7 +239,7 @@ contract TDRManager {
         if(allSignatoriesSign){
             emit Logger("All signatories signed");
             // Mark the TdrApplication as submitted if all signatories have signed
-            application.status = ApplicationStatus.submitted;
+            application.status = ApplicationStatus.SUBMITTED;
         }
         // Update the TdrApplication in the tdrStorage
         tdrStorage.updateApplication(application);
@@ -272,7 +272,7 @@ contract TDRManager {
         if (officer.role == Role.SUPER_ADMIN || officer.role== Role.ADMIN ||
         officer.role==Role.APPROVER || officer.role==Role.VC) {
             // update Application
-            tdrApplication.status = ApplicationStatus.rejected;
+            tdrApplication.status = ApplicationStatus.REJECTED;
             tdrStorage.updateApplication(tdrApplication);
             emit ApplicationRejected(applicationId, reason);
         } else {
@@ -287,13 +287,13 @@ contract TDRManager {
        // Check if notice is issued
        TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
        TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-       if(notice.status == NoticeStatus.issued){
+       if(notice.status == NoticeStatus.ISSUED){
            revert("DRC already issued against this notice");
        }
        if (officer.role == Role.SUPER_ADMIN || officer.role== Role.ADMIN ||
             officer.role==Role.APPROVER || officer.role==Role.VC) {
                // update Application
-               tdrApplication.status = ApplicationStatus.approved;
+               tdrApplication.status = ApplicationStatus.APPROVED;
                tdrStorage.updateApplication(tdrApplication);
                emit ApplicationApproved(officer, applicationId);
        } else {
@@ -308,15 +308,15 @@ contract TDRManager {
         // Check if notice is issued
         TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
         TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-        if(notice.status == NoticeStatus.issued){
+        if(notice.status == NoticeStatus.ISSUED){
             revert("DRC already issued against this notice");
         }
         if (officer.role == Role.SUPER_ADMIN || officer.role== Role.ADMIN
             || officer.role==Role.VC) {
             // set application status as verified
-            tdrApplication.status = ApplicationStatus.drcIssued;
+            tdrApplication.status = ApplicationStatus.DRCISSUED;
             // set notice as issued
-            notice.status = NoticeStatus.issued;
+            notice.status = NoticeStatus.ISSUED;
             tdrStorage.updateNotice(notice);
 
             // update Application
@@ -343,7 +343,7 @@ contract TDRManager {
         // Check if notice is issued
         TdrApplication memory tdrApplication = tdrStorage.getApplication(applicationId);
         TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-        if(notice.status == NoticeStatus.issued){
+        if(notice.status == NoticeStatus.ISSUED){
             revert("DRC already issued against this notice");
         }
         if (officer.role == Role.SUPER_ADMIN ||
@@ -354,7 +354,7 @@ contract TDRManager {
                 status.verifierId = officer.userId;
                 status.verifierRole = officer.role;
               // update Application
-                tdrApplication.status = ApplicationStatus.verified;
+                tdrApplication.status = ApplicationStatus.VERIFIED;
                 tdrStorage.updateApplication(tdrApplication);
                 emit ApplicationVerified(officer, applicationId);
                 tdrStorage.storeVerificationStatus(applicationId,status);
@@ -377,7 +377,7 @@ contract TDRManager {
             if (checkIfAllSubverifiersSigned(status)) {
                 status.verified=true;
                 // set application status as verified
-                tdrApplication.status = ApplicationStatus.verified;
+                tdrApplication.status = ApplicationStatus.VERIFIED;
                 // update Application
                 tdrStorage.updateApplication(tdrApplication);
                 emit Logger("Appliction verified by all sub verifier");
@@ -422,7 +422,7 @@ contract TDRManager {
         DRC memory drc;
         drc.id = tdrApplication.applicationId;
         drc.noticeId = tdrApplication.noticeId;
-        drc.status = DrcStatus.available;
+        drc.status = DrcStatus.AVAILABLE;
         drc.farCredited = farGranted;
         drc.farAvailable = farGranted;
         drc.areaSurrendered = 0; // change it to get the value from notice

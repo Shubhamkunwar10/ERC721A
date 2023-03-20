@@ -183,9 +183,9 @@ contract TdrStorage {
         // Update the application in the mapping
         applicationMap[_applicationId] = application;
         // check for the notice
-        if(_status == ApplicationStatus.drcIssued){
+        if(_status == ApplicationStatus.DRCISSUED){
             TdrNotice storage notice = noticeMap[application.noticeId];
-            notice.status= NoticeStatus.issued;
+            notice.status= NoticeStatus.ISSUED;
             noticeMap[application.noticeId]=notice;
         }
 
@@ -261,6 +261,7 @@ contract TdrStorage {
         emit Logger("application has not been created");
         return false;
         }
+    require(_applicationId > 0, "Applicant must be greater than 0");
     emit Logger("application has been created");
       return true;
   }

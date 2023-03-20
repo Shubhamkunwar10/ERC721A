@@ -40,7 +40,10 @@ contract DRCManager {
     event DtaApplicationApproved(KdaOfficer officer, bytes32 applicationId);
     event DtaApplicationRejected(bytes32 applicationId, string reason);
     event genDRCFromApplication(DrcTransferApplication application);
+<<<<<<< HEAD
 
+=======
+>>>>>>> KDA-103
 
     // Constructor function to set the initial values of the contract
     constructor(address _admin, address _manager) {
@@ -136,10 +139,10 @@ contract DRCManager {
         bytes32 applicationId,
         uint far,
         bytes32[] memory buyers
-        ) public {
-            emit Logger("Create tra");
+    ) public {
+        emit Logger("Create tra");
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
-        DRC memory drc = drcStorage.getDrc(drcId);
+
         // far should be less than available far.
         require(
             far <= drc.farAvailable,
@@ -154,7 +157,13 @@ contract DRCManager {
 
         // add all the owners id from the drc to the mapping
 
-        Signatory[] memory applicants = new Signatory[](drc.owners.length);
+        // Signatory[] memory applicants = new Signatory[](drc.owners.length);
+
+        if (drc.owners.length <= 0) {
+            revert("DRC has 0 owners");
+        } else if (buyers.length <= 0) {
+            revert("Number of buyers should be greater than 0");
+        }
 
         // no user has signed yet
         for (uint i = 0; i < drc.owners.length; i++) {
@@ -169,11 +178,29 @@ contract DRCManager {
             far,
             applicants,
             buyers,
-            ApplicationStatus.pending
+            ApplicationStatus.PENDING
         );
         // signs the drc transfer application and checks whether all owners have signed it or not
         signDrcTransferApplication(applicationId);
-        drcStorage.addDtaToDrc(drc.id, applicationId);
+        drcStorage.addDtaToDrc(drc.id,applicationId);
+        // // no user has signed yet
+        // for (uint i = 0; i < drc.owners.length; i++) {
+        //     Signatory memory s;
+        //     s.userId = drc.owners[i];
+        //     s.hasUserSigned = false;
+        //     applicants[i] = s;
+        // }
+        // dtaStorage.createApplication(
+        //     applicationId,
+        //     drcId,
+        //     far,
+        //     applicants,
+        //     buyers,
+        //     ApplicationStatus.pending
+        // );
+        // // signs the drc transfer application and checks whether all owners have signed it or not
+        // signDrcTransferApplication(applicationId);
+        // drcStorage.addDtaToDrc(drc.id, applicationId);
     }
 
     // this function is called by the user to approve the transfer
@@ -206,7 +233,7 @@ contract DRCManager {
         if (allSignatoriesSign) {
             //all the signatories has signed
             //change the status of the sub-drc
-            application.status = ApplicationStatus.submitted;
+            application.status = ApplicationStatus.SUBMITTED;
             // applicationMap[applicationId]=application;
         }
         dtaStorage.updateApplication(application);
@@ -224,7 +251,7 @@ contract DRCManager {
             applicationId
         );
         require(
-            dta.status == ApplicationStatus.submitted,
+            dta.status == ApplicationStatus.SUBMITTED,
             "Application is not submitted"
         );
         if (
@@ -237,7 +264,7 @@ contract DRCManager {
             status.verifierId = officer.userId;
             status.verifierRole = officer.role;
             // update Application
-            dta.status = ApplicationStatus.verified;
+            dta.status = ApplicationStatus.VERIFIED;
             dtaStorage.updateApplication(dta);
             emit DtaApplicationVerified(officer, applicationId);
             dtaStorage.storeVerificationStatus(applicationId, status);
@@ -256,7 +283,7 @@ contract DRCManager {
         );
         //application should not be already approved
         require(
-            application.status != ApplicationStatus.approved,
+            application.status != ApplicationStatus.APPROVED,
             "Application already approved"
         );
 
@@ -267,13 +294,12 @@ contract DRCManager {
             officer.role == Role.VC
         ) {
             // update Application
-            application.status = ApplicationStatus.approved;
+            application.status = ApplicationStatus.APPROVED;
             dtaStorage.updateApplication(application);
             emit DtaApplicationApproved(officer, applicationId);
             // one drc transfer is approved, new drc should be created
             genNewDrcFromApplication(application);
-        } else {
-        }
+        } else {}
 
         //        ///------------------------------------------
         //        require(msg.sender == admin,"Only admin can approve the Transfer");
@@ -305,7 +331,7 @@ contract DRCManager {
         DRC memory newDrc;
         newDrc.id = application.applicationId;
         newDrc.noticeId = drc.noticeId;
-        newDrc.status = DrcStatus.available;
+        newDrc.status = DrcStatus.AVAILABLE;
         newDrc.farCredited = application.farTransferred;
         newDrc.farAvailable = application.farTransferred;
         newDrc.owners = application.buyers;
@@ -328,11 +354,11 @@ contract DRCManager {
             applicationId
         );
         require(
-            application.status != ApplicationStatus.approved,
+            application.status != ApplicationStatus.APPROVED,
             "Application is already approved"
         );
         require(
-            application.status == ApplicationStatus.submitted,
+            application.status == ApplicationStatus.SUBMITTED,
             "Application is not yet submitted"
         );
 
@@ -344,9 +370,11 @@ contract DRCManager {
             officer.role == Role.VC
         ) {
             // update Application
-            application.status = ApplicationStatus.rejected;
+            application.status = ApplicationStatus.REJECTED;
             dtaStorage.updateApplication(application);
             emit DtaApplicationRejected(applicationId, reason);
+
+            // change the status of sub-drc
             //            DRC memory drc = drcStorage.getDrc(application.drcId);
             //            drc.farAvailable = drc.farAvailable+application.farTransferred;
             //            drcStorage.updateDrc(drc.id,drc);
@@ -455,8 +483,6 @@ contract DRCManager {
         return drcStorage.getDrcIdsForUser(userId);
     }
 
-
-
     //------
     //        require(msg.sender == admin,"Only admin can reject the Transfer");
     //        DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
@@ -472,6 +498,8 @@ contract DRCManager {
     //        drc.farAvailable = drc.farAvailable+application.farTransferred;
     //        drcStorage.updateDrc(drc.id,drc);
     //    }
+
+
 
     // what other details, like building application are needed fro utilization application
     function createUtilizationApplication(
@@ -503,7 +531,7 @@ contract DRCManager {
             drc.id,
             far,
             duaSignatories,
-            ApplicationStatus.pending
+            ApplicationStatus.PENDING
         );
         signDrcUtilizationApplication(applicationId);
         drcStorage.addDuaToDrc(drc.id, applicationId);
@@ -535,12 +563,13 @@ contract DRCManager {
         // if all the signatories has not signed
         if (allSignatoriesSign) {
             //all the signatories has signed
-            application.status = ApplicationStatus.approved;
+            application.status = ApplicationStatus.APPROVED;
             // reduce drc
         }
         duaStorage.updateApplication(application);
     }
 
+    // This function adds application to drc
     // also reduced the available area by the area in drc. This need to be removed
     //    function addApplicationToDrc(bytes32 drcId,bytes32 applicationId, uint farConsumed) internal {
     //        DRC memory drc = drcStorage.getDrc(drcId);
