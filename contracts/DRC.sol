@@ -83,6 +83,9 @@ contract DrcStorage {
     function setTdrManager(address _newTdrManager) onlyOwner public {
         tdrManager = _newTdrManager;
     }
+
+    // CRUD for drcMap
+
     // Create a function to add a new Drc to the mapping
     function createDrc(DRC memory _drc) public onlyDrcCreator{
         //check whether the DRC already exists
@@ -101,7 +104,6 @@ contract DrcStorage {
         storeDrcInMap(_drc);
     }
 
-
     // Create a function to retrieve a Drc from the mapping by ID
     function getDrc(bytes32 _id) public view returns (DRC memory) {
         // Retrieve the Drc from the mapping
@@ -119,6 +121,13 @@ contract DrcStorage {
         delete drcMap[_id];
     }
 
+    /**
+    CRUD operations on the owner map
+    */
+
+    /**
+    add drc to all of its owners
+    */
     function addDrcToOwners(DRC memory drc) public {
         for (uint i=0; i< drc.owners.length; i++){
             addDrcToOwner(drc.id,drc.owners[i]);
@@ -131,9 +140,7 @@ contract DrcStorage {
         emit DrcAddedToOwner(drcId,ownerId);
     }
 
-    /**
-    CRUD operations on the owner map
-    */
+
     event DrcIdsAdded(bytes32 ownerId, bytes32[] drcList);
     function addDrcIdsToOwner(bytes32[] memory drcList, bytes32 ownerId) public onlyManager{
         if(isOwnerinOwnerMap(ownerId)){
@@ -257,7 +264,7 @@ contract DrcStorage {
 //    return emptyDrcOwner;
     }
 
-    function storeDrcInMap (DRC memory _drc) public {
+    function storeDrcInMap (DRC memory _drc) internal {
 //        drcMap[_drc.id]=_drc;
 //
         DRC storage drc = drcMap[_drc.id];
