@@ -302,7 +302,7 @@ contract TDRManager {
     }
 
 // This function mark the application as verified
-    function issueDRC(bytes32 applicationId, uint farGranted, uint timeStamp) public {
+    function issueDRC(bytes32 applicationId, uint farGranted, uint timeStamp) internal {
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
         emit LogOfficer("Officer in action",officer);
         // Check if notice is issued
