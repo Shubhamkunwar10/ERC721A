@@ -304,9 +304,19 @@ contract DRCManager {
         );
         //application should not be already approved
         require(
+            application.status == ApplicationStatus.VERIFIED,
+            "Application not verified"
+        );
+        require(
             application.status != ApplicationStatus.APPROVED,
             "Application already approved"
         );
+
+        if(officer.Role == Role.ADMIN){
+            if(application.status = ApplicationStatus.REJECTED){
+                application.status = ApplicationStatus.APPROVED;
+            }
+        }
 
         if (
             officer.role == Role.SUPER_ADMIN ||
