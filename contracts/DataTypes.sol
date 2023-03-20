@@ -52,7 +52,17 @@ pragma solidity ^0.8.16;
         bytes32[] owners;
         uint timeStamp;
     }
-
+// DRC Utilization Certificate
+    struct DUC {
+        bytes32 id;
+        bytes32 applicationId; // application id of application in BPAS
+        bytes32 noticeId;
+        uint farUtilized;
+        uint circleRateSurrendered;
+        uint circleRateUtilization;
+        bytes32[] owners;
+        uint timeStamp;
+    }
     struct DrcOwner{
         bytes32 userId;
         uint area;
