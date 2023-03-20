@@ -157,7 +157,7 @@ contract NomineeStorage {
         nominees.pop();
         userNominees[user]= nominees;
     }
-    function findIndex(bytes32[] memory arr, bytes32 element) public pure returns(uint) {
+    function findIndex(bytes32[] memory arr, bytes32 element) internal pure returns(uint) {
         for (uint i = 0; i < arr.length; i++) {
             if (arr[i] == element) {
                 return i;
@@ -168,6 +168,7 @@ contract NomineeStorage {
     event nomineeApplicationAdded(bytes32 applicationId, bytes32 userId);
     event nomineeApplicationUpdated(bytes32 applicationId, bytes32 userId);
     event nomineeApplicationDeleted(bytes32 applicationId, bytes32 userId);
+
     function createNomineeApplication(nomineeApplication memory application) onlyManager public {
         // check whether the application exists or not
         if(isApplicationCreated(application.applicationId)){
@@ -176,6 +177,7 @@ contract NomineeStorage {
         nomineeApplicationMap[application.applicationId] = application;
         emit nomineeApplicationAdded(application.applicationId, application.userId);
     }
+    
     function updateNomineeApplication(nomineeApplication memory application) onlyManager public {
         // check whether the application exists or not
         if(!isApplicationCreated(application.applicationId)){

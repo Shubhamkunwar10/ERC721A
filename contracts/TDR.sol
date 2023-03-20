@@ -333,7 +333,7 @@ contract TdrStorage {
         applicationIds.pop();
         userApplicationMap[userId]= applicationIds;
     }
-    function findIndex(bytes32[] memory arr, bytes32 element) public pure returns(uint) {
+    function findIndex(bytes32[] memory arr, bytes32 element) internal pure returns(uint) {
         for (uint i = 0; i < arr.length; i++) {
             if (arr[i] == element) {
                 return i;

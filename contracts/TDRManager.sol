@@ -434,7 +434,7 @@ contract TDRManager {
             revert("user not authorized");
         }
     }
-    function checkIfAllSubverifiersSigned(VerificationStatus memory verificationStatus) public pure returns (bool) {
+    function checkIfAllSubverifiersSigned(VerificationStatus memory verificationStatus) internal pure returns (bool) {
     bool allSigned = true;
 
     // Check the status of each subverifier

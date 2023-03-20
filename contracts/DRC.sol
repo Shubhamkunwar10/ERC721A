@@ -103,12 +103,12 @@ contract DrcStorage {
         // insertDrc((_drc));
         storeDrcInMap(_drc);
     }
-    function addDrcToOwners(DRC memory drc) public {
+    function addDrcToOwners(DRC memory drc) internal {
         for (uint i=0; i< drc.owners.length; i++){
             addDrcToOwner(drc.id,drc.owners[i]);
         }
     }
-    function addDrcToOwner(bytes32 drcId, bytes32 ownerId) public {
+    function addDrcToOwner(bytes32 drcId, bytes32 ownerId) internal {
         bytes32[] storage drcList = ownerMap[ownerId];
         drcList.push(drcId);
         ownerMap[ownerId]=drcList;
@@ -133,12 +133,12 @@ contract DrcStorage {
         delete drcMap[_id];
     }
 
-    function addDrcToOwners(DRC memory drc) public {
+    function addDrcToOwners(DRC memory drc) internal {
         for (uint i=0; i< drc.owners.length; i++){
             addDrcToOwner(drc.id,drc.owners[i]);
         }
     }
-    function addDrcToOwner(bytes32 drcId, bytes32 ownerId) public {
+    function addDrcToOwner(bytes32 drcId, bytes32 ownerId) internal {
         bytes32[] storage drcList = ownerMap[ownerId];
         drcList.push(drcId);
         ownerMap[ownerId]=drcList;
@@ -208,11 +208,7 @@ contract DrcStorage {
 ////    drcMap[_drcId] = drc;
 //  }
 
-    /**
-    Deletes the owner from drc.
-    Also deletes the drc from ownerMap
-    */
-  function removeOwnerFromDrc(bytes32 _drcId, bytes32 ownerId) public onlyManager{
+  function deleteOwner(bytes32 _drcId, bytes32 ownerId) public{
     // assume singkle occurance of the ownerID
     // Funtion searches for owners and deletes it. Assume that there are multiple owner with same owner id.
     DRC storage drc = drcMap[_drcId];
