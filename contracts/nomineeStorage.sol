@@ -126,7 +126,7 @@ contract NomineeStorage {
      * @param user The user for whom the nominees are being retrieved
      * @return The array of nominees for the user
      */
-    function getNominees(bytes32 user) public onlyManager returns (bytes32[] memory) {
+    function getNominees(bytes32 user) public onlyManager view returns (bytes32[] memory) {
         return userNominees[user];
     }
 
@@ -192,7 +192,7 @@ contract NomineeStorage {
         delete nomineeApplicationMap[application.applicationId];
         emit nomineeApplicationDeleted(application.applicationId, application.userId);
     }
-    function getNomineeApplication(bytes32 applicationId) public returns (nomineeApplication memory) {
+    function getNomineeApplication(bytes32 applicationId) public view returns (nomineeApplication memory) {
         return nomineeApplicationMap[applicationId];
     }
     function isApplicationCreated(bytes32 _applicationId) public view returns (bool) {

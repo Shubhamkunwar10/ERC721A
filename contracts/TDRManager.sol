@@ -202,7 +202,7 @@ contract TDRManager {
     }
 
     // This function uses address to see whether the user has signed the application or not
-    function getApplicantsPosition(bytes32 _applicationId,address adrs) public returns(uint){
+    function getApplicantsPosition(bytes32 _applicationId,address adrs) public view returns(uint){
         TdrApplication memory  application = tdrStorage.getApplication(_applicationId);
         bytes32 userId = userManager.getUserId(adrs);
 //        emit LogAddress("address quries is ",adrs);

@@ -51,10 +51,6 @@ contract DRCManager {
     event DrcIssuedByTransfer(bytes32 applicationId, bytes32[] applicants, bytes32[] buyers);
     event DuaCreated(bytes32 applicationId, uint far, bytes32[] applicants);
     event DrcUtilized(bytes32 applicationId, uint farUtilized);    event genDRCFromApplication(DrcTransferApplication application);
-<<<<<<< HEAD
-
-=======
->>>>>>> KDA-103
 
     // Constructor function to set the initial values of the contract
     constructor(address _admin, address _manager) {
@@ -643,13 +639,13 @@ contract DRCManager {
         drcStorage.updateDrc(drcId, drc);
         emit DrcTransferredToNominees(drcId, userId, nominees);
     }
-    function replaceUserByNominees(bytes32[] memory owners, bytes32 user, bytes32[] memory nominees) public returns (bytes32[] memory){
+    function replaceUserByNominees(bytes32[] memory owners, bytes32 user, bytes32[] memory nominees) public view returns (bytes32[] memory){
         bytes32[] memory ownersWithoutUser = deleteUserFromList(owners,user);
         bytes32[] memory ownersWithNominees = mergeArrays(ownersWithoutUser, nominees);
 //        bytes32[] memory ownersWithNominees = mergeArrays(owners, nominees);
         return ownersWithNominees;
     }
-    function mergeArrays(bytes32[] memory arr1, bytes32[] memory arr2) public pure returns (bytes32[] memory) {
+    function mergeArrays(bytes32[] memory arr1, bytes32[] memory arr2) public view returns (bytes32[] memory) {
         uint256 arr1Len = arr1.length;
         uint256 arr2Len = arr2.length;
         bytes32[] memory result = new bytes32[](arr1Len + arr2Len);
@@ -662,7 +658,7 @@ contract DRCManager {
         }
         return result;
     }
-    function deleteUserFromList(bytes32[] memory owners, bytes32 user) public returns (bytes32[] memory){
+    function deleteUserFromList(bytes32[] memory owners, bytes32 user) public view returns (bytes32[] memory){
         uint index = findIndex(owners, user);
         if (index == owners.length){
             revert("user not found in owner list");
@@ -672,7 +668,7 @@ contract DRCManager {
         }
         return deleteLastElement(owners);
     }
-    function findIndex(bytes32[] memory arr, bytes32 element) public pure returns(uint) {
+    function findIndex(bytes32[] memory arr, bytes32 element) public view returns(uint) {
         for (uint i = 0; i < arr.length; i++) {
             if (arr[i] == element) {
                 return i;
@@ -680,7 +676,7 @@ contract DRCManager {
         }
         return arr.length;
     }
-    function deleteLastElement(bytes32[] memory arr) public pure returns (bytes32[] memory){
+    function deleteLastElement(bytes32[] memory arr) public view returns (bytes32[] memory){
         bytes32[] memory tempArray = new bytes32[](arr.length -1);
         for (uint i=0; i< tempArray.length; i++){
             tempArray[i]=arr[i];

@@ -249,7 +249,7 @@ contract TdrStorage {
 
         // Emit the TDRDeleted event
        
-  function isNoticeCreated(TdrNotice memory _tdrNotice) public returns (bool) {
+  function isNoticeCreated(TdrNotice memory _tdrNotice) public view returns (bool) {
     emit Logger("notice check was called");
     // in mapping, default values of all atrributes is zero
     TdrNotice memory _noticeFromMap = noticeMap[_tdrNotice.noticeId];
@@ -262,7 +262,7 @@ contract TdrStorage {
         return true;
   }
 
-  function isApplicationCreated(bytes32 _applicationId) public returns (bool) {
+  function isApplicationCreated(bytes32 _applicationId) public view returns (bool) {
     emit Logger("application check was called");
     // in mapping, default values of all atrributes is zero
       TdrApplication memory application = applicationMap[_applicationId];
