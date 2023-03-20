@@ -200,7 +200,7 @@ contract DRCManager{
         dtaStorage.updateApplication(application);
     }
 
-    // this function is called by the admin to approve the transfer
+    // this function is called by the admin to verify the transfer
     function verifyDrcApplication(bytes32 applicationId) public {
         VerificationStatus memory status = dtaStorage.getVerificationStatus(applicationId);
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
@@ -222,7 +222,7 @@ contract DRCManager{
             dtaStorage.storeVerificationStatus(applicationId,status);
 
         } else {
-            emit Logger("User is not authorized");
+            revert("User not authorized");
         }
     }
     // this function is called by the admin to approve the transfer
@@ -243,7 +243,7 @@ contract DRCManager{
             // one drc transfer is approved, new drc should be created
             genNewDrcFromApplication(application, newDrcId);
         } else {
-            emit Logger("User not authorized");
+            revert("User not authorized");
         }
         emit DrcIssuedByTransfer(applicationId, getApplicantIdsFromApplicants(application.applicants), application.buyers);
     }

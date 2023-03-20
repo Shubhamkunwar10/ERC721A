@@ -311,7 +311,7 @@ contract TDRManager {
                                         reason,
                                         getApplicantIdsFromTdrApplication(tdrApplication));
         } else {
-            emit Logger("User not authorized");
+            revert("User not authorized");
         }
         // store the reason for rejection of application
     }
@@ -335,7 +335,7 @@ contract TDRManager {
                                         applicationId,
                                         getApplicantIdsFromTdrApplication(tdrApplication));
        } else {
-           emit Logger("User not authorized");
+           revert("User not authorized");
        }
     }
 
@@ -361,11 +361,11 @@ contract TDRManager {
             tdrStorage.updateApplication(tdrApplication);
             // issue DRC
             emit Logger("DRC Issue was successful, creating DRC now");
-            createDrc(tdrApplication, farGranted, newDrcId,timeStamp);
+            createDrc(tdrApplication, farGranted, newDrcId,timeStamp, notice.areaSurrendered, notice.circleRateSurrendered);
 //             drcManager.issueDRC(tdrApplication, far);
             // emit events
         }else {
-            emit Logger("User not authorised");
+            revert("User not authorized");
         }
 
 
@@ -431,7 +431,7 @@ contract TDRManager {
             }
             tdrStorage.storeVerificationStatus(applicationId,status);
         } else {
-            emit Logger("User is not authorized");
+            revert("user not authorized");
         }
     }
     function checkIfAllSubverifiersSigned(VerificationStatus memory verificationStatus) public pure returns (bool) {
@@ -464,7 +464,7 @@ contract TDRManager {
         return tdrStorage.getApplicationForUser(userId);
     }
 
-    function createDrc(TdrApplication memory tdrApplication, uint farGranted, bytes32 newDrcId, uint timeStamp) public {
+    function createDrc(TdrApplication memory tdrApplication, uint farGranted, bytes32 newDrcId, uint timeStamp, uint areaSurrendered, uint circleRateSurrendered) public {
         // from the approved application, it creates a drc
         DRC memory drc;
         drc.id = newDrcId;
@@ -472,8 +472,8 @@ contract TDRManager {
         drc.status = DrcStatus.available;
         drc.farCredited = farGranted;
         drc.farAvailable = farGranted;
-        drc.areaSurrendered = notice.areaSurrendered; // change it to get the value from notice
-        drc.circleRateSurrendered = notice.circleRateSurrendered; // get it from application
+        drc.areaSurrendered = areaSurrendered; // change it to get the value from notice
+        drc.circleRateSurrendered = circleRateSurrendered; // get it from application
         drc.circleRateUtilization = tdrApplication.circleRateUtilized; // get from application
         drc.applicationId = tdrApplication.applicationId;
         drc.owners = new bytes32[](tdrApplication.applicants.length);
