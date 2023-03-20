@@ -86,6 +86,8 @@ contract TdrStorage {
         if(isApplicationCreated(_tdrApplication.applicationId)){
             revert("application with same id has already been created");
         }
+        require((_tdrApplication.applicants).length > 0, "Applicant should be greater than 0" );
+
         // add application to the map
         addApplicationToMap(_tdrApplication);
         storeApplicationForUser(_tdrApplication);
