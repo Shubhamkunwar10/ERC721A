@@ -43,8 +43,8 @@ contract UserManager {
     // Address of the Vice-chairman
     address public vc;
 
-     
-    // Event emitted after a user is updated   
+
+    // Event emitted after a user is updated
     event UserAdded(bytes32 userId, address userAddress);
     // Event emitted after a user is updated
     event UserUpdated(bytes32 userId, address userAddress);
@@ -56,7 +56,7 @@ contract UserManager {
     // Event emitted after a officer is deleted
     event OfficerDeleted(bytes32 officerId);
 
-    // Event emitted after a verifier is added   
+    // Event emitted after a verifier is added
     event VerifierAdded(bytes32 verifierId, address verifierAddress);
     // Event emitted after a verifier is updated
     event VerifierUpdated(bytes32 verifierId, address verifierAddress);
@@ -64,7 +64,7 @@ contract UserManager {
     event VerifierDeleted(bytes32 verifierId);
 
 
-    // Event emitted after a approver is added   
+    // Event emitted after a approver is added
     event ApproverAdded(bytes32 approverId, address approverAddress);
     // Event emitted after a approver is updated
     event ApproverUpdated(bytes32 approverId, address approverAddress);
@@ -72,7 +72,7 @@ contract UserManager {
     event ApproverDeleted(bytes32 approverId);
 
 
-    // Event emitted after a issuer is added   
+    // Event emitted after a issuer is added
     event IssuerAdded(bytes32 issuerId, address issuerAddress);
     // Event emitted after a issuer is updated
     event IssuerUpdated(bytes32 issuerId, address issuerAddress);
@@ -151,7 +151,7 @@ contract UserManager {
  * @param userId 12 bit uint id of the user
  * @param userAddress address of the user
  */
-    function updateUser(bytes32 userId, address userAddress) public onlyAdmin {
+    function updateUser(bytes32 userId, address userAddress) public onlyManager {
         // check if user already exists
         if(userMap[userId]==address(0)){
             revert("user does not exist");
@@ -170,12 +170,18 @@ contract UserManager {
     /**
      * Adds a new Officer to the mapping of KdaOfficers.
      * @param officer The Officer to add to the mapping.
-     * @param officerAddress The address of the Officer to add to the mapping.
-     * @dev The method will only allow an Admin to add a new Officer. If the Officer already exists in the mapping,
+     * @dev The method will only allow an Admin to add a new Officer. If the Officer already exists in the mapping,address
      * the method will revert with an error message. If the Officer is added successfully, the method will emit
      * the OfficerAdded event.
      */
-    function addOfficer (KdaOfficer memory officer, address officerAddress) public onlyManager {
+    function addOfficer (KdaOfficer memory officer) public {
+        address officerAddress = userMap[officer.userId];
+        // check role of the user should be admin only if not manager
+        if(msg.sender != manager){
+            require(officerMap[reverseOfficerMap[tx.origin]].role == Role.ADMIN, "Officer is not an admin");
+            // check for user role is not admin or super admin
+            require(officer.role != Role.ADMIN || officer.role != Role.SUPER_ADMIN, "Officer role is not valid");
+        }
         // check is user already does not exist
         if(officerAddressMap[officer.userId]!=address(0)){
             revert("Officer already exist, instead try updating the address");
@@ -193,12 +199,17 @@ contract UserManager {
     /**
      * Updates an existing Officer in the mapping of KdaOfficers.
      * @param officer The Officer to update in the mapping.
-     * @param officerAddress The new address of the Officer to update in the mapping.
      * @dev The method will only allow an Admin to update an existing Officer. If the Officer does not exist in the
      * mapping, the method will revert with an error message. If the Officer is updated successfully, the method will
      * emit the OfficerUpdated event.
      */
-    function updateOfficer (KdaOfficer memory officer, address officerAddress) public onlyManager {
+    function updateOfficer (KdaOfficer memory officer) public {
+        address officerAddress = userMap[officer.userId];
+        // check role of the user should be admin only
+        if(msg.sender != manager){
+            require(officerMap[reverseOfficerMap[tx.origin]].role == Role.ADMIN, "Officer is not an admin");
+            require(officer.role != Role.ADMIN || officer.role != Role.SUPER_ADMIN, "Officer role is not valid");
+        }
         // check is user already does not exist
         if(officerAddressMap[officer.userId]==address(0)){
             revert("Officer does not exist, instead try adding the address");
@@ -220,7 +231,11 @@ contract UserManager {
      * mapping, the method will revert with an error message. If the Officer is deleted successfully, the method will
      * emit the OfficerDeleted event.
      */
-    function deleteOfficer(bytes32 id) public onlyManager {
+    function deleteOfficer(bytes32 id) public {
+        // check role of the user should be admin only
+        if(msg.sender != manager){
+            require(officerMap[reverseOfficerMap[tx.origin]].role == Role.ADMIN, "Officer is not an admin");
+        }
         // check if verifier already exists
         if(officerAddressMap[id]==address(0)){
             revert("officer does not exist");
@@ -461,8 +476,6 @@ contract UserManager {
     }
     // This method would @return empty address in case address is not found
     function getUserId (address _address) public view returns (bytes32){
-//        emit LogAddress("user manager called for address",_address);
-//        emit LogBytes("returned user id is ",reverseUserMap[_address]);
         return reverseUserMap[_address];
     }
     function getVerifierId (address _address) view public returns (bytes32){
@@ -480,6 +493,6 @@ contract UserManager {
         return officerMap[id];
     }
 
-    
+
 
 }

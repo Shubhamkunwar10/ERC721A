@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.16;
 
 import "./DRC.sol";
@@ -5,6 +6,7 @@ import "./UserManager.sol";
 import "./Application.sol";
 import "./UtilizationApplication.sol";
 import "./DataTypes.sol";
+import "./nomineeManager.sol";
 
 /**
 @title TDR Manager for TDR storage
@@ -17,6 +19,7 @@ contract DRCManager{
     UserManager public userManager;
     DrcTransferApplicationStorage public dtaStorage;
     DuaStorage public duaStorage;
+    NomineeManager public nomineeManager;
 
 
     // Address of the contracts
@@ -24,6 +27,7 @@ contract DRCManager{
     address public userManagerAddress;
     address public dtaStorageAddress;
     address public duaStorageAddress;
+    address public nomineeManagerAddress;
 
 // admin address
     address owner;
@@ -37,10 +41,17 @@ contract DRCManager{
     event LogBool(string messageInfo, bool message);
     event LogApplication(string message, TdrApplication application);
     event LogOfficer(string message, KdaOfficer officer);
-    event DtaApplicationVerified(KdaOfficer officer, bytes32 applicationId);
-    event DtaApplicationApproved(KdaOfficer officer, bytes32 applicationId);
-    event DtaApplicationRejected(bytes32 applicationId, string reason);
-
+    event DtaApplicationVerified(KdaOfficer officer, bytes32 applicationId, bytes32[] applicants, bytes32[] buyers);
+    event DtaApplicationApproved(KdaOfficer officer, bytes32 applicationId,bytes32[] applicants, bytes32[] buyers);
+    event DtaApplicationRejected(bytes32 applicationId, string reason, bytes32[] applicants, bytes32[] buyers);
+    event DuaSigned(bytes32 applicationId, bytes32 signer, bytes32[] applicants);
+    event DuaApproved(bytes32 applicationId, bytes32[] applicants);
+    event DtaCreated(bytes32 drcId, bytes32 applicationId, uint far, bytes32[] applicants, bytes32[] buyers);
+    event DtaSigned(bytes32 applicationId, bytes32 signer, bytes32[] applicants);
+    event DtaSubmitted (bytes32 applicationId, bytes32[] applicants, bytes32[] buyers);
+    event DrcIssuedByTransfer(bytes32 applicationId, bytes32[] applicants, bytes32[] buyers);
+    event DuaCreated(bytes32 applicationId, uint far, bytes32[] applicants);
+    event DrcUtilized(bytes32 applicationId, uint farUtilized);
 
     // Constructor function to set the initial values of the contract
     constructor(address _admin, address _manager) {
@@ -120,7 +131,15 @@ contract DRCManager{
         duaStorageAddress = _duaStorageAddress;
         duaStorage = DuaStorage(duaStorageAddress);
     }
+    function loadNomineeManager(address _nomineeManagerAddress) public {
+        nomineeManagerAddress = _nomineeManagerAddress;
+        nomineeManager = NomineeManager(nomineeManagerAddress);
+    }
 
+    function updateNomineeManager(address _nomineeManagerAddress) public {
+        nomineeManagerAddress = _nomineeManagerAddress;
+        nomineeManager = NomineeManager(nomineeManagerAddress);
+    }
     // This function begins the drd transfer application
     function createTransferApplication(bytes32 drcId,bytes32 applicationId, uint far, uint timeStamp,bytes32[] memory buyers) public {
         // check drc exists or not
@@ -140,9 +159,12 @@ contract DRCManager{
             applicants[i]=s;
         }
         dtaStorage.createApplication(applicationId,drcId,far, applicants, buyers, timeStamp, ApplicationStatus.pending);
+        // signs the drc transfer application and checks whether all owners have signed it or not
         signDrcTransferApplication(applicationId);
         drcStorage.addDtaToDrc(drc.id,applicationId);
+//        emit DtaCreated(drcId,applicationId,far,getApplicantIdsFromApplicants(applicants),buyers);
     }
+
 
     // this function is called by the user to approve the transfer
     function signDrcTransferApplication(bytes32 applicationId) public {
@@ -153,6 +175,8 @@ contract DRCManager{
             if(signatory.userId == userManager.getUserId(msg.sender)){
                 require(!signatory.hasUserSigned,"User have already signed the application");
                 signatory.hasUserSigned = true;
+                emit DtaSigned(applicationId, signatory.userId, application.buyers );
+
             }
         }
         // user signs the application
@@ -170,12 +194,13 @@ contract DRCManager{
             //all the signatories has signed
             //change the status of the sub-drc
             application.status = ApplicationStatus.submitted;
+            emit DtaSubmitted(applicationId,getApplicantIdsFromApplicants(application.applicants), application.buyers);
             // applicationMap[applicationId]=application;
         }
         dtaStorage.updateApplication(application);
     }
 
-    // this function is called by the admin to approve the transfer
+    // this function is called by the admin to verify the transfer
     function verifyDrcApplication(bytes32 applicationId) public {
         VerificationStatus memory status = dtaStorage.getVerificationStatus(applicationId);
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
@@ -193,15 +218,15 @@ contract DRCManager{
             // update Application
             dta.status = ApplicationStatus.verified;
             dtaStorage.updateApplication(dta);
-            emit DtaApplicationVerified(officer, applicationId);
+            emit DtaApplicationVerified(officer, applicationId, getApplicantIdsFromApplicants(dta.applicants), dta.buyers);
             dtaStorage.storeVerificationStatus(applicationId,status);
 
         } else {
-            emit Logger("User is not authorized");
+            revert("User not authorized");
         }
     }
     // this function is called by the admin to approve the transfer
-    function approveDta(bytes32 applicationId) public {
+    function approveDta(bytes32 applicationId, bytes32  newDrcId) public {
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
         emit LogOfficer("Officer in action",officer);
         //fetch the application
@@ -214,13 +239,13 @@ contract DRCManager{
             // update Application
             application.status = ApplicationStatus.approved;
             dtaStorage.updateApplication(application);
-            emit DtaApplicationApproved(officer, applicationId);
+            emit DtaApplicationApproved(officer, applicationId,getApplicantIdsFromApplicants(application.applicants), application.buyers );
             // one drc transfer is approved, new drc should be created
-            genNewDrcFromApplication(application);
+            genNewDrcFromApplication(application, newDrcId);
         } else {
-            emit Logger("User not authorized");
+            revert("User not authorized");
         }
-
+        emit DrcIssuedByTransfer(applicationId, getApplicantIdsFromApplicants(application.applicants), application.buyers);
     }
     /**
     Creates a new DRC from a DRC transfer application
@@ -228,20 +253,27 @@ contract DRCManager{
     @param application The DRC transfer application to create a new DRC from
     */
 
-    function genNewDrcFromApplication(DrcTransferApplication memory application ) internal {
+    function genNewDrcFromApplication(DrcTransferApplication memory application, bytes32 newDrcId) internal {
         DRC memory drc = drcStorage.getDrc(application.drcId);
         emit LogBytes("id of the drc fetched in gen new drc is",drc.id);
         emit LogBytes("id of the application fetched in gen new drc is",application.drcId);
         DRC memory newDrc;
-        newDrc.id = application.applicationId;
+        newDrc.id = newDrcId;
         newDrc.noticeId = drc.noticeId;
         newDrc.status = DrcStatus.available;
         newDrc.farCredited = application.farTransferred;
         newDrc.farAvailable = application.farTransferred;
         newDrc.owners = application.buyers;
+        newDrc.applicationId = application.applicationId;
+        newDrc.areaSurrendered = drc.areaSurrendered;
+        newDrc.circleRateSurrendered= drc.circleRateSurrendered;
+        newDrc.circleRateUtilization = drc.circleRateUtilization;
         drcStorage.createDrc(newDrc);
         // need to reduce the available area of the old drc
         drc.farAvailable = drc.farAvailable - application.farTransferred;
+        if(drc.farAvailable==0){
+            drc.status=DrcStatus.transferred;
+        }
         drcStorage.updateDrc(drc.id,drc);
     }
 
@@ -260,13 +292,13 @@ contract DRCManager{
             // update Application
             application.status = ApplicationStatus.rejected;
             dtaStorage.updateApplication(application);
-            emit DtaApplicationRejected(applicationId, reason);
+            emit DtaApplicationRejected(applicationId, reason, getApplicantIdsFromApplicants(application.applicants), application.buyers);
         } else {
             emit Logger("User not authorized");
         }
     }
 
-    function hasUserSignedDta(bytes32 _applicationId, address _address) public returns (bool){
+    function hasUserSignedDta(bytes32 _applicationId, address _address) public view returns (bool){
         DrcTransferApplication memory application = dtaStorage.getApplication(_applicationId);
         require(application.applicationId != "", "Drc transfer application does not exist");
             // Get the user id by the address
@@ -284,7 +316,7 @@ contract DRCManager{
     }
 
 
-    function hasUserSignedDua(bytes32 applicationId, address _address) public returns (bool){
+    function hasUserSignedDua(bytes32 applicationId, address _address) public view returns (bool){
         DUA memory application = duaStorage.getApplication(applicationId);
         require(application.applicationId != "", "Drc transfer application does not exist");
         // Get the user id by the address
@@ -316,22 +348,22 @@ contract DRCManager{
         return status.verified;
     }
     // I need to create two different get application method and then merge it
-    function getDtaForUser(bytes32 userId) public returns (bytes32[] memory){
+    function getDtaForUser(bytes32 userId) public view returns (bytes32[] memory){
         return dtaStorage.getApplicationForUser(userId);
     }
-    function getDuaForUser(bytes32 userId) public returns (bytes32[] memory){
+    function getDuaForUser(bytes32 userId) public view returns (bytes32[] memory){
         return duaStorage.getApplicationForUser(userId);
     }
-    function getDtaIdsForDrc(bytes32 drcId) public returns (bytes32[] memory){
+    function getDtaIdsForDrc(bytes32 drcId) public view returns (bytes32[] memory){
         return drcStorage.getDtaIdsForDrc(drcId);
     }
-    function getDuaIdsForDrc(bytes32 drcId) public returns (bytes32[] memory){
+    function getDuaIdsForDrc(bytes32 drcId) public view returns (bytes32[] memory){
         return drcStorage.getDuaIdsForDrc(drcId);
     }
-    function getDrc(bytes32 drcId) public returns (DRC memory){
+    function getDrc(bytes32 drcId) public view returns (DRC memory){
         return drcStorage.getDrc(drcId);
     }
-    function getDrcIdsForUser(bytes32 userId) public returns(bytes32[] memory){
+    function getDrcIdsForUser(bytes32 userId) public view returns(bytes32[] memory){
         return drcStorage.getDrcIdsForUser(userId);
     }
 
@@ -358,19 +390,24 @@ contract DRCManager{
         duaStorage.createApplication(applicationId,drc.id,far,duaSignatories, timeStamp, ApplicationStatus.pending);
         signDrcUtilizationApplication(applicationId);
         drcStorage.addDuaToDrc(drc.id,applicationId);
+        emit DuaCreated(applicationId,far,getApplicantIdsFromApplicants(duaSignatories));
     }
+
     function signDrcUtilizationApplication(bytes32 applicationId) public {
         DUA  memory application = duaStorage.getApplication(applicationId);
+        // require application Signatories.length != 0 
+        require(application.signatories.length != 0, "No signatories found");
         // make sure the user has not signed the transfer
         for (uint i=0;i<application.signatories.length;i++){
             Signatory memory signatory = application.signatories[i];
             if(signatory.userId == userManager.getUserId(msg.sender)){
                 require(!signatory.hasUserSigned,"User have already signed the application");
                 signatory.hasUserSigned = true;
+                emit DuaSigned(applicationId, signatory.userId, getApplicantIdsFromApplicants(application.signatories));
             }
         }
         // user signs the application
-        // find out whether all the users have signed
+        // find out whether all the users have signed 
         bool allSignatoriesSign = true;
         for (uint i=0;i<application.signatories.length;i++){
             Signatory memory s = application.signatories[i];
@@ -383,9 +420,129 @@ contract DRCManager{
         if(allSignatoriesSign){
             //all the signatories has signed
             application.status = ApplicationStatus.approved;
-            // reduce drc
+            emit DuaApproved(applicationId, getApplicantIdsFromApplicants(application.signatories));
+            // reduce drc once Application is approved, and update the drc
+            DRC memory drc = drcStorage.getDrc(application.drcId);
+            drc.farAvailable = drc.farAvailable - application.farUtilized;
+            drc.status = DrcStatus.locked_for_utilization;
+            drcStorage.updateDrc(application.drcId,drc);
         }
         duaStorage.updateApplication(application);
     }
 
+    function getApplicantIdsFromApplicants(Signatory[] memory applicants)
+                                        internal view returns(bytes32[] memory) {
+        bytes32[] memory applicantList = new bytes32[](applicants.length) ;
+        for(uint i=0; i < applicants.length; i++){
+            applicantList[i]= applicants[i].userId;
+        }
+        return applicantList;
+
+    }
+    /**
+    transfers all drc to the nominee of the user
+    deletes the owner from  owner map
+    */
+    function transferAllDrcToNominees(bytes32 userId) public {
+        // check whether the role is admin or application
+        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        emit LogOfficer("Officer in action",officer);
+        if (officer.role == Role.SUPER_ADMIN || officer.role== Role.ADMIN ||
+        officer.role==Role.APPROVER || officer.role==Role.VC) {
+            // fetch all replaceUserByNominees
+            bytes32[] memory nominees = nomineeManager.getNominees(userId);
+            // fetch all drc id
+            bytes32[] memory drcIds = drcStorage.getDrcIdsForUser(userId);
+            for (uint i=0; i < drcIds.length; i++){
+                transferDrcToNominee(drcIds[i], userId, nominees);
+            }
+        }else {
+            revert("user not authorized");
+        }
+        drcStorage.deleteDrcIdsOfOwner(userId);
+        emit Logger("All drc successfully transferred to nominees");
+    }
+    event DrcTransferredToNominees(bytes32 drcId, bytes32 userId, bytes32[] nominees);
+    /**
+    WARNING: This function does not delete the drc from original owner list
+    */
+    function transferDrcToNominee(bytes32 drcId, bytes32 userId, bytes32[] memory nominees) public {
+        //fetch the drc
+        DRC memory drc = drcStorage.getDrc(drcId);
+        // replace the user with the nominee
+        drc.owners = replaceUserByNominees(drc.owners, userId,nominees);
+        drcStorage.updateDrc(drcId, drc);
+        emit DrcTransferredToNominees(drcId, userId, nominees);
+    }
+    function replaceUserByNominees(bytes32[] memory owners, bytes32 user, bytes32[] memory nominees) public returns (bytes32[] memory){
+        bytes32[] memory ownersWithoutUser = deleteUserFromList(owners,user);
+        bytes32[] memory ownersWithNominees = mergeArrays(ownersWithoutUser, nominees);
+//        bytes32[] memory ownersWithNominees = mergeArrays(owners, nominees);
+        return ownersWithNominees;
+    }
+    function mergeArrays(bytes32[] memory arr1, bytes32[] memory arr2) public pure returns (bytes32[] memory) {
+        uint256 arr1Len = arr1.length;
+        uint256 arr2Len = arr2.length;
+        bytes32[] memory result = new bytes32[](arr1Len + arr2Len);
+        uint256 i;
+        for (i = 0; i < arr1Len; i++) {
+            result[i] = arr1[i];
+        }
+        for (i = 0; i < arr2Len; i++) {
+            result[arr1Len + i] = arr2[i];
+        }
+        return result;
+    }
+    function deleteUserFromList(bytes32[] memory owners, bytes32 user) public returns (bytes32[] memory){
+        uint index = findIndex(owners, user);
+        if (index == owners.length){
+            revert("user not found in owner list");
+        }
+        for (uint i=index; i< owners.length-1; i++){
+            owners[i]= owners[i+1];
+        }
+        return deleteLastElement(owners);
+    }
+    function findIndex(bytes32[] memory arr, bytes32 element) public pure returns(uint) {
+        for (uint i = 0; i < arr.length; i++) {
+            if (arr[i] == element) {
+                return i;
+            }
+        }
+        return arr.length;
+    }
+    function deleteLastElement(bytes32[] memory arr) public pure returns (bytes32[] memory){
+        bytes32[] memory tempArray = new bytes32[](arr.length -1);
+        for (uint i=0; i< tempArray.length; i++){
+            tempArray[i]=arr[i];
+        }
+        return tempArray;
+    }
+
+    // Utilize DRC
+    function utilizeDrc(bytes32 applicationId) public {
+        DUA memory application = duaStorage.getApplication(applicationId);
+        // msg.sender should be in the owner list of the drc
+        require(isOwnerOfDrc(application.drcId, userManager.getUserId(msg.sender)), "User is not the owner of the DRC");
+        DRC memory drc = drcStorage.getDrc(application.drcId);
+        // check if the drc is approved
+        require(application.status == ApplicationStatus.approved, "DRC Utilization Application is not approved");
+        require(drc.status != DrcStatus.locked_for_utilization, "DRC is not locked for utilization");
+        // change the status of the drc to utilized
+        drc.status = DrcStatus.utilized;
+        // update the drc
+        drcStorage.updateDrc(application.drcId,drc);
+        emit DrcUtilized(application.drcId,application.farUtilized);
+    }
+
+    // check if given user is one of the owner of the drc
+    function isOwnerOfDrc(bytes32 drcId, bytes32 userId) internal view returns(bool){
+        DRC memory drc = drcStorage.getDrc(drcId);
+        for(uint i=0;i<drc.owners.length;i++){
+            if(drc.owners[i] == userId){
+                return true;
+            }
+        }
+        return false;
+    }
 }

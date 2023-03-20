@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.16;
 import "./DataTypes.sol";
 
@@ -16,13 +17,13 @@ contract TdrStorage {
     // Map to store the applications against the notice
     mapping(bytes32 => bytes32[]) public noticeApplicationMap; //noticeId => application
     mapping(bytes32 => VerificationStatus) public verificationStatusMap; //app Id => verification
-    mapping(bytes32 => bytes32[] ) public userApplicationMap; // userId => applicaitonId[]
+    mapping(bytes32 => bytes32[] ) public userApplicationMap; // userId => applicationId[]
     //User application mapping
     // TDR struct definition
 
 
     // Event emitted after a TDR is created
-    event ApplicationCreated(bytes32 noticeId, bytes32 applicationId);
+    event TdrApplicationCreated(bytes32 noticeId, bytes32 applicationId, bytes32[] applicants);
     event ApplicationUpdated(bytes32 noticeId, bytes32 applicationId);
 
     event NoticeCreated(bytes32 noticeId, TdrNotice notice);
@@ -91,9 +92,10 @@ contract TdrStorage {
         // Create a new TDR and add it to the mapping
 
         // Emit the TDRCreated event
-        emit ApplicationCreated(_tdrApplication.noticeId, _tdrApplication.applicationId);
+        emit TdrApplicationCreated(_tdrApplication.noticeId, _tdrApplication.applicationId,getApplicantIdsFromTdrApplication(_tdrApplication));
     }
     function storeApplicationForUser(TdrApplication memory application) public onlyManager {
+        emit LogApplication("logging the application before saving to users", application);
         for(uint i=0; i<application.applicants.length; i++){
             bytes32 userId = application.applicants[i].userId;
             bytes32[] storage applicationIds = userApplicationMap[userId];
@@ -103,7 +105,7 @@ contract TdrStorage {
         }
     }
 
-    function getApplicationForUser(bytes32 userId) public onlyManager returns (bytes32[] memory){
+    function getApplicationForUser(bytes32 userId) public view onlyManager returns (bytes32[] memory){
         return userApplicationMap[userId];
     }
     // Function to create a new TDR
@@ -131,6 +133,10 @@ contract TdrStorage {
         emit NoticeUpdated(tdrNotice.noticeId,tdrNotice);
 
     }
+
+    function deleteNotice(bytes32 noticeId) public onlyManager {
+    delete noticeMap[noticeId];
+}
 
     /**
      * @dev Adds an application to a notice specified by its noticeId.
@@ -200,6 +206,9 @@ contract TdrStorage {
         emit ApplicationUpdated(_application.noticeId, _application.applicationId); // emit this event
     }
 
+    function deleteApplication(bytes32 noticeId) public onlyManager {
+        delete applicationMap[noticeId];
+    }
     /**
     * @dev Adds an application to the applicationMap.
     * @param _application The TdrApplication memory object to be added to the applicationMap.
@@ -214,6 +223,7 @@ contract TdrStorage {
         application.place = _application.place;
         application.noticeId = _application.noticeId;
         application.farRequested = _application.farRequested;
+        application.circleRateUtilized = _application.circleRateUtilized;
 //        application.farGranted = _application.farGranted;
         application.status = _application.status;
         delete application.applicants;
@@ -267,8 +277,76 @@ contract TdrStorage {
     function getVerificationStatus(bytes32 applicationId) public view returns(VerificationStatus memory) {
         return verificationStatusMap[applicationId];
     }
-    function getApplicationsForNotice(bytes32 noticeId)public returns(bytes32[] memory) {
+    function deletVerificationStatus(bytes32 id, VerificationStatus memory status) public {
+        delete verificationStatusMap[id];
+    }
+    function getApplicationsForNotice(bytes32 noticeId) public view returns(bytes32[] memory) {
         return noticeApplicationMap[noticeId];
     }
+    function deleteApplicationInMap(bytes32 applicationId) public onlyManager {
+        delete applicationMap[applicationId];
+    }
+    function addApplicationListToNotice(bytes32[] memory applicationList, bytes32 noticeId) public onlyManager {
+    noticeApplicationMap[noticeId] = applicationList;
+    }
+    function updateApplicationListToNotice(bytes32[] memory applicationList, bytes32 noticeId) public onlyManager {
+        noticeApplicationMap[noticeId] = applicationList;
+    }
+    function deleteApplicationListToNotice(bytes32 noticeId) public onlyManager {
+        delete noticeApplicationMap[noticeId];
+    }
+    function addApplicationListToUser(bytes32[] memory applicationList, bytes32 userId) public onlyManager {
+        userApplicationMap[userId] = applicationList;
+    }
+    function updateApplicationListToUser(bytes32[] memory applicationList, bytes32 userId) public onlyManager {
+        userApplicationMap[userId] = applicationList;
+    }
+    function deleteApplicationListToUser(bytes32 userId) public onlyManager {
+        delete userApplicationMap[userId];
+    }
+
+    // delete application from notice
+    function deleteApplicationFromNotice(bytes32 noticeId, bytes32 applicationId) public onlyManager {
+        bytes32[] storage applicationIds = noticeApplicationMap[noticeId];
+        uint index = findIndex(applicationIds, applicationId);
+        if (index == applicationIds.length){
+            revert("applicationId not found");
+        }
+        for (uint i=index; i< applicationIds.length; i++){
+            applicationIds[i]= applicationIds[i+1];
+        }
+        applicationIds.pop();
+        noticeApplicationMap[noticeId]= applicationIds;
+    }
+    function deleteApplicationFromUser(bytes32 userId, bytes32 applicationId) public onlyManager {
+        bytes32[] storage applicationIds = userApplicationMap[userId];
+        uint index = findIndex(applicationIds, applicationId);
+        if (index == applicationIds.length){
+            revert("applicationId not found");
+        }
+        for (uint i=index; i< applicationIds.length; i++){
+            applicationIds[i]= applicationIds[i+1];
+        }
+        applicationIds.pop();
+        userApplicationMap[userId]= applicationIds;
+    }
+    function findIndex(bytes32[] memory arr, bytes32 element) public pure returns(uint) {
+        for (uint i = 0; i < arr.length; i++) {
+            if (arr[i] == element) {
+                return i;
+            }
+        }
+        return arr.length;
+    }
+    function getApplicantIdsFromTdrApplication(TdrApplication memory _tdrApplication )
+    internal view returns(bytes32[] memory) {
+        bytes32[] memory applicantList = new bytes32[](_tdrApplication.applicants.length) ;
+        for(uint i=0; i < _tdrApplication.applicants.length; i++){
+            applicantList[i]= _tdrApplication.applicants[i].userId;
+        }
+        return applicantList;
+
+    }
+    // delete applicatiion from user
 
 }
