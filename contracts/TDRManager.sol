@@ -158,7 +158,7 @@ contract TDRManager {
         tdrStorage.updateNotice(tdrNotice);
     }
 
-    function setZone(bytes32 _applicationId, Zone memory _zone) public {
+    function setZone(bytes32 _applicationId, Zone _zone) public {
         TdrApplication memory application = tdrStorage.getApplication(_applicationId);
         if(application.applicationId == ""){
             revert("No such application found");
@@ -166,8 +166,8 @@ contract TDRManager {
         tdrStorage.setZone(_applicationId, _zone);
     }
 
-    function getZone(bytes32 _applicationId) public view returns(Zone memory){
-        TdrApplication memory application = tdrStorage.getApplication(_applicationId);
+    function getZone(bytes32 _applicationId) public view returns(Zone){
+         TdrApplication memory application = tdrStorage.getApplication(_applicationId);
         if(application.applicationId == ""){
             revert("No such application found");
         }
@@ -248,7 +248,7 @@ contract TDRManager {
     function getApplicantsPosition(
         bytes32 _applicationId,
         address adrs
-    ) public view returns (uint) {
+    ) public returns (uint) {
         TdrApplication memory application = tdrStorage.getApplication(
             _applicationId
         );
@@ -358,7 +358,6 @@ contract TDRManager {
     function hasAllUserSignedTdrApplication(
         TdrApplication memory application
     ) private pure returns (bool) {
-        bool allSignatoriesSign = true;
         for (uint i = 0; i < application.applicants.length; i++) {
             Signatory memory s = application.applicants[i];
             if (!s.hasUserSigned) {
@@ -419,7 +418,7 @@ contract TDRManager {
         );
 
         require(
-            tdrApplication == ApplicationStatus.VERIFIED,
+            tdrApplication.status == ApplicationStatus.VERIFIED,
             "application should be verified before approval"
         );
 
@@ -664,7 +663,7 @@ contract TDRManager {
 
     function getApplicantIdsFromTdrApplication(
         TdrApplication memory _tdrApplication
-    ) internal view returns (bytes32[] memory) {
+    ) internal pure returns (bytes32[] memory) {
         bytes32[] memory applicantList = new bytes32[](
             _tdrApplication.applicants.length
         );

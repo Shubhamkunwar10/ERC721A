@@ -89,19 +89,19 @@ contract TdrStorage {
         manager = _manager;
     }
 
-    event setZone(bytes32 applicationId, Zone _zone);
+    event zoneSet(bytes32 applicationId, Zone _zone);
 
-    function setZone(bytes32 _applicationId, Zone memory _zone) {
+    function setZone(bytes32 _applicationId, Zone _zone) public {
         require(
             isApplicationCreated(_applicationId),
             "Application is not exist"
         );
         require(_applicationId > 0, "Application ID is greater than 0");
         applicaitonZoneMap[_applicationId] = _zone;
-        emit setZone(_applicationId, _zone);
+        emit zoneSet(_applicationId, _zone);
     }
 
-    function getZone(bytes32 _applicationId) public view returns(Zone memory){
+    function getZone(bytes32 _applicationId) public view returns(Zone){
         return applicaitonZoneMap[_applicationId];
     }
 
@@ -260,9 +260,6 @@ contract TdrStorage {
         TdrApplication memory _application
     ) public onlyManager {
         emit LogBytes("begin update application", _application.applicationId);
-        TdrApplication storage application = applicationMap[
-            _application.applicationId
-        ];
         if (!isApplicationCreated(_application.applicationId)) {
             revert("Application does not exist");
         }
@@ -321,7 +318,7 @@ contract TdrStorage {
 
     function isNoticeCreated(
         TdrNotice memory _tdrNotice
-    ) public view returns (bool) {
+    ) public returns (bool) {
         emit Logger("notice check was called");
         // in mapping, default values of all atrributes is zero
         TdrNotice memory _noticeFromMap = noticeMap[_tdrNotice.noticeId];
@@ -336,7 +333,7 @@ contract TdrStorage {
 
     function isApplicationCreated(
         bytes32 _applicationId
-    ) public view returns (bool) {
+    ) public returns (bool) {
         emit Logger("application check was called");
         // in mapping, default values of all atrributes is zero
         TdrApplication memory application = applicationMap[_applicationId];
@@ -363,9 +360,8 @@ contract TdrStorage {
     }
 
     function deletVerificationStatus(
-        bytes32 id,
-        VerificationStatus memory status
-    ) public {
+        bytes32 id
+    )  public {
         delete verificationStatusMap[id];
     }
 
@@ -464,7 +460,7 @@ contract TdrStorage {
 
     function getApplicantIdsFromTdrApplication(
         TdrApplication memory _tdrApplication
-    ) internal view returns (bytes32[] memory) {
+    ) internal pure returns (bytes32[] memory) {
         bytes32[] memory applicantList = new bytes32[](
             _tdrApplication.applicants.length
         );
