@@ -241,10 +241,10 @@ contract NomineeManager {
             revert("User not authorized");
         }
     }
-    function getNominees(bytes32 userId) public returns (bytes32[] memory){
+    function getNominees(bytes32 userId) public view returns (bytes32[] memory){
         return nomineeStorage.getNominees(userId);
     }
-    function getApplication(bytes32 applicationId) public returns(nomineeApplication memory){
+    function getApplication(bytes32 applicationId) public view returns(nomineeApplication memory){
         return nomineeStorage.getNomineeApplication(applicationId);
     }
 

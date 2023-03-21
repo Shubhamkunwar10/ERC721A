@@ -1,24 +1,27 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.16;
 //import "./TDR.sol";
-    enum DrcStatus {
-                    available,
-                    locked_for_transfer, 
-                    locked_for_utilization, 
-                    transferred, 
-                    utilized
-                }
+   enum DrcStatus {
+    AVAILABLE,
+    LOCKED_FOR_TRANSFER,
+    LOCKED_FOR_UTILIZATION,
+    TRANSFERRED,
+    UTILIZED,
+}
 
-    enum ApplicationStatus {
-                            pending, 
-                            submitted, 
-                            approved, 
-                            rejected,
-                            drcIssued,
-                            verified
-                        }
+enum ApplicationStatus {
+    PENDING,
+    SUBMITTED,
+    APPROVED,
+    REJECTED,
+    DRCISSUED,
+    VERIFIED
+}
 
-    enum NoticeStatus{pending, issued}
+enum NoticeStatus {
+    PENDING,
+    ISSUED
+}
 
     enum AreaType {
                     DEVELOPED,
