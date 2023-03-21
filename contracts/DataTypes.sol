@@ -15,7 +15,8 @@ pragma solidity ^0.8.16;
                             approved, 
                             rejected,
                             drcIssued,
-                            verified
+                            verified,
+                            sentBackForCorrection
                         }
 
     enum NoticeStatus{pending, issued}

@@ -24,6 +24,7 @@ contract TdrStorage {
 
     // Event emitted after a TDR is created
     event TdrApplicationCreated(bytes32 noticeId, bytes32 applicationId, bytes32[] applicants);
+    event TdrApplicationUpdated(bytes32 noticeId, bytes32 applicationId, bytes32[] applicants);
     event ApplicationUpdated(bytes32 noticeId, bytes32 applicationId);
 
     event NoticeCreated(bytes32 noticeId, TdrNotice notice);
@@ -138,6 +139,21 @@ contract TdrStorage {
         // Emit the TDRCreated event
         emit TdrApplicationCreated(_tdrApplication.noticeId, _tdrApplication.applicationId,getApplicantIdsFromTdrApplication(_tdrApplication));
     }
+
+    // Function to update an existing TDR Application
+    function updateTdrApplication(TdrApplication memory _tdrApplication) public onlyManager {
+        // check that an application have not been created earlier
+        if(!isApplicationCreated(_tdrApplication.applicationId)){
+            revert("application with same id has not been created");
+        }
+        // add application to the map
+        addApplicationToMap(_tdrApplication);
+        storeApplicationForUser(_tdrApplication);
+        // Create a new TDR and add it to the mapping
+
+        emit TdrApplicationUpdated(_tdrApplication.noticeId, _tdrApplication.applicationId,getApplicantIdsFromTdrApplication(_tdrApplication));
+    }
+
     // Function to read a TDR
     function getApplication(bytes32 _applicationId) public view returns (TdrApplication memory) {
         // Retrieve the TDR from the mapping
