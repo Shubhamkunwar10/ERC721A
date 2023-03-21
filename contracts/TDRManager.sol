@@ -158,6 +158,22 @@ contract TDRManager {
         tdrStorage.updateNotice(tdrNotice);
     }
 
+    function setZone(bytes32 _applicationId, Zone memory _zone) public {
+        TdrApplication memory application = tdrStorage.getApplication(_applicationId);
+        if(application.applicationId == ""){
+            revert("No such application found");
+        }
+        tdrStorage.setZone(_applicationId, _zone);
+    }
+
+    function getZone(bytes32 _applicationId) public view returns(Zone memory){
+        TdrApplication memory application = tdrStorage.getApplication(_applicationId);
+        if(application.applicationId == ""){
+            revert("No such application found");
+        }
+        return tdrStorage.getZone(_applicationId);
+    }
+
     /**
     @dev Function to create an application
     @param _tdrApplication TdrApplication memory object representing the application to be created
@@ -177,6 +193,10 @@ contract TDRManager {
         if (tdrNotice.noticeId == "") {
             revert("No such notice has been created");
         }
+
+        // Set zone by default as NONE
+        tdrStorage.setZone(_tdrApplication.applicationId, Zone.NONE);
+
         //        // add application in application map
         tdrStorage.createApplication(_tdrApplication);
         emit Logger("application created in storage");
@@ -359,7 +379,10 @@ contract TDRManager {
         TdrApplication memory tdrApplication = tdrStorage.getApplication(
             applicationId
         );
-        require(tdrApplication.status != ApplicationStatus.APPROVED, "Application already approved");
+        require(
+            tdrApplication.status != ApplicationStatus.APPROVED,
+            "Application already approved"
+        );
         // No need to check notice, as application can be rejected even when DRC is issued.
         if (
             officer.role == Role.SUPER_ADMIN ||
@@ -394,16 +417,19 @@ contract TDRManager {
         TdrApplication memory tdrApplication = tdrStorage.getApplication(
             applicationId
         );
-        
-        require(tdrApplication == ApplicationStatus.VERIFIED, "application should be verified before approval");
+
+        require(
+            tdrApplication == ApplicationStatus.VERIFIED,
+            "application should be verified before approval"
+        );
 
         TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
         if (notice.status == NoticeStatus.ISSUED) {
             revert("DRC already issued against this notice");
         }
-        if( officer.role == Role.ADMIN){
-            if(tdrApplication.status == ApplicationStatus.REJECTED){
-               tdrApplication.status = ApplicationStatus.APPROVED;
+        if (officer.role == Role.ADMIN) {
+            if (tdrApplication.status == ApplicationStatus.REJECTED) {
+                tdrApplication.status = ApplicationStatus.APPROVED;
             }
         }
         if (
