@@ -562,6 +562,10 @@ contract DRCManager{
         if (duc.id =="") {
             revert("no such DRC utilization certificate exists");
         }
+        if(duc.applicationId !=""){
+            emit LogBytes("application already used", duc.applicationId );
+            revert("application already used in another application");
+        }
         duc.applicationId=applicationId;
         ducStorage.updateDuc(duc);
         ducStorage.addDucToApplication(ducId,applicationId);
