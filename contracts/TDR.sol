@@ -3,8 +3,10 @@ pragma solidity ^0.8.16;
 import "./DataTypes.sol";
 
 // Contract to maintain the TDR notice and applicationIds.
-// A TdrNotice stores all the applicationIds against a notice. If any of the application is converted to DRC, it stops taking further application against that notice. One should that go to court and get the DRC quashed.
-// Note: This is a storage contract. Job of this contract is not to see the logic of the storage, but to store the values in the blockchain. All the logic and checks should be there in the TdrManager contract
+// A TdrNotice stores all the applicationIds against a notice. If any of the application is converted to DRC,
+//  it stops taking further application against that notice. One should that go to court and get the DRC quashed.
+// Note: This is a storage contract. Job of this contract is not to see the logic of the storage, 
+// but to store the values in the blockchain. All the logic and checks should be there in the TdrManager contract
 // TDR storage contract
 contract TdrStorage {
     // Address of the TDR manager

@@ -6,7 +6,7 @@ pragma solidity ^0.8.16;
     LOCKED_FOR_TRANSFER,
     LOCKED_FOR_UTILIZATION,
     TRANSFERRED,
-    UTILIZED,
+    UTILIZED
 }
 
 enum ApplicationStatus {
@@ -40,7 +40,8 @@ enum NoticeStatus {
         PLOTTED_RESIDENTIAL,
         INDUSTRIAL
     }
-    // DRC would be stored in this struct. knowing this DRC one should know the owner of the DRC, area and the status of the DRC
+    // DRC would be stored in this struct. knowing this DRC one should know the owner of the DRC,
+    //  area and the status of the DRC
     // Everything else, is static data, not to be interpreted by blockchain.
     struct DRC {
         bytes32 id;
