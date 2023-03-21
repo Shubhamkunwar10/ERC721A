@@ -261,8 +261,11 @@ contract DRCManager {
     }
 
     // this function is called by the admin to verify the transfer
-    function verifyDrcApplication(bytes32 applicationId) public {
         VerificationStatus memory status = dtaStorage.getVerificationStatus(
+            applicationId
+        );
+    function verifyDTA(bytes32 applicationId) public {
+            VerificationStatus memory status = dtaStorage.getVerificationStatus(
             applicationId
         );
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
