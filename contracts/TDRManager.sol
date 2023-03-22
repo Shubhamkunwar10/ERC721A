@@ -158,6 +158,22 @@ contract TDRManager {
         tdrStorage.updateNotice(tdrNotice);
     }
 
+    function setZone(bytes32 _applicationId, Zone _zone) public {
+        TdrApplication memory application = tdrStorage.getApplication(_applicationId);
+        if(application.applicationId == ""){
+            revert("No such application found");
+        }
+        tdrStorage.setZone(_applicationId, _zone);
+    }
+
+    function getZone(bytes32 _applicationId) public view returns(Zone){
+         TdrApplication memory application = tdrStorage.getApplication(_applicationId);
+        if(application.applicationId == ""){
+            revert("No such application found");
+        }
+        return tdrStorage.getZone(_applicationId);
+    }
+
     /**
     @dev Function to create an application
     @param _tdrApplication TdrApplication memory object representing the application to be created
@@ -177,6 +193,10 @@ contract TDRManager {
         if (tdrNotice.noticeId == "") {
             revert("No such notice has been created");
         }
+
+        // Set zone by default as NONE
+        tdrStorage.setZone(_tdrApplication.applicationId, Zone.NONE);
+
         //        // add application in application map
         tdrStorage.createApplication(_tdrApplication);
         emit Logger("application created in storage");
@@ -228,7 +248,7 @@ contract TDRManager {
     function getApplicantsPosition(
         bytes32 _applicationId,
         address adrs
-    ) public view returns (uint) {
+    ) public returns (uint) {
         TdrApplication memory application = tdrStorage.getApplication(
             _applicationId
         );
@@ -338,7 +358,6 @@ contract TDRManager {
     function hasAllUserSignedTdrApplication(
         TdrApplication memory application
     ) private pure returns (bool) {
-        bool allSignatoriesSign = true;
         for (uint i = 0; i < application.applicants.length; i++) {
             Signatory memory s = application.applicants[i];
             if (!s.hasUserSigned) {
@@ -359,7 +378,10 @@ contract TDRManager {
         TdrApplication memory tdrApplication = tdrStorage.getApplication(
             applicationId
         );
-        require(tdrApplication.status != ApplicationStatus.APPROVED, "Application already approved");
+        require(
+            tdrApplication.status != ApplicationStatus.APPROVED,
+            "Application already approved"
+        );
         // No need to check notice, as application can be rejected even when DRC is issued.
         if (
             officer.role == Role.SUPER_ADMIN ||
@@ -394,16 +416,19 @@ contract TDRManager {
         TdrApplication memory tdrApplication = tdrStorage.getApplication(
             applicationId
         );
-        
-        require(tdrApplication == ApplicationStatus.VERIFIED, "application should be verified before approval");
+
+        require(
+            tdrApplication.status == ApplicationStatus.VERIFIED,
+            "application should be verified before approval"
+        );
 
         TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
         if (notice.status == NoticeStatus.ISSUED) {
             revert("DRC already issued against this notice");
         }
-        if( officer.role == Role.ADMIN){
-            if(tdrApplication.status == ApplicationStatus.REJECTED){
-               tdrApplication.status = ApplicationStatus.APPROVED;
+        if (officer.role == Role.ADMIN) {
+            if (tdrApplication.status == ApplicationStatus.REJECTED) {
+                tdrApplication.status = ApplicationStatus.APPROVED;
             }
         }
         if (
@@ -638,7 +663,7 @@ contract TDRManager {
 
     function getApplicantIdsFromTdrApplication(
         TdrApplication memory _tdrApplication
-    ) internal view returns (bytes32[] memory) {
+    ) internal pure returns (bytes32[] memory) {
         bytes32[] memory applicantList = new bytes32[](
             _tdrApplication.applicants.length
         );

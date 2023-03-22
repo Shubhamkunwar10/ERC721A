@@ -170,7 +170,8 @@ contract UserManager {
     /**
      * Adds a new Officer to the mapping of KdaOfficers.
      * @param officer The Officer to add to the mapping.
-     * @dev The method will only allow an Admin to add a new Officer. If the Officer already exists in the mapping,address
+     * @dev The method will only allow an Admin to add a new Officer.
+     * If the Officer already exists in the mapping,address
      * the method will revert with an error message. If the Officer is added successfully, the method will emit
      * the OfficerAdded event.
      */
