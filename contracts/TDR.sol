@@ -22,7 +22,7 @@ contract TdrStorage {
     //User application mapping
 
     // Application zone mapping
-    mapping(bytes32 => Zone) public applicaitonZoneMap;
+    mapping(bytes32 => Zone) public applicationZoneMap;
     // TDR struct definition
 
     // Event emitted after a TDR is created
@@ -93,23 +93,6 @@ contract TdrStorage {
 
     event zoneSet(bytes32 applicationId, Zone _zone);
 
-    function setZone(bytes32 _applicationId, Zone _zone) public {
-        require(
-            isApplicationCreated(_applicationId),
-            "Application is not exist"
-        );
-        require(_applicationId > 0, "Application ID is greater than 0");
-        applicaitonZoneMap[_applicationId] = _zone;
-        emit zoneSet(_applicationId, _zone);
-    }
-
-    function getZone(bytes32 _applicationId) public view returns(Zone){
-        return applicaitonZoneMap[_applicationId];
-    }
-
-    function deleteZone(bytes32 _applicationId) public {
-        delete applicaitonZoneMap[_applicationId];
-    }
 
     // Function to create a new TDR
     function createApplication(
@@ -473,3 +456,21 @@ contract TdrStorage {
     }
     // delete applicatiion from user
 }
+// CRUD operation for zone
+    function setZone(bytes32 _applicationId, Zone _zone) public {
+        require(
+            isApplicationCreated(_applicationId),
+            "Application is not exist"
+        );
+        require(_applicationId > 0, "Application ID is greater than 0");
+        applicationZoneMap[_applicationId] = _zone;
+        emit zoneSet(_applicationId, _zone);
+    }
+
+    function getZone(bytes32 _applicationId) public view returns(Zone){
+        return applicationZoneMap[_applicationId];
+    }
+
+    function deleteZone(bytes32 _applicationId) public {
+        delete applicationZoneMap[_applicationId];
+    }
