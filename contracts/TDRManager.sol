@@ -226,7 +226,7 @@ contract TDRManager {
             "Application cannot be updated"
         );
 
-        tdrStorage.updateTdrApplication(_tdrApplication);
+        tdrStorage.updateApplication(_tdrApplication);
         emit Logger("application updated in storage");
         // add application in the notice
         tdrStorage.addApplicationToNotice(
