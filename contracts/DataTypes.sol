@@ -162,19 +162,17 @@ enum NoticeStatus {
         Department department;
         Zone zone;
     }
-    struct SubVerifierStatus {
-        bool land;
-        bool planning;
-        bool engineering;
-        bool property;
-        bool sales;
-        bool legal;
+    
+    struct SubVerificationStatus {
+        Department dep;
+        bytes32 officerId;
+        bool isVerified;
     }
     struct VerificationStatus {
         bool verified;
         bytes32 verifierId;
         Role verifierRole;
-        SubVerifierStatus subVerifierStatus;
+        SubVerificationStatus subVerifierStatus;
     }
 struct nomineeApplication {
     bytes32 applicationId;
