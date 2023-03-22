@@ -195,6 +195,10 @@ contract DRCManager {
         uint far,
         bytes32[] memory buyers
     ) public {
+
+ // check drc exists or not
+        // require(drcStorage.isDrcCreated(drcId),"DRC not created");
+        DRC memory drc = drcStorage.getDrc(drcId);
         emit Logger("Create tra");
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
 
@@ -219,6 +223,9 @@ contract DRCManager {
         } else if (buyers.length <= 0) {
             revert("Number of buyers should be greater than 0");
         }
+
+        Signatory[] memory applicants = new Signatory[](drc.owners.length);
+
 
         // no user has signed yet
         for (uint i = 0; i < drc.owners.length; i++) {
