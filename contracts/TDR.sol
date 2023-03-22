@@ -41,9 +41,9 @@ contract TdrStorage {
     event LogApplication(string message, TdrApplication application);
 
 
-    address owner;
-    address admin;
-    address manager;
+    address public owner;
+    address public admin;
+    address public manager;
 
 
     // Constructor function to set the initial values of the contract
@@ -67,7 +67,7 @@ contract TdrStorage {
     }
 
     modifier onlyManager() {
-       require(msg.sender == manager, "Only the manager, admin, or owner can perform this action.");
+       require(msg.sender == manager, "Only the manager can perform this action.");
         _;
     }
 
@@ -80,9 +80,36 @@ contract TdrStorage {
         manager = _manager;
     }
 
+    // Function to create a new TDR
+    function createApplication(TdrApplication memory _tdrApplication) public onlyManager {
+        // check that an application have not been created earlier
+        if(isApplicationCreated(_tdrApplication.applicationId)){
+            revert("application with same id has already been created");
+        }
+        require((_tdrApplication.applicants).length > 0, "Applicant should be greater than 0" );
 
+        // add application to the map
+        addApplicationToMap(_tdrApplication);
+        storeApplicationForUser(_tdrApplication);
+        // Create a new TDR and add it to the mapping
 
-    // CRUD operation for notice map
+        // Emit the TDRCreated event
+        emit TdrApplicationCreated(_tdrApplication.noticeId, _tdrApplication.applicationId,getApplicantIdsFromTdrApplication(_tdrApplication));
+    }
+    function storeApplicationForUser(TdrApplication memory application) public onlyManager {
+        emit LogApplication("logging the application before saving to users", application);
+        for(uint i=0; i<application.applicants.length; i++){
+            bytes32 userId = application.applicants[i].userId;
+            bytes32[] storage applicationIds = userApplicationMap[userId];
+            applicationIds.push(application.applicationId);
+            userApplicationMap[userId]=applicationIds;
+            emit ApplicationCreatedForUser(application.applicants[i].userId,application.applicationId);
+        }
+    }
+
+    function getApplicationForUser(bytes32 userId) public view onlyManager returns (bytes32[] memory){
+        return userApplicationMap[userId];
+    }
     // Function to create a new TDR
     function createNotice(TdrNotice memory tdrNotice) public onlyManager{
         emit Logger("START createNotice");
@@ -113,65 +140,13 @@ contract TdrStorage {
     delete noticeMap[noticeId];
 }
 
-    // function to get a notice
-    function getNotice(bytes32 _noticeId) public view returns (TdrNotice memory) {
-        // Retrieve the TDR from the mapping
-        TdrNotice memory notice = noticeMap[_noticeId];
-
-        // Return the TDR data
-        return notice;
-    }
-
-
-    //CRUD operation for applicaiton map
-    // Function to create a new TDR
-    function createApplication(TdrApplication memory _tdrApplication) public onlyManager {
-        // check that an application have not been created earlier
-        if(isApplicationCreated(_tdrApplication.applicationId)){
-            revert("application with same id has already been created");
-        }
-        // add application to the map
-        addApplicationToMap(_tdrApplication);
-        storeApplicationForUser(_tdrApplication);
-        // Create a new TDR and add it to the mapping
-
-        // Emit the TDRCreated event
-        emit TdrApplicationCreated(_tdrApplication.noticeId, _tdrApplication.applicationId,getApplicantIdsFromTdrApplication(_tdrApplication));
-    }
-    // Function to read a TDR
-    function getApplication(bytes32 _applicationId) public view returns (TdrApplication memory) {
-        // Retrieve the TDR from the mapping
-        TdrApplication memory application = applicationMap[_applicationId];
-
-        // Return the TDR data
-        return application;
-    }
-
-    function updateApplication(TdrApplication memory _application) public {
-        emit LogBytes("begin update application",_application.applicationId);
-        TdrApplication storage application = applicationMap[_application.applicationId];
-        if(! isApplicationCreated(_application.applicationId)){
-            revert("Application does not exist");
-        }
-        addApplicationToMap(_application);
-        emit ApplicationUpdated(_application.noticeId, _application.applicationId); // emit this event
-    }
-
-    function deleteApplication(bytes32 noticeId) public onlyManager {
-        delete applicationMap[noticeId];
-    }
-    function deleteApplicationInMap(bytes32 applicationId) public onlyManager {
-        delete applicationMap[applicationId];
-    }
-
-    //CRUD for notice application map
     /**
      * @dev Adds an application to a notice specified by its noticeId.
     * @param noticeId The bytes32 identifier of the notice to which the application is to be added.
     * @param applicationId The bytes32 identifier of the application to be added to the notice.
     * @dev Revert if no notice exists with the given noticeId.
     */
-    function addApplicationToNotice(bytes32 noticeId, bytes32 applicationId) public {
+    function addApplicationToNotice(bytes32 noticeId, bytes32 applicationId) public onlyManager{
         TdrNotice storage tdrNotice = noticeMap[noticeId];
         // notice should exist
         if(tdrNotice.noticeId==""){
@@ -181,33 +156,26 @@ contract TdrStorage {
         applications.push(applicationId);
         noticeApplicationMap[noticeId]=applications;
     }
-    function getApplicationsForNotice(bytes32 noticeId) public view returns(bytes32[] memory) {
-        return noticeApplicationMap[noticeId];
-    }
-
-    function addApplicationListToNotice(bytes32[] memory applicationList, bytes32 noticeId) public onlyManager {
-        noticeApplicationMap[noticeId] = applicationList;
-    }
-    function updateApplicationListToNotice(bytes32[] memory applicationList, bytes32 noticeId) public onlyManager {
-        noticeApplicationMap[noticeId] = applicationList;
-    }
-    function deleteApplicationListToNotice(bytes32 noticeId) public onlyManager {
-        delete noticeApplicationMap[noticeId];
-    }
-
-    // CRUD of application status maopping
-    function storeVerificationStatus(bytes32 id, VerificationStatus memory status) public {
-        verificationStatusMap[id] = status;
-    }
-    function getVerificationStatus(bytes32 applicationId) public view returns(VerificationStatus memory) {
-        return verificationStatusMap[applicationId];
-    }
-    function deletVerificationStatus(bytes32 id, VerificationStatus memory status) public {
-        delete verificationStatusMap[id];
-    }
 
 
-    // Function to update applicaiton status
+    // Function to read a TDR
+    function getApplication(bytes32 _applicationId) public view returns (TdrApplication memory) {
+        // Retrieve the TDR from the mapping
+        TdrApplication memory application = applicationMap[_applicationId];
+
+        // Return the TDR data
+        return application;
+    }
+    // function to get a notice
+    function getNotice(bytes32 _noticeId) public view returns (TdrNotice memory) {
+        // Retrieve the TDR from the mapping
+        TdrNotice memory notice = noticeMap[_noticeId];
+
+        // Return the TDR data
+        return notice;
+    }
+    
+    // Function to update a TDR
     function updateApplicationStatus(bytes32 _applicationId, ApplicationStatus _status) public onlyManager {
         // fetch the application
         TdrApplication storage application = applicationMap[_applicationId];
@@ -220,9 +188,9 @@ contract TdrStorage {
         // Update the application in the mapping
         applicationMap[_applicationId] = application;
         // check for the notice
-        if(_status == ApplicationStatus.drcIssued){
+        if(_status == ApplicationStatus.DRCISSUED){
             TdrNotice storage notice = noticeMap[application.noticeId];
-            notice.status= NoticeStatus.issued;
+            notice.status= NoticeStatus.ISSUED;
             noticeMap[application.noticeId]=notice;
         }
 
@@ -230,11 +198,24 @@ contract TdrStorage {
         emit TDRUpdated(application.noticeId,application.applicationId);
     }
 
+    function updateApplication(TdrApplication memory _application) public onlyManager {
+        emit LogBytes("begin update application",_application.applicationId);
+        TdrApplication storage application = applicationMap[_application.applicationId];
+        if(! isApplicationCreated(_application.applicationId)){
+            revert("Application does not exist");
+        }
+        addApplicationToMap(_application);
+        emit ApplicationUpdated(_application.noticeId, _application.applicationId); // emit this event
+    }
+
+    function deleteApplication(bytes32 noticeId) public onlyManager {
+        delete applicationMap[noticeId];
+    }
     /**
     * @dev Adds an application to the applicationMap.
     * @param _application The TdrApplication memory object to be added to the applicationMap.
     */
-    function addApplicationToMap(TdrApplication memory _application) public {
+    function addApplicationToMap(TdrApplication memory _application) internal {
         emit Logger("Adding application to map");
         // Retrieve the application in storage using its applicationId
         TdrApplication storage application = applicationMap[_application.applicationId];
@@ -268,7 +249,7 @@ contract TdrStorage {
 
         // Emit the TDRDeleted event
        
-  function isNoticeCreated(TdrNotice memory _tdrNotice) public returns (bool) {
+  function isNoticeCreated(TdrNotice memory _tdrNotice) public view returns (bool) {
     emit Logger("notice check was called");
     // in mapping, default values of all atrributes is zero
     TdrNotice memory _noticeFromMap = noticeMap[_tdrNotice.noticeId];
@@ -281,7 +262,7 @@ contract TdrStorage {
         return true;
   }
 
-  function isApplicationCreated(bytes32 _applicationId) public returns (bool) {
+  function isApplicationCreated(bytes32 _applicationId) public view returns (bool) {
     emit Logger("application check was called");
     // in mapping, default values of all atrributes is zero
       TdrApplication memory application = applicationMap[_applicationId];
@@ -289,24 +270,33 @@ contract TdrStorage {
         emit Logger("application has not been created");
         return false;
         }
+    require(_applicationId > 0, "Applicant must be greater than 0");
     emit Logger("application has been created");
       return true;
   }
-
-// CRUD for user Application[] mapping
-    function storeApplicationForUser(TdrApplication memory application) public onlyManager {
-        emit LogApplication("logging the application before saving to users", application);
-        for(uint i=0; i<application.applicants.length; i++){
-            bytes32 userId = application.applicants[i].userId;
-            bytes32[] storage applicationIds = userApplicationMap[userId];
-            applicationIds.push(application.applicationId);
-            userApplicationMap[userId]=applicationIds;
-            emit ApplicationCreatedForUser(application.applicants[i].userId,application.applicationId);
-        }
+    function storeVerificationStatus(bytes32 id, VerificationStatus memory status) public {
+        verificationStatusMap[id] = status;
     }
-
-    function getApplicationForUser(bytes32 userId) public view onlyManager returns (bytes32[] memory){
-        return userApplicationMap[userId];
+    function getVerificationStatus(bytes32 applicationId) public view returns(VerificationStatus memory) {
+        return verificationStatusMap[applicationId];
+    }
+    function deletVerificationStatus(bytes32 id, VerificationStatus memory status) public {
+        delete verificationStatusMap[id];
+    }
+    function getApplicationsForNotice(bytes32 noticeId) public view returns(bytes32[] memory) {
+        return noticeApplicationMap[noticeId];
+    }
+    function deleteApplicationInMap(bytes32 applicationId) public onlyManager {
+        delete applicationMap[applicationId];
+    }
+    function addApplicationListToNotice(bytes32[] memory applicationList, bytes32 noticeId) public onlyManager {
+    noticeApplicationMap[noticeId] = applicationList;
+    }
+    function updateApplicationListToNotice(bytes32[] memory applicationList, bytes32 noticeId) public onlyManager {
+        noticeApplicationMap[noticeId] = applicationList;
+    }
+    function deleteApplicationListToNotice(bytes32 noticeId) public onlyManager {
+        delete noticeApplicationMap[noticeId];
     }
     function addApplicationListToUser(bytes32[] memory applicationList, bytes32 userId) public onlyManager {
         userApplicationMap[userId] = applicationList;
@@ -343,7 +333,7 @@ contract TdrStorage {
         applicationIds.pop();
         userApplicationMap[userId]= applicationIds;
     }
-    function findIndex(bytes32[] memory arr, bytes32 element) public pure returns(uint) {
+    function findIndex(bytes32[] memory arr, bytes32 element) internal pure returns(uint) {
         for (uint i = 0; i < arr.length; i++) {
             if (arr[i] == element) {
                 return i;

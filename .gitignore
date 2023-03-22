@@ -9,3 +9,5 @@ node_modules/*
 *.log
 .vscode/*
 deployer/.smcENV
+node_modules
+.env

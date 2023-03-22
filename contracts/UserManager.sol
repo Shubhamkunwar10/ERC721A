@@ -319,7 +319,7 @@ contract UserManager {
  * @param id bytes32 id of the approver
  * @param _address address of the approver
  */
-    function addApprover(bytes32 id, address _address) public onlyAdmin {
+    function addApprover(bytes32 id, address _address) public {
         // check if user already does not exist
         if(approverMap[id]!=address(0)){
             revert("approver already exists, instead try updating the address");
@@ -338,7 +338,7 @@ contract UserManager {
  * @param id bytes32 id of the approver
  * @param _address address of the approver
  */
-    function updateApprover(bytes32 id, address _address) public onlyAdmin {
+    function updateApprover(bytes32 id, address _address) public {
         // check if approver already exists
         if(approverMap[id]==address(0)){
             revert("Approver does not exist");
@@ -355,7 +355,7 @@ contract UserManager {
  * @dev Function to delete the approver address in the map
  * @param id bytes32 id of the approver
  */
-    function deleteApprover(bytes32 id) public onlyAdmin {
+    function deleteApprover(bytes32 id) public  {
         // check if approver already exists
         if(approverMap[id]==address(0)){
             revert("Approver does not exist");
