@@ -542,10 +542,14 @@ contract TDRManager {
         if (notice.status == NoticeStatus.ISSUED) {
             revert("DRC already issued against this notice");
         }
+        if (officer.role == Role.VERIFIER || officer.role == Role.SUB_VERIFIER) {
+            require(officer.zone == tdrStorage.getZone(applicationId), "Officer zone needs to be same as application zone");
+        }
         if (officer.role == Role.VERIFIER) {
             status.verified = true;
             status.verifierId = officer.userId;
             status.verifierRole = officer.role;
+
             // update Application
             tdrApplication.status = ApplicationStatus.VERIFIED;
             tdrStorage.updateApplication(tdrApplication);
@@ -574,19 +578,6 @@ contract TDRManager {
                 applicationId,
                 getApplicantIdsFromTdrApplication(tdrApplication)
             );
-            if (checkIfAllSubverifiersSigned(status)) {
-                status.verified = true;
-                // set application status as verified
-                tdrApplication.status = ApplicationStatus.VERIFIED;
-                // update Application
-                tdrStorage.updateApplication(tdrApplication);
-                emit Logger("Appliction verified by all sub verifier");
-                emit TdrApplicationVerified(
-                    officer,
-                    applicationId,
-                    getApplicantIdsFromTdrApplication(tdrApplication)
-                );
-            }
             tdrStorage.storeVerificationStatus(applicationId, status);
         } else {
             revert("user not authorized");
