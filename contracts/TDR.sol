@@ -162,8 +162,12 @@ contract TdrStorage {
 
     function updateNotice(TdrNotice memory tdrNotice) public onlyManager {
         emit Logger("START: updateNotice");
+        TdrNotice memory _tdrNotice = noticeMap[tdrNotice.noticeId];
         if (!isNoticeCreated(tdrNotice)) {
             revert("no such notice exists, reverting");
+        }
+        if(_tdrNotice.status == NoticeStatus.ISSUED){
+            revert("DRC already issued against the notice");
         }
         saveNoticeInMap(tdrNotice);
         emit NoticeUpdated(tdrNotice.noticeId, tdrNotice);
