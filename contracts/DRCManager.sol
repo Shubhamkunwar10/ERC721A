@@ -88,7 +88,7 @@ contract DRCManager {
     );
     event DuaCreated(bytes32 applicationId, uint256 far, bytes32[] applicants);
     event DrcUtilized(bytes32 applicationId, uint256 farUtilized);
-    event genDRCFromApplication(DrcTransferApplication application);
+    event genDRCFromApplication(DRC application);
 
     // Constructor function to set the initial values of the contract
     constructor(address _admin, address _manager) {
@@ -204,10 +204,25 @@ contract DRCManager {
             require(drcStorage.isDrcCreated(_drcId), "DRC not created");
             drc.farCredited = _farCredited;
             drc.farAvailable = _farAvailable;
-            DrcStorage.updateDrc(_drcId, drc);
+            drcStorage.updateDrc(_drcId, drc);
 
             emit FarValueUpdate(_drcId, _farCredited, _farAvailable);
         }
+    }
+
+    function changeOwnerDrc(bytes32 _drcId, bytes32[] memory _owner) public onlyAdmin {
+        DRC memory drc = drcStorage.getDrc(_drcId);
+
+        bytes32[] memory drcOwnerList = drc.owners;
+
+        if (drcOwnerList.length > 0) {
+            for (uint256 i = 0; i < drc.owners.length; i++) {
+                delete drcOwnerList[i];
+            }
+        }
+
+        drc.owners = _owner;
+        drcStorage.updateDrc(_drcId, drc );
     }
 
     // This function begins the drd transfer application
@@ -391,8 +406,8 @@ contract DRCManager {
             "Application already approved"
         );
 
-        if (officer.Role == Role.ADMIN) {
-            if (application.status = ApplicationStatus.REJECTED) {
+        if (officer.role == Role.ADMIN) {
+            if (application.status == ApplicationStatus.REJECTED) {
                 application.status = ApplicationStatus.APPROVED;
             }
         }
@@ -458,7 +473,7 @@ contract DRCManager {
         // need to reduce the available area of the old drc
         drc.farAvailable = drc.farAvailable - application.farTransferred;
         if (drc.farAvailable == 0) {
-            drc.status = DrcStatus.transferred;
+            drc.status = DrcStatus.TRANSFERRED;
         }
         drcStorage.updateDrc(drc.id, drc);
         emit genDRCFromApplication(newDrc);
