@@ -15,7 +15,8 @@ enum ApplicationStatus {
     APPROVED,
     REJECTED,
     DRCISSUED,
-    VERIFIED
+    VERIFIED,
+    REJECTED_DURING_VERIFICATION
 }
 
 enum NoticeStatus {
