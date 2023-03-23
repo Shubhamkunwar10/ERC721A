@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.16;
 import "./DataTypes.sol";
+import "./KdaCommon.sol";
+
 
 // Contract to maintain the TDR notice and applicationIds.
 // A TdrNotice stores all the applicationIds against a notice. If any of the application is converted to DRC,
@@ -8,7 +10,7 @@ import "./DataTypes.sol";
 // Note: This is a storage contract. Job of this contract is not to see the logic of the storage, 
 // but to store the values in the blockchain. All the logic and checks should be there in the TdrManager contract
 // TDR storage contract
-contract TdrStorage {
+contract TdrStorage is KdaCommon{
     // Address of the TDR manager
     address public tdrManager;
 
@@ -42,54 +44,13 @@ contract TdrStorage {
 
     // Event emitted after a TDR is deleted
     event TDRDeleted(bytes32 noticeId);
-    event Logger(string log);
-    event LogAddress(string addressInfo, address _address);
-    event LogBytes(string messgaeInfo, bytes32 _bytes);
-    event LogApplication(string message, TdrApplication application);
 
-    address public owner;
-    address public admin;
-    address public manager;
 
-    // Constructor function to set the initial values of the contract
-    constructor(address _admin, address _manager) {
-        // Set the contract owner to the caller
-        owner = msg.sender;
+   // Constructor function to set the initial values of the contract
+    constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
 
-        // Set the contract admin
-        admin = _admin;
-        manager = _manager;
-    }
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only the owner can perform this action.");
-        _;
-    }
 
-    modifier onlyAdmin() {
-        require(
-            msg.sender == admin || msg.sender == owner,
-            "Only the admin or owner can perform this action."
-        );
-        _;
-    }
-
-    modifier onlyManager() {
-        require(
-            msg.sender == manager,
-            "Only the manager can perform this action."
-        );
-        _;
-    }
-
-    function setAdmin(address _admin) public onlyOwner {
-        admin = _admin;
-    }
-
-    function setManager(address _manager) public {
-        require(msg.sender == owner || msg.sender == admin);
-        manager = _manager;
-    }
 
     event zoneSet(bytes32 applicationId, Zone _zone);
 
@@ -455,8 +416,7 @@ contract TdrStorage {
         return applicantList;
     }
     // delete applicatiion from user
-}
-// CRUD operation for zone
+    // CRUD operation for zone
     function setZone(bytes32 _applicationId, Zone _zone) public {
         require(
             isApplicationCreated(_applicationId),
@@ -474,3 +434,5 @@ contract TdrStorage {
     function deleteZone(bytes32 _applicationId) public {
         delete applicationZoneMap[_applicationId];
     }
+
+}

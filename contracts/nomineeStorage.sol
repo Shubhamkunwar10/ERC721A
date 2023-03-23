@@ -7,103 +7,17 @@ pragma solidity ^0.8.16;
  * Date: 04/03/2023
  */
 import "./DataTypes.sol";
+import "./KdaCommon.sol";
 
-contract NomineeStorage {
+contract NomineeStorage is KdaCommon  {
     mapping(bytes32 => bytes32[]) private userNominees;
     mapping(bytes32 => nomineeApplication) public nomineeApplicationMap;
-    address owner;
-    address admin;
-    address manager;
 
-    event Logger(string log);
-    event LogAddress(string addressInfo, address _address);
-    event LogBytes(string messgaeInfo, bytes32 _bytes);
-    event LogBool(string messageInfo, bool message);
-    event LogApplication(string message, TdrApplication application);
     event LogOfficer(string message, KdaOfficer officer);
 
-    /**
-    * @dev Constructor function to set the initial values of the contract.
-     * @param _admin The address of the contract admin.
-     * @param _manager The address of the TDR manager.
-     */
 
-    constructor(address _admin, address _manager) {
-        // Set the contract owner to the caller
-        owner = msg.sender;
-
-        // Set the contract admin
-        admin = _admin;
-        manager = _manager;
-    }
-    /**
-     * @dev Modifier to check if the caller is the TDR manager.
-     */    modifier onlyOwner() {
-        require(msg.sender == owner, "Caller is not the owner of the contract");
-        _;
-    }
-    /**
-    * @dev Modifier to check if the caller is the contract admin.
-    */
-        modifier onlyAdmin() {
-        require(msg.sender == admin, "Caller is not the contract admin");
-        _;
-    }
-    /**
-    * @dev Modifier to check if the caller is the contract manager.
-    */
-    modifier onlyManager() {
-        require(msg.sender == manager, "Caller is not the contract manager");
-//        emit LogAddress("sender is", msg.sender);
-//        emit LogAddress("manager is", manager);
-//        emit LogAddress("admin is", admin);
-//        emit LogAddress("owner is", owner);
-        _;
-    }
-
-    /**
-    * @dev Updates the address of the contract admin. Can only be called by the owner
-     * @param _newAdmin The new address of the contract admin.
-     */
-    function setAdmin(address _newAdmin) onlyOwner public{
-        admin = _newAdmin;
-    }
-
-    /**
-     * @dev Updates the address of the contract owner. Can only be called by the owner
-     * @param _newOwner The new address of the contract owner.
-     */
-    function setOwner(address _newOwner) onlyOwner public {
-        owner = _newOwner;
-    }
-
-    /**
-     * @dev Updates the address of the TDR manager. Can only be called by the User manager.
-     * @param _newManager The new address of the TDR manager.
-     */
-    function setManager(address _newManager) onlyOwner public {
-        manager = _newManager;
-    }
-    /**
-* @dev returns the address of the contract admin.
-     */
-    function getAdmin() public view returns (address){
-        return admin;
-    }
-
-    /**
-     * @dev returns the address of the contract owner.
-     */
-    function getOwner() public view returns (address) {
-        return owner;
-    }
-
-    /**
-     * @dev returns the address of the TDR manager.
-     */
-    function getManager() public view returns (address) {
-        return manager;
-    }
+   // Constructor function to set the initial values of the contract
+    constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
 
 
     // Events emitted when nominee operation is made

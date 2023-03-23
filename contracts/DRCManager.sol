@@ -7,13 +7,14 @@ import "./Application.sol";
 import "./UtilizationApplication.sol";
 import "./DataTypes.sol";
 import "./nomineeManager.sol";
+import "./KdaCommon.sol";
 
 /**
 @title TDR Manager for TDR storage
 @author Ras Dwivedi
 @notice Manager contract for TDR storage: It implements the business logic for the TDR storage
  */
-contract DRCManager {
+contract DRCManager is KdaCommon {
     // contracts
     DrcStorage public drcStorage;
     UserManager public userManager;
@@ -29,16 +30,10 @@ contract DRCManager {
     address public nomineeManagerAddress;
 
     // admin address
-    address owner;
-    address public admin;
-    address public manager;
+    
     address tdrManager;
 
-    event Logger(string log);
-    event LogAddress(string addressInfo, address _address);
-    event LogBytes(string messgaeInfo, bytes32 _bytes);
-    event LogBool(string messageInfo, bool message);
-    event LogApplication(string message, TdrApplication application);
+    
     event LogOfficer(string message, KdaOfficer officer);
     event DtaApplicationVerified(
         KdaOfficer officer,
@@ -90,51 +85,15 @@ contract DRCManager {
     event DrcUtilized(bytes32 applicationId, uint farUtilized);
     event genDRCFromApplication(DrcTransferApplication application);
 
-    // Constructor function to set the initial values of the contract
-    constructor(address _admin, address _manager) {
-        // Set the contract owner to the caller
-        owner = msg.sender;
+   // Constructor function to set the initial values of the contract
+    constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {} 
 
-        // Set the contract admin
-        admin = _admin;
-        manager = _manager;
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only the owner can perform this action.");
-        _;
-    }
-
-    modifier onlyAdmin() {
-        require(
-            msg.sender == admin || msg.sender == owner,
-            "Only the admin or owner can perform this action."
-        );
-        _;
-    }
-
-    modifier onlyManager() {
-        require(
-            msg.sender == manager,
-            "Only the manager, admin, or owner can perform this action."
-        );
-        _;
-    }
     modifier onlyTdrManager() {
         require(
             msg.sender == tdrManager,
             "Only the manager, admin, or owner can perform this action."
         );
         _;
-    }
-
-    function setAdmin(address _admin) public onlyOwner {
-        admin = _admin;
-    }
-
-    function setManager(address _manager) public {
-        require(msg.sender == owner || msg.sender == admin);
-        manager = _manager;
     }
 
     function loadDrcStorage(address _drcStorageAddress) public {
@@ -307,9 +266,9 @@ contract DRCManager {
     }
 
     // this function is called by the admin to verify the transfer
-        VerificationStatus memory status = dtaStorage.getVerificationStatus(
-            applicationId
-        );
+        // VerificationStatus memory status = dtaStorage.getVerificationStatus(
+        //     applicationId
+        // );
     function verifyDTA(bytes32 applicationId) public {
             VerificationStatus memory status = dtaStorage.getVerificationStatus(
             applicationId

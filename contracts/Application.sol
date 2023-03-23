@@ -3,70 +3,24 @@ pragma solidity ^0.8.16;
 import "./DRC.sol";
 import "./UserManager.sol";
 import "./DataTypes.sol";
+import "./KdaCommon.sol";
 
-contract DrcTransferApplicationStorage {
+contract DrcTransferApplicationStorage is KdaCommon{
     // enum ApplicationStatus {pending, submitted, approved, rejected}
 
     mapping(bytes32 => DrcTransferApplication) public applicationMap; // application id => application
     mapping(bytes32 => bytes32[]) public userApplicationMap; // userId => application Id
     mapping(bytes32 => VerificationStatus) public verificationStatusMap; //applicationId => verification status
 
-    address owner;
-    address admin;
-    address manager;
     //events
-    event Logger(string s);
-    event LogAddress(string addressInfo, address _address);
-    event LogBytes(string messgaeInfo, bytes32 _bytes);
-    event LogBool(string messageInfo, bool message);
-    event LogApplication(string message, TdrApplication application);
+   
     event DTACreatedForUser(bytes32 userId, bytes32 applicationId);
     event DTACreated(bytes32 applicationId);
     event DTAUpdated(bytes32 applicationId);
 
     // Constructor function to set the initial values of the contract
-    constructor(address _admin, address _manager) {
-        // Set the contract owner to the caller
-        owner = msg.sender;
+constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
 
-        // Set the contract admin
-        admin = _admin;
-        manager = _manager;
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only the owner can perform this action.");
-        _;
-    }
-
-    modifier onlyAdmin() {
-        require(
-            msg.sender == admin || msg.sender == owner,
-            "Only the admin or owner can perform this action."
-        );
-        _;
-    }
-
-    modifier onlyManager() {
-        require(
-            msg.sender == manager,
-            "Only the manager, admin, or owner can perform this action."
-        );
-        _;
-    }
-
-    function setAdmin(address _admin) public onlyOwner {
-        admin = _admin;
-    }
-
-    function setManager(address _manager) public {
-        require(msg.sender == owner || msg.sender == admin);
-        manager = _manager;
-    }
-
-    function setOwner(address _newOwner) public onlyOwner {
-        owner = _newOwner;
-    }
 
     function createApplication(
         DrcTransferApplication memory dta
