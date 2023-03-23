@@ -204,7 +204,7 @@ contract DRCManager {
             require(drcStorage.isDrcCreated(_drcId), "DRC not created");
             drc.farCredited = _farCredited;
             drc.farAvailable = _farAvailable;
-            DrcStorage.drcMap[_drcId] = drc;
+            DrcStorage.updateDrc(_drcId, drc);
 
             emit FarValueUpdate(_drcId, _farCredited, _farAvailable);
         }
