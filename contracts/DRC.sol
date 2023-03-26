@@ -63,6 +63,20 @@ contract DrcStorage is KdaCommon {
         // insertDrc((_drc));
         storeDrcInMap(_drc);
     }
+    
+    function getDrcHistory(bytes32 drcId) public view returns (DRC[] memory) {
+        DRC[] memory history = new DRC[](10); // set maximum history length to 10
+        bytes32 currentDrcId = drcId;
+        uint i = 0;
+        while (currentDrcId != bytes32(0) && i < 10) {
+            DRC memory drc = drcs[currentDrcId];
+            history[i] = drc;
+            currentDrcId = drc.previousDRC;
+            i++;
+        }
+        return history;
+    }
+
     function addDrcToOwners(DRC memory drc) internal {
         for (uint i=0; i< drc.owners.length; i++){
             addDrcToOwner(drc.id,drc.owners[i]);
