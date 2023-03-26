@@ -438,6 +438,7 @@ contract TDRManager {
         TdrApplication memory tdrApplication = tdrStorage.getApplication(
             applicationId
         );
+        require(tdrApplication.status != ApplicationStatus.REJECTED, "Application already rejected");
         require(
             tdrApplication.status != ApplicationStatus.APPROVED,
             "Application already approved"
