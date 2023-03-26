@@ -176,9 +176,9 @@ enum NoticeStatus {
         Role verifierRole;
         SubVerifierStatus subVerifierStatus;
     }
-struct nomineeApplication {
-    bytes32 applicationId;
-    bytes32 userId;
-    bytes32[] nominees;
-    ApplicationStatus status;
-}
+    struct nomineeApplication {
+        bytes32 applicationId;
+        bytes32 userId;
+        bytes32[] nominees;
+        ApplicationStatus status;
+    }
