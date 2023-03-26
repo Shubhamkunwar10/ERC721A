@@ -2,67 +2,22 @@
 pragma solidity ^0.8.16;
 import "./DRC.sol";
 import "./UserManager.sol";
+import "./KdaCommon.sol";
 
-contract DuaStorage {
+
+contract DuaStorage is KdaCommon {
     mapping(bytes32 => DUA) public applicationMap; // applicaton id => dua application
     mapping(bytes32 => bytes32[]) public userApplicationMap; //userId => application id list
 
     //logger events
-    event LogAddress(string addressInfo, address _address);
-    event LogBytes(string messgaeInfo, bytes32 _bytes);
-    event LogBool(string messageInfo, bool message);
-    event LogApplication(string message, TdrApplication application);
     event DUACreatedForUser(bytes32 userId, bytes32 applicationId);
     event DUACreated(bytes32 applicationId);
     event DUAUpdated(bytes32 applicationId);
 
-    address owner;
-    address admin;
-    address manager;
 
-    // Constructor function to set the initial values of the contract
-    constructor(address _admin, address _manager) {
-        // Set the contract owner to the caller
-        owner = msg.sender;
+  // Constructor function to set the initial values of the contract
+    constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
 
-        // Set the contract admin
-        admin = _admin;
-        manager = _manager;
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only the owner can perform this action.");
-        _;
-    }
-
-    modifier onlyAdmin() {
-        require(
-            msg.sender == admin || msg.sender == owner,
-            "Only the admin or owner can perform this action."
-        );
-        _;
-    }
-
-    modifier onlyManager() {
-        require(
-            msg.sender == manager,
-            "Only the manager, admin, or owner can perform this action."
-        );
-        _;
-    }
-
-    function setAdmin(address _admin) public onlyOwner {
-        admin = _admin;
-    }
-
-    function setManager(address _manager) public {
-        require(msg.sender == owner || msg.sender == admin);
-        manager = _manager;
-    }
-
-    function setOwner(address _newOwner) public onlyOwner {
-        owner = _newOwner;
-    }
 
     function createApplication(DUA memory dua) public onlyManager {
         require(
