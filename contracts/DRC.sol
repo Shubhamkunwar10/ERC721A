@@ -44,7 +44,7 @@ contract DrcStorage is KdaCommon {
         tdrManager = _newTdrManager;
     }
     // Create a function to add a new Drc to the mapping
-    function createDrc(DRC memory _drc) public onlyManager{
+    function createDrc(DRC memory _drc) public onlyDrcCreator{
          if (_drc.owners.length <= 0) {
             revert("DRC has 0 owners");
         } 

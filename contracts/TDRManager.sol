@@ -121,16 +121,26 @@ contract TDRManager is KdaCommon {
     }
 
     function setZone(bytes32 _applicationId, Zone _zone) public {
-        TdrApplication memory application = tdrStorage.getApplication(_applicationId);
-        if(application.applicationId == ""){
-            revert("No such application found");
+        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        TdrApplication memory application = tdrStorage.getApplication(
+            _applicationId
+        );
+
+        if (officer.role == Role.ADMIN || officer.role == Role.VC) {
+            if (application.applicationId == "") {
+                revert("No such application found");
+            }
+            tdrStorage.setZone(_applicationId, _zone);
+        } else {
+            revert("User not authorized");
         }
-        tdrStorage.setZone(_applicationId, _zone);
     }
 
-    function getZone(bytes32 _applicationId) public view returns(Zone){
-         TdrApplication memory application = tdrStorage.getApplication(_applicationId);
-        if(application.applicationId == ""){
+    function getZone(bytes32 _applicationId) public view returns (Zone) {
+        TdrApplication memory application = tdrStorage.getApplication(
+            _applicationId
+        );
+        if (application.applicationId == "") {
             revert("No such application found");
         }
         return tdrStorage.getZone(_applicationId);
@@ -174,15 +184,63 @@ contract TDRManager is KdaCommon {
     }
 
     /**
+     * @dev Function to update an application
+     * @param _tdrApplication TdrApplication memory object representing the application to be updated
+     * @dev Revert if the notice for the application does not exist
+     */
+    function updateTdrApplication(
+        TdrApplication memory _tdrApplication
+    ) public {
+        emit LogBytes(
+            "STARTED update TDR application",
+            _tdrApplication.applicationId
+        );
+        emit LogApplication("application received was ", _tdrApplication);
+        // check whether Notice has been created for the application. If not, revert
+        TdrNotice memory tdrNotice = tdrStorage.getNotice(
+            _tdrApplication.noticeId
+        );
+        // if notice is empty, create notice.
+        if (tdrNotice.noticeId == "") {
+            revert("No such notice has been created");
+        }
+        TdrApplication memory tdrApplication = tdrStorage.getApplication(
+            _tdrApplication.applicationId
+        );
+        if (tdrApplication.applicationId == "") {
+            revert("No such application has been created");
+        }
+        // application should have status pending or sent back
+        require(
+            tdrApplication.status == ApplicationStatus.pending ||
+                tdrApplication.status ==
+                ApplicationStatus.sentBackForCorrection,
+            "Application cannot be updated"
+        );
+
+        tdrStorage.updateApplication(_tdrApplication);
+        emit Logger("application updated in storage");
+        // add application in the notice
+        tdrStorage.addApplicationToNotice(
+            _tdrApplication.noticeId,
+            _tdrApplication.applicationId
+        );
+        emit Logger("application added to Notice");
+        signTdrApplication(_tdrApplication.applicationId);
+        emit Logger("application signed by creator");
+    }
+
+    /**
      * @dev Check if a user has signed a TDR application.
      * @param _applicationId Id of the TDR application
      * @param adrs Address of the user to check
      * @return Boolean indicating if the user has signed the application
      */
-    function hasUserSignedApplication(
-        bytes32 _applicationId,
-        address adrs
-    ) public view returns (bool) {
+    function hasUserSignedApplication(bytes32 _applicationId, address adrs)
+        public
+        view
+        returns (bool)
+    {
         // Get the TDR application by its id
         TdrApplication memory application = tdrStorage.getApplication(
             _applicationId
@@ -196,7 +254,7 @@ contract TDRManager is KdaCommon {
         bytes32 userId = userManager.getUserId(adrs);
 
         // Loop through all applicants in the TDR application
-        for (uint i = 0; i < application.applicants.length; i++) {
+        for (uint256 i = 0; i < application.applicants.length; i++) {
             Signatory memory signatory = application.applicants[i];
             if (signatory.userId == userId) {
                 return signatory.hasUserSigned;
@@ -207,16 +265,16 @@ contract TDRManager is KdaCommon {
     }
 
     // This function uses address to see whether the user has signed the application or not
-    function getApplicantsPosition(
-        bytes32 _applicationId,
-        address adrs
-    ) public returns (uint) {
+    function getApplicantsPosition(bytes32 _applicationId, address adrs)
+        public
+        returns (uint256)
+    {
         TdrApplication memory application = tdrStorage.getApplication(
             _applicationId
         );
         bytes32 userId = userManager.getUserId(adrs);
         //        emit LogAddress("address quries is ",adrs);
-        for (uint i = 0; i < application.applicants.length; i++) {
+        for (uint256 i = 0; i < application.applicants.length; i++) {
             Signatory memory signatory = application.applicants[i];
             if (signatory.userId == userId) {
                 emit LogBytes("user found", userId);
@@ -227,10 +285,10 @@ contract TDRManager is KdaCommon {
         return 0;
     }
 
-    function signApplicationAtPos(
-        bytes32 _applicationId,
-        uint pos
-    ) private returns (TdrApplication memory) {
+    function signApplicationAtPos(bytes32 _applicationId, uint256 pos)
+        private
+        returns (TdrApplication memory)
+    {
         if (pos == 0) {
             emit Logger("Applicant not found  in the application");
         }
@@ -253,9 +311,10 @@ contract TDRManager is KdaCommon {
         return application;
     }
 
-    function getApplication(
-        bytes32 _applicationId
-    ) public returns (TdrApplication memory) {
+    function getApplication(bytes32 _applicationId)
+        public
+        returns (TdrApplication memory)
+    {
         TdrApplication memory application = tdrStorage.getApplication(
             _applicationId
         );
@@ -279,7 +338,7 @@ contract TDRManager is KdaCommon {
             _applicationId
         );
         // Get the position of the message sender in the applicants array of the TdrApplication
-        uint pos = getApplicantsPosition(_applicationId, msg.sender);
+        uint256 pos = getApplicantsPosition(_applicationId, msg.sender);
         if (pos == 0) {
             emit Logger("ERROR: applicant id not found");
             emit LogAddress("sender is ", msg.sender);
@@ -317,10 +376,12 @@ contract TDRManager is KdaCommon {
      * @dev return whether all the user of the application has signed the application
      * @param application The application to check signature of all applicants
      */
-    function hasAllUserSignedTdrApplication(
-        TdrApplication memory application
-    ) private pure returns (bool) {
-        for (uint i = 0; i < application.applicants.length; i++) {
+    function hasAllUserSignedTdrApplication(TdrApplication memory application)
+        private
+        pure
+        returns (bool)
+    {
+        for (uint256 i = 0; i < application.applicants.length; i++) {
             Signatory memory s = application.applicants[i];
             if (!s.hasUserSigned) {
                 return false;
@@ -330,29 +391,41 @@ contract TDRManager is KdaCommon {
     }
 
     // This function mark the application as verified
-    function rejectApplication(
-        bytes32 applicationId,
-        string memory reason
-    ) public {
+    function rejectApplication(bytes32 applicationId, string memory reason)
+        public
+    {
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // Check if notice is issued
         TdrApplication memory tdrApplication = tdrStorage.getApplication(
             applicationId
         );
+        require(tdrApplication.status != ApplicationStatus.REJECTED, "Application already rejected");
         require(
             tdrApplication.status != ApplicationStatus.APPROVED,
             "Application already approved"
         );
         // No need to check notice, as application can be rejected even when DRC is issued.
+
         if (
             officer.role == Role.SUPER_ADMIN ||
             officer.role == Role.ADMIN ||
             officer.role == Role.APPROVER ||
             officer.role == Role.VC
         ) {
-            // update Application
-            tdrApplication.status = ApplicationStatus.REJECTED;
+            if (officer.role == Role.VC) {
+                require(
+                    tdrApplication.status == ApplicationStatus.SUBMITTED,
+                    "Application not in submitted state"
+                );
+            } if(officer.role == Role.APPROVER){
+                require(
+                    tdrApplication.status == ApplicationStatus.VERIFIED,
+                    "Application not in Approver state"
+                );
+            }
+
+            tdrApplication.status = ApplicationStatus.REJECTED_DURING_VERIFICATION;
             tdrStorage.updateApplication(tdrApplication);
             emit TdrApplicationRejected(
                 applicationId,
@@ -394,9 +467,6 @@ contract TDRManager is KdaCommon {
             }
         }
         if (
-            officer.role == Role.SUPER_ADMIN ||
-            officer.role == Role.ADMIN ||
-            officer.role == Role.APPROVER ||
             officer.role == Role.VC
         ) {
             // update Application
@@ -416,8 +486,8 @@ contract TDRManager is KdaCommon {
     function issueDRC(
         bytes32 applicationId,
         bytes32 newDrcId,
-        uint farGranted,
-        uint timeStamp
+        uint256 farGranted,
+        uint256 timeStamp
     ) internal {
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
@@ -459,9 +529,11 @@ contract TDRManager is KdaCommon {
         }
     }
 
-    function getVerificationStatus(
-        bytes32 applicationId
-    ) public view returns (bool) {
+    function getVerificationStatus(bytes32 applicationId)
+        public
+        view
+        returns (bool)
+    {
         VerificationStatus memory status = tdrStorage.getVerificationStatus(
             applicationId
         );
@@ -490,14 +562,18 @@ contract TDRManager is KdaCommon {
             revert("DRC already issued against this notice");
         }
         if (
-            officer.role == Role.SUPER_ADMIN ||
-            officer.role == Role.ADMIN ||
-            officer.role == Role.VERIFIER ||
-            officer.role == Role.VC
+            officer.role == Role.VERIFIER || officer.role == Role.SUB_VERIFIER
         ) {
+            require(
+                officer.zone == tdrStorage.getZone(applicationId),
+                "Officer zone needs to be same as application zone"
+            );
+        }
+        if (officer.role == Role.VERIFIER) {
             status.verified = true;
             status.verifierId = officer.userId;
             status.verifierRole = officer.role;
+
             // update Application
             tdrApplication.status = ApplicationStatus.VERIFIED;
             tdrStorage.updateApplication(tdrApplication);
@@ -509,36 +585,23 @@ contract TDRManager is KdaCommon {
             tdrStorage.storeVerificationStatus(applicationId, status);
         } else if (officer.role == Role.SUB_VERIFIER) {
             if (officer.department == Department.LAND) {
-                status.subVerifierStatus.land = true;
+                status.landVerification.isVerified = true;
             } else if (officer.department == Department.PLANNING) {
-                status.subVerifierStatus.planning = true;
+                status.planningVerification.isVerified = true;
             } else if (officer.department == Department.ENGINEERING) {
-                status.subVerifierStatus.engineering = true;
+                status.engineeringVerification.isVerified = true;
             } else if (officer.department == Department.PROPERTY) {
-                status.subVerifierStatus.property = true;
+                status.propertyVerification.isVerified = true;
             } else if (officer.department == Department.SALES) {
-                status.subVerifierStatus.sales = true;
+                status.salesVerification.isVerified = true;
             } else if (officer.department == Department.LEGAL) {
-                status.subVerifierStatus.legal = true;
+                status.legalVerification.isVerified = true;
             }
             emit TdrApplicationVerified(
                 officer,
                 applicationId,
                 getApplicantIdsFromTdrApplication(tdrApplication)
             );
-            if (checkIfAllSubverifiersSigned(status)) {
-                status.verified = true;
-                // set application status as verified
-                tdrApplication.status = ApplicationStatus.VERIFIED;
-                // update Application
-                tdrStorage.updateApplication(tdrApplication);
-                emit Logger("Appliction verified by all sub verifier");
-                emit TdrApplicationVerified(
-                    officer,
-                    applicationId,
-                    getApplicantIdsFromTdrApplication(tdrApplication)
-                );
-            }
             tdrStorage.storeVerificationStatus(applicationId, status);
         } else {
             revert("user not authorized");
@@ -547,45 +610,48 @@ contract TDRManager is KdaCommon {
 
     function checkIfAllSubverifiersSigned(
         VerificationStatus memory verificationStatus
+
     ) internal pure returns (bool) {
         bool allSigned = true;
 
         // Check the status of each subverifier
-        if (!verificationStatus.subVerifierStatus.land) {
+        if (!verificationStatus.landVerification.isVerified) {
             allSigned = false;
         }
-        if (!verificationStatus.subVerifierStatus.planning) {
+        if (!verificationStatus.planningVerification.isVerified) {
             allSigned = false;
         }
-        if (!verificationStatus.subVerifierStatus.engineering) {
+        if (!verificationStatus.engineeringVerification.isVerified) {
             allSigned = false;
         }
-        if (!verificationStatus.subVerifierStatus.property) {
+        if (!verificationStatus.propertyVerification.isVerified) {
             allSigned = false;
         }
-        if (!verificationStatus.subVerifierStatus.sales) {
+        if (!verificationStatus.salesVerification.isVerified) {
             allSigned = false;
         }
-        if (!verificationStatus.subVerifierStatus.legal) {
+        if (!verificationStatus.legalVerification.isVerified) {
             allSigned = false;
         }
 
         return allSigned;
     }
 
-    function getApplicationForUser(
-        bytes32 userId
-    ) public view returns (bytes32[] memory) {
+    function getApplicationForUser(bytes32 userId)
+        public
+        view
+        returns (bytes32[] memory)
+    {
         return tdrStorage.getApplicationForUser(userId);
     }
 
     function createDrc(
         TdrApplication memory tdrApplication,
-        uint farGranted,
+        uint256 farGranted,
         bytes32 newDrcId,
-        uint timeStamp,
-        uint areaSurrendered,
-        uint circleRateSurrendered
+        uint256 timeStamp,
+        uint256 areaSurrendered,
+        uint256 circleRateSurrendered
     ) public {
         // from the approved application, it creates a drc
         DRC memory drc;
@@ -600,7 +666,7 @@ contract TDRManager is KdaCommon {
         drc.applicationId = tdrApplication.applicationId;
         drc.owners = new bytes32[](tdrApplication.applicants.length);
         drc.timeStamp = timeStamp;
-        for (uint i = 0; i < tdrApplication.applicants.length; i++) {
+        for (uint256 i = 0; i < tdrApplication.applicants.length; i++) {
             drc.owners[i] = tdrApplication.applicants[i].userId;
         }
         drcStorage.createDrc(drc);
@@ -608,18 +674,22 @@ contract TDRManager is KdaCommon {
         emit DrcIssued(drc, getApplicantIdsFromTdrApplication(tdrApplication));
     }
 
-    function getTdrNotice(
-        bytes32 noticeId
-    ) public view returns (TdrNotice memory) {
+    function getTdrNotice(bytes32 noticeId)
+        public
+        view
+        returns (TdrNotice memory)
+    {
         return tdrStorage.getNotice(noticeId);
     }
 
     /*
     Returns the tdrApplicationIds for notice id
     */
-    function getTdrApplicationsIdsForTdrNotice(
-        bytes32 noticeId
-    ) public view returns (bytes32[] memory) {
+    function getTdrApplicationsIdsForTdrNotice(bytes32 noticeId)
+        public
+        view
+        returns (bytes32[] memory)
+    {
         return tdrStorage.getApplicationsForNotice(noticeId);
     }
 
@@ -629,7 +699,7 @@ contract TDRManager is KdaCommon {
         bytes32[] memory applicantList = new bytes32[](
             _tdrApplication.applicants.length
         );
-        for (uint i = 0; i < _tdrApplication.applicants.length; i++) {
+        for (uint256 i = 0; i < _tdrApplication.applicants.length; i++) {
             applicantList[i] = _tdrApplication.applicants[i].userId;
         }
         return applicantList;

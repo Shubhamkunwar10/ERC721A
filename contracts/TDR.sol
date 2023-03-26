@@ -28,12 +28,12 @@ contract TdrStorage is KdaCommon{
     // TDR struct definition
 
     // Event emitted after a TDR is created
+    event TdrApplicationUpdated(bytes32 noticeId, bytes32 applicationId, bytes32[] applicants);
     event TdrApplicationCreated(
         bytes32 noticeId,
         bytes32 applicationId,
         bytes32[] applicants
     );
-    event ApplicationUpdated(bytes32 noticeId, bytes32 applicationId);
 
     event NoticeCreated(bytes32 noticeId, TdrNotice notice);
     event NoticeUpdated(bytes32 noticeId, TdrNotice notice);
@@ -123,8 +123,12 @@ contract TdrStorage is KdaCommon{
 
     function updateNotice(TdrNotice memory tdrNotice) public onlyManager {
         emit Logger("START: updateNotice");
+        TdrNotice memory _tdrNotice = noticeMap[tdrNotice.noticeId];
         if (!isNoticeCreated(tdrNotice)) {
             revert("no such notice exists, reverting");
+        }
+        if(_tdrNotice.status == NoticeStatus.ISSUED){
+            revert("DRC already issued against the notice");
         }
         saveNoticeInMap(tdrNotice);
         emit NoticeUpdated(tdrNotice.noticeId, tdrNotice);
@@ -210,9 +214,10 @@ contract TdrStorage is KdaCommon{
             revert("Application does not exist");
         }
         addApplicationToMap(_application);
-        emit ApplicationUpdated(
+        emit TdrApplicationUpdated(
             _application.noticeId,
-            _application.applicationId
+            _application.applicationId,
+            getApplicantIdsFromTdrApplication(_application)
         ); // emit this event
     }
 
@@ -416,8 +421,9 @@ contract TdrStorage is KdaCommon{
         return applicantList;
     }
     // delete applicatiion from user
+
     // CRUD operation for zone
-    function setZone(bytes32 _applicationId, Zone _zone) public {
+    function setZone(bytes32 _applicationId, Zone _zone) public onlyManager {
         require(
             isApplicationCreated(_applicationId),
             "Application is not exist"
@@ -431,8 +437,9 @@ contract TdrStorage is KdaCommon{
         return applicationZoneMap[_applicationId];
     }
 
-    function deleteZone(bytes32 _applicationId) public {
+    function deleteZone(bytes32 _applicationId) public onlyAdmin {
         delete applicationZoneMap[_applicationId];
     }
 
 }
+
