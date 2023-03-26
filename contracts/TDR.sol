@@ -44,6 +44,7 @@ contract TdrStorage is KdaCommon{
 
     // Event emitted after a TDR is deleted
     event TDRDeleted(bytes32 noticeId);
+    event zoneSet(bytes32 applicationId, Zone _zone, bytes32[] applicants);
 
 
    // Constructor function to set the initial values of the contract
@@ -52,7 +53,6 @@ contract TdrStorage is KdaCommon{
 
 
 
-    event zoneSet(bytes32 applicationId, Zone _zone);
 
 
     // Function to create a new TDR
@@ -214,11 +214,11 @@ contract TdrStorage is KdaCommon{
             revert("Application does not exist");
         }
         addApplicationToMap(_application);
-        emit TdrApplicationUpdated(
-            _application.noticeId,
-            _application.applicationId,
-            getApplicantIdsFromTdrApplication(_application)
-        ); // emit this event
+//        emit TdrApplicationUpdated(
+//            _application.noticeId,
+//            _application.applicationId,
+//            getApplicantIdsFromTdrApplication(_application)
+//        ); // emit this event
     }
 
     function deleteApplication(bytes32 noticeId) public onlyManager {
@@ -426,11 +426,12 @@ contract TdrStorage is KdaCommon{
     function setZone(bytes32 _applicationId, Zone _zone) public onlyManager {
         require(
             isApplicationCreated(_applicationId),
-            "Application is not exist"
+            "Application does not exist"
         );
-        require(_applicationId > 0, "Application ID is greater than 0");
+        require(_applicationId !="", "Application ID cannot be empty");
         applicationZoneMap[_applicationId] = _zone;
-        emit zoneSet(_applicationId, _zone);
+        TdrApplication memory application = applicationMap[_applicationId];
+        emit zoneSet(_applicationId, _zone, getApplicantIdsFromTdrApplication(applicationMap));
     }
 
     function getZone(bytes32 _applicationId) public view returns(Zone){
@@ -442,4 +443,3 @@ contract TdrStorage is KdaCommon{
     }
 
 }
-

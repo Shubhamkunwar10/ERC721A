@@ -122,12 +122,9 @@ contract TDRManager is KdaCommon {
 
     function setZone(bytes32 _applicationId, Zone _zone) public {
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
-        TdrApplication memory application = tdrStorage.getApplication(
-            _applicationId
-        );
 
         if (officer.role == Role.ADMIN || officer.role == Role.VC) {
-            if (application.applicationId == "") {
+            if (!tdrStorage.isApplicationCreated(_applicationId)){
                 revert("No such application found");
             }
             tdrStorage.setZone(_applicationId, _zone);
@@ -167,11 +164,12 @@ contract TDRManager is KdaCommon {
         }
 
         // Set zone by default as NONE
-        tdrStorage.setZone(_tdrApplication.applicationId, Zone.NONE);
 
         //        // add application in application map
         tdrStorage.createApplication(_tdrApplication);
         emit Logger("application created in storage");
+        tdrStorage.setZone(_tdrApplication.applicationId, Zone.NONE);
+
         // add application in the notice
         tdrStorage.addApplicationToNotice(
             _tdrApplication.noticeId,
@@ -350,7 +348,9 @@ contract TDRManager is KdaCommon {
         }
         //        // Sign the TdrApplication at the given position
         application = signApplicationAtPos(_applicationId, pos);
-
+        emit TdrApplicationSigned(_applicationId,
+            userManager.getUserId(msg.sender),
+            getApplicantIdsFromTdrApplication(application));
         // Check if all signatories have signed the TdrApplication
         bool allSignatoriesSign = hasAllUserSignedTdrApplication(application);
         if (allSignatoriesSign) {
