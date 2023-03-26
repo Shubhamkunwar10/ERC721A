@@ -21,13 +21,15 @@ pragma solidity ^0.8.16;
 import "./TDR.sol";
 import "./UserManager.sol";
 import "./DRC.sol";
+import "./KdaCommon.sol";
+
 
 /**
 @title TDR Manager for TDR storage
 @author Ras Dwivedi
 @notice Manager contract for TDR storage: It implements the business logic for the TDR storage
  */
-contract TDRManager {
+contract TDRManager is KdaCommon {
     // Address of the TDR storage contract
     TdrStorage public tdrStorage;
     UserManager public userManager;
@@ -42,49 +44,16 @@ contract TDRManager {
         string reason,
         bytes32[] applicants
     );
-    event Logger(string log);
-    event LogAddress(string addressInfo, address _address);
-    event LogBytes(string messgaeInfo, bytes32 _bytes);
-    event LogBool(string messageInfo, bool message);
-    event LogApplication(string message, TdrApplication application);
     event DrcIssued(DRC drc, bytes32[] owners);
     event TdrApplicationSubmitted(bytes32 applicationId, bytes32[] applicants);
     event DrcSubmitted(bytes32 drcId);
 
-    address owner;
-    address admin;
-    address manager;
+   // Constructor function to set the initial values of the contract
+    constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
 
-    // Constructor function to set the initial values of the contract
-    constructor(address _admin, address _manager) {
-        // Set the contract owner to the caller
-        owner = msg.sender;
 
-        // Set the contract admin
-        admin = _admin;
-        manager = _manager;
-    }
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only the owner can perform this action.");
-        _;
-    }
 
-    modifier onlyAdmin() {
-        require(
-            msg.sender == admin || msg.sender == owner,
-            "Only the admin or owner can perform this action."
-        );
-        _;
-    }
-
-    modifier onlyManager() {
-        require(
-            msg.sender == manager,
-            "Only the manager, admin, or owner can perform this action."
-        );
-        _;
-    }
     modifier onlyNoticeCreator() {
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
@@ -94,14 +63,7 @@ contract TDRManager {
         _;
     }
 
-    function setAdmin(address _admin) public onlyOwner {
-        admin = _admin;
-    }
 
-    function setManager(address _manager) public {
-        require(msg.sender == owner || msg.sender == admin);
-        manager = _manager;
-    }
 
     // Import all the contracts
     // function to add tdrStorage contract

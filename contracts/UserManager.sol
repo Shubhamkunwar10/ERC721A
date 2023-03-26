@@ -7,8 +7,10 @@ The contract owner and admin have the authority to update user, verifier, approv
 */
 pragma solidity ^0.8.16;
 import "./DataTypes.sol";
+import "./KdaCommon.sol";
 
-contract UserManager {
+
+contract UserManager is KdaCommon {
     // Mapping from user id to user address
     mapping(bytes32 => address) public userMap;
     mapping(address => bytes32) public reverseUserMap;
@@ -32,14 +34,6 @@ contract UserManager {
     mapping(address => bytes32) public reverseIssuerMap;
 
 
-    // Address of the contract owner
-    address public owner;
-
-    // Address of the contract admin
-    address public admin;
-
-    // address of the manager of the contract
-    address public manager;
     // Address of the Vice-chairman
     address public vc;
 
@@ -82,51 +76,11 @@ contract UserManager {
     // Event emitted after an issuer list is updated
     event IssuerListUpdated(address[] issuerAddresses);
 
-    event Logger(string log);
-    event LogAddress(string addressInfo, address _address);
-    event LogBytes(string messgaeInfo, bytes32 _bytes);
 
-    // Constructor function to set the initial values of the contract
-    constructor(address _admin, address _manager) {
-        // Set the contract owner to the caller
-        owner = msg.sender;
+  // Constructor function to set the initial values of the contract
+    constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
 
-        // Set the contract admin
-        admin = _admin;
-        manager = _manager;
-    }
 
-/**
- * @dev Modifier to check if the caller is the contract owner
- */
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Caller is not the contract owner");
-        _;
-    }
-
-/**
- * @dev Modifier to check if the caller is the contract admin
- */
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Caller is not the contract admin");
-        _;
-    }
-
-/**
- * @dev Modifier to check if the caller is the contract admin
- */
-    modifier onlyManager() {
-        require(msg.sender == manager, "Caller is not the contract manager");
-        _;
-    }
-    function setAdmin(address _admin) public onlyOwner {
-        admin = _admin;
-    }
-
-    function setManager(address _manager) public {
-        require (msg.sender == owner ||  msg.sender == admin);
-        manager = _manager;
-    }
 
 /**
  * @dev Function to add a user

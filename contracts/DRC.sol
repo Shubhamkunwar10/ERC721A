@@ -4,65 +4,34 @@ import "./TDR.sol";
 import "./DataTypes.sol";
 //import "./lib/Counters.sol";
 //import "./lib/SafeMath.sol";
+import "./KdaCommon.sol";
 
-contract DrcStorage {
+contract DrcStorage is KdaCommon {
 
 //    using SafeMath for uint256;
 //    using Counters for Counters.Counter;
-
-    // Define the struct that we will be using for our CRUD operations
-
-
 
     // Mappings
     // Create a mapping to store the DRC against Drc id
     mapping(bytes32 => DRC) public drcMap;  // drcId => drc
     mapping(bytes32 => bytes32[]) public ownerMap; //ownerId => drcId
-//    mapping(bytes32 => bytes32[] ) public userApplicationMap; // onwerid => applicationId[]
+    //mapping(bytes32 => bytes32[] ) public userApplicationMap; // onwerid => applicationId[]
     mapping(bytes32 => bytes32[] ) public drcDtaMap; // drcId => applicationId []
     mapping(bytes32 => bytes32[] ) public drcDuaMap; // drcId => applicationId []
 
     // Events
     event DrcCreated(bytes32 drcId, bytes32[] owners);
-    event Logger(string log);
-    event LogAddress(string addressInfo, address _address);
-    event LogBytes(string messgaeInfo, bytes32 _bytes);
-    event LogBool(string messageInfo, bool message);
-    event LogApplication(string message, TdrApplication application);
     event DtaAddedToDrc(bytes32 dtaId, bytes32 applicationId);
     event DuaAddedToDrc(bytes32 dtaId, bytes32 applicationId);
     event DrcAddedToOwner(bytes32 drcId, bytes32 ownerId);
 
     
-    address public owner;
-    address public admin;
-    address  public manager;
     address public tdrManager;
 
     // Constructor function to set the initial values of the contract
-    constructor(address _admin, address _manager) {
-        // Set the contract owner to the caller
-        owner = msg.sender;
+    constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
 
-        // Set the contract admin
-        admin = _admin;
-        manager = _manager;
-    }
-    // Modifier to check if the caller is the TDR manager
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Caller is not the TDR manager");
-        _;
-    }
 
-    // Modifier to check if the caller is the contract admin
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Caller is not the contract admin");
-        _;
-    }
-    modifier onlyManager() {
-        require(msg.sender == manager, "Caller is not the contract manager");
-        _;
-    }
     modifier onlyDrcCreator() {
         // Drc is created only in two ways, either through land acquisition or through transfer.manager
         // In case of land acquisition, tdr manager would create the drc
@@ -71,15 +40,6 @@ contract DrcStorage {
         _;
     }
 
-    function setAdmin(address _newAdmin) onlyOwner public{
-        admin = _newAdmin;
-    }
-    function setOwner(address _newOwner) onlyOwner public {
-        owner = _newOwner;
-    }
-    function setManager(address _newManager) onlyOwner public {
-        manager = _newManager;
-    }
     function setTdrManager(address _newTdrManager) onlyOwner public {
         tdrManager = _newTdrManager;
     }
