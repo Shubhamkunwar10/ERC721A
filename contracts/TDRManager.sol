@@ -159,16 +159,26 @@ contract TDRManager {
     }
 
     function setZone(bytes32 _applicationId, Zone _zone) public {
-        TdrApplication memory application = tdrStorage.getApplication(_applicationId);
-        if(application.applicationId == ""){
-            revert("No such application found");
+        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        TdrApplication memory application = tdrStorage.getApplication(
+            _applicationId
+        );
+
+        if (officer.role == Role.ADMIN || officer.role == Role.VC) {
+            if (application.applicationId == "") {
+                revert("No such application found");
+            }
+            tdrStorage.setZone(_applicationId, _zone);
+        } else {
+            revert("User not authorized");
         }
-        tdrStorage.setZone(_applicationId, _zone);
     }
 
-    function getZone(bytes32 _applicationId) public view returns(Zone){
-         TdrApplication memory application = tdrStorage.getApplication(_applicationId);
-        if(application.applicationId == ""){
+    function getZone(bytes32 _applicationId) public view returns (Zone) {
+        TdrApplication memory application = tdrStorage.getApplication(
+            _applicationId
+        );
+        if (application.applicationId == "") {
             revert("No such application found");
         }
         return tdrStorage.getZone(_applicationId);

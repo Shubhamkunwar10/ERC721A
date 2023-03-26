@@ -1,5 +1,7 @@
 const TdrStorage = artifacts.require("TdrStorage");
 // const DataTypes = artifacts.require("DataTypes");
+const truffleAssertion = require('truffle-assertions');
+
 
 contract("TdrStorage", (accounts) => {
   let storage;
@@ -299,6 +301,24 @@ contract("TdrStorage", (accounts) => {
       assert.equal(result1, tdrApplication1.applicationId, "Application ID not returned correctly");
       assert.equal(result2, tdrApplication2.applicationId, "Application ID not returned correctly");
     });
+
+    it(`Should set application zone`, async () => {
+      const storeZone = await storage.setZone(tdrApplication1.applicationId, 1, { from: manager});
+      const getZoneMapValue = await storage.applicationZoneMap(tdrApplication1.applicationId);
+      const zoneValue = await storage.getZone(tdrApplication1.applicationId);
+      assert.equal(getZoneMapValue, zoneValue, "Zone value not set" ); 
+
+      truffleAssertion.eventEmitted(storeZone, "zoneSet", (e) => {
+        return e.applicationId == tdrApplication1.applicationId && e._zone == 1;
+      });
+
+    });
+
+    it(`Should delete application zone`, async () => {
+      await storage.deleteZone(tdrApplication1.applicationId, { from: admin});
+      const getZoneValue = await storage.getZone(tdrApplication1.applicationId);
+      assert.equal(getZoneValue, 0, "Application zone not deleted");
+    })
   });
 });
 

@@ -455,9 +455,9 @@ contract TdrStorage {
         return applicantList;
     }
     // delete applicatiion from user
-}
-// CRUD operation for zone
-    function setZone(bytes32 _applicationId, Zone _zone) public {
+
+    // CRUD operation for zone
+    function setZone(bytes32 _applicationId, Zone _zone) public onlyManager {
         require(
             isApplicationCreated(_applicationId),
             "Application is not exist"
@@ -471,6 +471,9 @@ contract TdrStorage {
         return applicationZoneMap[_applicationId];
     }
 
-    function deleteZone(bytes32 _applicationId) public {
+    function deleteZone(bytes32 _applicationId) public onlyAdmin {
         delete applicationZoneMap[_applicationId];
     }
+}
+
+

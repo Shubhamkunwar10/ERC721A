@@ -307,9 +307,6 @@ contract DRCManager {
     }
 
     // this function is called by the admin to verify the transfer
-        VerificationStatus memory status = dtaStorage.getVerificationStatus(
-            applicationId
-        );
     function verifyDTA(bytes32 applicationId) public {
             VerificationStatus memory status = dtaStorage.getVerificationStatus(
             applicationId
