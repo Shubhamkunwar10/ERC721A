@@ -126,7 +126,7 @@ contract NomineeStorage {
      * @param user The user for whom the nominees are being retrieved
      * @return The array of nominees for the user
      */
-    function getNominees(bytes32 user) public onlyManager returns (bytes32[] memory) {
+    function getNominees(bytes32 user) public onlyManager view returns (bytes32[] memory) {
         return userNominees[user];
     }
 
@@ -157,7 +157,7 @@ contract NomineeStorage {
         nominees.pop();
         userNominees[user]= nominees;
     }
-    function findIndex(bytes32[] memory arr, bytes32 element) public pure returns(uint) {
+    function findIndex(bytes32[] memory arr, bytes32 element) internal pure returns(uint) {
         for (uint i = 0; i < arr.length; i++) {
             if (arr[i] == element) {
                 return i;
@@ -168,6 +168,7 @@ contract NomineeStorage {
     event nomineeApplicationAdded(bytes32 applicationId, bytes32 userId);
     event nomineeApplicationUpdated(bytes32 applicationId, bytes32 userId);
     event nomineeApplicationDeleted(bytes32 applicationId, bytes32 userId);
+
     function createNomineeApplication(nomineeApplication memory application) onlyManager public {
         // check whether the application exists or not
         if(isApplicationCreated(application.applicationId)){
@@ -176,6 +177,7 @@ contract NomineeStorage {
         nomineeApplicationMap[application.applicationId] = application;
         emit nomineeApplicationAdded(application.applicationId, application.userId);
     }
+    
     function updateNomineeApplication(nomineeApplication memory application) onlyManager public {
         // check whether the application exists or not
         if(!isApplicationCreated(application.applicationId)){
@@ -192,7 +194,7 @@ contract NomineeStorage {
         delete nomineeApplicationMap[application.applicationId];
         emit nomineeApplicationDeleted(application.applicationId, application.userId);
     }
-    function getNomineeApplication(bytes32 applicationId) public returns (nomineeApplication memory) {
+    function getNomineeApplication(bytes32 applicationId) public view returns (nomineeApplication memory) {
         return nomineeApplicationMap[applicationId];
     }
     function isApplicationCreated(bytes32 _applicationId) public view returns (bool) {

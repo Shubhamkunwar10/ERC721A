@@ -158,6 +158,32 @@ contract TDRManager {
         tdrStorage.updateNotice(tdrNotice);
     }
 
+    function setZone(bytes32 _applicationId, Zone _zone) public {
+        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        TdrApplication memory application = tdrStorage.getApplication(
+            _applicationId
+        );
+
+        if (officer.role == Role.ADMIN || officer.role == Role.VC) {
+            if (application.applicationId == "") {
+                revert("No such application found");
+            }
+            tdrStorage.setZone(_applicationId, _zone);
+        } else {
+            revert("User not authorized");
+        }
+    }
+
+    function getZone(bytes32 _applicationId) public view returns (Zone) {
+        TdrApplication memory application = tdrStorage.getApplication(
+            _applicationId
+        );
+        if (application.applicationId == "") {
+            revert("No such application found");
+        }
+        return tdrStorage.getZone(_applicationId);
+    }
+
     /**
     @dev Function to create an application
     @param _tdrApplication TdrApplication memory object representing the application to be created
@@ -177,6 +203,10 @@ contract TDRManager {
         if (tdrNotice.noticeId == "") {
             revert("No such notice has been created");
         }
+
+        // Set zone by default as NONE
+        tdrStorage.setZone(_tdrApplication.applicationId, Zone.NONE);
+
         //        // add application in application map
         tdrStorage.createApplication(_tdrApplication);
         emit Logger("application created in storage");
@@ -362,7 +392,7 @@ contract TDRManager {
         if (allSignatoriesSign) {
             emit Logger("All signatories signed");
             // Mark the TdrApplication as submitted if all signatories have signed
-            application.status = ApplicationStatus.submitted;
+            application.status = ApplicationStatus.SUBMITTED;
             emit TdrApplicationSubmitted(
                 _applicationId,
                 getApplicantIdsFromTdrApplication(application)
@@ -406,6 +436,10 @@ contract TDRManager {
         TdrApplication memory tdrApplication = tdrStorage.getApplication(
             applicationId
         );
+        require(
+            tdrApplication.status != ApplicationStatus.APPROVED,
+            "Application already approved"
+        );
         // No need to check notice, as application can be rejected even when DRC is issued.
         if (
             officer.role == Role.SUPER_ADMIN ||
@@ -414,7 +448,7 @@ contract TDRManager {
             officer.role == Role.VC
         ) {
             // update Application
-            tdrApplication.status = ApplicationStatus.rejected;
+            tdrApplication.status = ApplicationStatus.REJECTED;
             tdrStorage.updateApplication(tdrApplication);
             emit TdrApplicationRejected(
                 applicationId,
@@ -440,9 +474,20 @@ contract TDRManager {
         TdrApplication memory tdrApplication = tdrStorage.getApplication(
             applicationId
         );
+
+        require(
+            tdrApplication.status == ApplicationStatus.VERIFIED,
+            "application should be verified before approval"
+        );
+
         TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-        if (notice.status == NoticeStatus.issued) {
+        if (notice.status == NoticeStatus.ISSUED) {
             revert("DRC already issued against this notice");
+        }
+        if (officer.role == Role.ADMIN) {
+            if (tdrApplication.status == ApplicationStatus.REJECTED) {
+                tdrApplication.status = ApplicationStatus.APPROVED;
+            }
         }
         if (
             officer.role == Role.SUPER_ADMIN ||
@@ -451,7 +496,7 @@ contract TDRManager {
             officer.role == Role.VC
         ) {
             // update Application
-            tdrApplication.status = ApplicationStatus.approved;
+            tdrApplication.status = ApplicationStatus.APPROVED;
             tdrStorage.updateApplication(tdrApplication);
             emit TdrApplicationApproved(
                 officer,
@@ -469,7 +514,7 @@ contract TDRManager {
         bytes32 newDrcId,
         uint farGranted,
         uint timeStamp
-    ) public {
+    ) internal {
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // Check if notice is issued
@@ -477,7 +522,7 @@ contract TDRManager {
             applicationId
         );
         TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-        if (notice.status == NoticeStatus.issued) {
+        if (notice.status == NoticeStatus.ISSUED) {
             revert("DRC already issued against this notice");
         }
         if (
@@ -486,9 +531,9 @@ contract TDRManager {
             officer.role == Role.VC
         ) {
             // set application status as verified
-            tdrApplication.status = ApplicationStatus.drcIssued;
+            tdrApplication.status = ApplicationStatus.DRCISSUED;
             // set notice as issued
-            notice.status = NoticeStatus.issued;
+            notice.status = NoticeStatus.ISSUED;
             tdrStorage.updateNotice(notice);
 
             // update Application
@@ -537,7 +582,7 @@ contract TDRManager {
             applicationId
         );
         TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-        if (notice.status == NoticeStatus.issued) {
+        if (notice.status == NoticeStatus.ISSUED) {
             revert("DRC already issued against this notice");
         }
         if (
@@ -550,7 +595,7 @@ contract TDRManager {
             status.verifierId = officer.userId;
             status.verifierRole = officer.role;
             // update Application
-            tdrApplication.status = ApplicationStatus.verified;
+            tdrApplication.status = ApplicationStatus.VERIFIED;
             tdrStorage.updateApplication(tdrApplication);
             emit TdrApplicationVerified(
                 officer,
@@ -580,7 +625,7 @@ contract TDRManager {
             if (checkIfAllSubverifiersSigned(status)) {
                 status.verified = true;
                 // set application status as verified
-                tdrApplication.status = ApplicationStatus.verified;
+                tdrApplication.status = ApplicationStatus.VERIFIED;
                 // update Application
                 tdrStorage.updateApplication(tdrApplication);
                 emit Logger("Appliction verified by all sub verifier");
@@ -598,7 +643,8 @@ contract TDRManager {
 
     function checkIfAllSubverifiersSigned(
         VerificationStatus memory verificationStatus
-    ) public pure returns (bool) {
+
+    ) internal pure returns (bool) {
         bool allSigned = true;
 
         // Check the status of each subverifier
@@ -642,7 +688,7 @@ contract TDRManager {
         DRC memory drc;
         drc.id = newDrcId;
         drc.noticeId = tdrApplication.noticeId;
-        drc.status = DrcStatus.available;
+        drc.status = DrcStatus.AVAILABLE;
         drc.farCredited = farGranted;
         drc.farAvailable = farGranted;
         drc.areaSurrendered = areaSurrendered; // change it to get the value from notice
@@ -676,7 +722,7 @@ contract TDRManager {
 
     function getApplicantIdsFromTdrApplication(
         TdrApplication memory _tdrApplication
-    ) internal view returns (bytes32[] memory) {
+    ) internal pure returns (bytes32[] memory) {
         bytes32[] memory applicantList = new bytes32[](
             _tdrApplication.applicants.length
         );
