@@ -133,18 +133,6 @@ contract DrcStorage {
         delete drcMap[_id];
     }
 
-    function addDrcToOwners(DRC memory drc) internal {
-        for (uint i=0; i< drc.owners.length; i++){
-            addDrcToOwner(drc.id,drc.owners[i]);
-        }
-    }
-    function addDrcToOwner(bytes32 drcId, bytes32 ownerId) internal {
-        bytes32[] storage drcList = ownerMap[ownerId];
-        drcList.push(drcId);
-        ownerMap[ownerId]=drcList;
-        emit DrcAddedToOwner(drcId,ownerId);
-    }
-
     /**
     CRUD operations on the owner map
     */

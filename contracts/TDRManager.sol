@@ -250,9 +250,9 @@ contract TDRManager {
         }
         // application should have status pending or sent back
         require(
-            tdrApplication.status == ApplicationStatus.pending ||
+            tdrApplication.status == ApplicationStatus.PENDING ||
                 tdrApplication.status ==
-                ApplicationStatus.sentBackForCorrection,
+                ApplicationStatus.SENT_BACK_FOR_CORRECTION,
             "Application cannot be updated"
         );
 
@@ -463,7 +463,7 @@ contract TDRManager {
                 );
             }
 
-            tdrApplication.status = ApplicationStatus.REJECTED_DURING_VERIFICATION;
+            tdrApplication.status = ApplicationStatus.REJECTED;
             tdrStorage.updateApplication(tdrApplication);
             emit TdrApplicationRejected(
                 applicationId,

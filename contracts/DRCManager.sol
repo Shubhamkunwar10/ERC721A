@@ -246,12 +246,12 @@ contract DRCManager {
         bytes32 drcId,
         bytes32 applicationId,
         uint256 far,
+        uint256 timestamp,
         bytes32[] memory buyers
     ) public {
         // check drc exists or not
         // require(drcStorage.isDrcCreated(drcId),"DRC not created");
         DRC memory drc = drcStorage.getDrc(drcId);
-        emit Logger("Create tra");
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
 
         // far should be less than available far.
@@ -260,25 +260,19 @@ contract DRCManager {
             "Transfer area is greater than the available area"
         );
 
-        if ((drc.owners).length <= 0) {
-            revert("DRC owners should be greater than 0");
-        } else if (buyers.length <= 0) {
-            revert("Buyers should be greater than 0");
-        }
 
-        // add all the owners id from the drc to the mapping
 
         // Signatory[] memory applicants = new Signatory[](drc.owners.length);
 
         if (drc.owners.length <= 0) {
             revert("DRC has 0 owners");
         } else if (buyers.length <= 0) {
-            revert("Number of buyers should be greater than 0");
+            revert("DRC has 0 buyers");
         }
 
         Signatory[] memory applicants = new Signatory[](drc.owners.length);
 
-        // no user has signed yet
+        // add all the owners id from the drc to the mapping
         for (uint256 i = 0; i < drc.owners.length; i++) {
             Signatory memory s;
             s.userId = drc.owners[i];
@@ -291,31 +285,12 @@ contract DRCManager {
             far,
             applicants,
             buyers,
+            timestamp,
             ApplicationStatus.PENDING
         );
         // signs the drc transfer application and checks whether all owners have signed it or not
-        // signs the drc transfer application and checks whether all owners have signed it or not
         signDrcTransferApplication(applicationId);
         drcStorage.addDtaToDrc(drc.id, applicationId);
-        //        emit DtaCreated(drcId,applicationId,far,getApplicantIdsFromApplicants(applicants),buyers);
-        // // no user has signed yet
-        // for (uint i = 0; i < drc.owners.length; i++) {
-        //     Signatory memory s;
-        //     s.userId = drc.owners[i];
-        //     s.hasUserSigned = false;
-        //     applicants[i] = s;
-        // }
-        // dtaStorage.createApplication(
-        //     applicationId,
-        //     drcId,
-        //     far,
-        //     applicants,
-        //     buyers,
-        //     ApplicationStatus.pending
-        // );
-        // // signs the drc transfer application and checks whether all owners have signed it or not
-        // signDrcTransferApplication(applicationId);
-        // drcStorage.addDtaToDrc(drc.id, applicationId);
     }
 
     // this function is called by the user to approve the transfer
@@ -683,7 +658,8 @@ contract DRCManager {
     function createUtilizationApplication(
         bytes32 drcId,
         bytes32 applicationId,
-        uint256 far
+        uint256 far,
+        uint256 timestamp
     ) public {
         // check drc exists or not
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
@@ -709,6 +685,7 @@ contract DRCManager {
             drc.id,
             far,
             duaSignatories,
+            timestamp,
             ApplicationStatus.PENDING
         );
         signDrcUtilizationApplication(applicationId);
@@ -753,7 +730,7 @@ contract DRCManager {
         // if all the signatories has not signed
         if (allSignatoriesSign) {
             //all the signatories has signed
-            application.status = ApplicationStatus.approved;
+            application.status = ApplicationStatus.APPROVED;
             emit DuaApproved(applicationId, getApplicantIdsFromApplicants(application.signatories));
             // reduce drc once Application is approved, and update the drc
             DRC memory drc = drcStorage.getDrc(application.drcId);
@@ -910,7 +887,7 @@ contract DRCManager {
         // need to reduce the available area of the old drc
         drc.farAvailable = drc.farAvailable - farUtilized;
         if(drc.farAvailable==0){
-            drc.status=DrcStatus.utilized;
+            drc.status=DrcStatus.UTILIZED;
         }
         drcStorage.updateDrc(drc.id,drc);
 
