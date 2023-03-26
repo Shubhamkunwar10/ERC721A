@@ -9,13 +9,15 @@ pragma solidity ^0.8.16;
     UTILIZED
 }
 
+S
 enum ApplicationStatus {
     PENDING,
     SUBMITTED,
     APPROVED,
     REJECTED,
     DRCISSUED,
-    VERIFIED
+    VERIFIED,
+    SENT_BACK_FOR_CORRECTION
 }
 
 enum NoticeStatus {

@@ -26,12 +26,12 @@ contract TdrStorage {
     // TDR struct definition
 
     // Event emitted after a TDR is created
+    event TdrApplicationUpdated(bytes32 noticeId, bytes32 applicationId, bytes32[] applicants);
     event TdrApplicationCreated(
         bytes32 noticeId,
         bytes32 applicationId,
         bytes32[] applicants
     );
-    event ApplicationUpdated(bytes32 noticeId, bytes32 applicationId);
 
     event NoticeCreated(bytes32 noticeId, TdrNotice notice);
     event NoticeUpdated(bytes32 noticeId, TdrNotice notice);
