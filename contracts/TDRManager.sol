@@ -222,6 +222,53 @@ contract TDRManager {
     }
 
     /**
+     * @dev Function to update an application
+     * @param _tdrApplication TdrApplication memory object representing the application to be updated
+     * @dev Revert if the notice for the application does not exist
+     */
+    function updateTdrApplication(
+        TdrApplication memory _tdrApplication
+    ) public {
+        emit LogBytes(
+            "STARTED update TDR application",
+            _tdrApplication.applicationId
+        );
+        emit LogApplication("application received was ", _tdrApplication);
+        // check whether Notice has been created for the application. If not, revert
+        TdrNotice memory tdrNotice = tdrStorage.getNotice(
+            _tdrApplication.noticeId
+        );
+        // if notice is empty, create notice.
+        if (tdrNotice.noticeId == "") {
+            revert("No such notice has been created");
+        }
+        TdrApplication memory tdrApplication = tdrStorage.getApplication(
+            _tdrApplication.applicationId
+        );
+        if (tdrApplication.applicationId == "") {
+            revert("No such application has been created");
+        }
+        // application should have status pending or sent back
+        require(
+            tdrApplication.status == ApplicationStatus.pending ||
+                tdrApplication.status ==
+                ApplicationStatus.sentBackForCorrection,
+            "Application cannot be updated"
+        );
+
+        tdrStorage.updateApplication(_tdrApplication);
+        emit Logger("application updated in storage");
+        // add application in the notice
+        tdrStorage.addApplicationToNotice(
+            _tdrApplication.noticeId,
+            _tdrApplication.applicationId
+        );
+        emit Logger("application added to Notice");
+        signTdrApplication(_tdrApplication.applicationId);
+        emit Logger("application signed by creator");
+    }
+
+    /**
      * @dev Check if a user has signed a TDR application.
      * @param _applicationId Id of the TDR application
      * @param adrs Address of the user to check
@@ -600,6 +647,7 @@ contract TDRManager {
 
     function checkIfAllSubverifiersSigned(
         VerificationStatus memory verificationStatus
+
     ) internal pure returns (bool) {
         bool allSigned = true;
 

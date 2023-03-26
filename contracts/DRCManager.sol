@@ -7,7 +7,7 @@ import "./Application.sol";
 import "./UtilizationApplication.sol";
 import "./DataTypes.sol";
 import "./nomineeManager.sol";
-
+import "./DucStorage.sol";
 /**
 @title TDR Manager for TDR storage
 @author Ras Dwivedi
@@ -20,6 +20,7 @@ contract DRCManager {
     DrcTransferApplicationStorage public dtaStorage;
     DuaStorage public duaStorage;
     NomineeManager public nomineeManager;
+    DucStorage public ducStorage;
 
     // Address of the contracts
     address public drcStorageAddress;
@@ -27,6 +28,7 @@ contract DRCManager {
     address public dtaStorageAddress;
     address public duaStorageAddress;
     address public nomineeManagerAddress;
+    address public ducStorageAddress;
 
     // admin address
     address owner;
@@ -166,6 +168,19 @@ contract DRCManager {
         dtaStorageAddress = _dtaStorageAddress;
         dtaStorage = DrcTransferApplicationStorage(dtaStorageAddress);
     }
+    //#############333333@return
+    function loadDucStorage(address _ducStorageAddress) public {
+        ducStorageAddress = _ducStorageAddress;
+        ducStorage = DucStorage(ducStorageAddress);
+    }
+
+    function updateDucStorage(address _ducStorageAddress) public {
+        ducStorageAddress = _ducStorageAddress;
+        ducStorage = DucStorage(ducStorageAddress);
+    }
+
+
+    //##################333333
 
     function loadDuaStorage(address _duaStorageAddress) public {
         duaStorageAddress = _duaStorageAddress;
@@ -739,7 +754,11 @@ contract DRCManager {
         if (allSignatoriesSign) {
             //all the signatories has signed
             application.status = ApplicationStatus.approved;
-            // reduce drc
+            emit DuaApproved(applicationId, getApplicantIdsFromApplicants(application.signatories));
+            // reduce drc once Application is approved, and update the drc
+            DRC memory drc = drcStorage.getDrc(application.drcId);
+            // need to create unique Id
+            createDucFromDrc(drc, application.farUtilized, application.applicationId);
         }
         duaStorage.updateApplication(application);
     }
@@ -877,56 +896,69 @@ contract DRCManager {
         return tempArray;
     }
 
-    // Utilize DRC
-    function utilizeDrc(bytes32 applicationId) public {
-        DUA memory application = duaStorage.getApplication(applicationId);
-        // msg.sender should be in the owner list of the drc
-        require(
-            isOwnerOfDrc(application.drcId, userManager.getUserId(msg.sender)),
-            "User is not the owner of the DRC"
-        );
-        DRC memory drc = drcStorage.getDrc(application.drcId);
-        // check if the drc is approved
-        require(
-            application.status == ApplicationStatus.approved,
-            "DRC Utilization Application is not approved"
-        );
-        require(
-            drc.status != DrcStatus.locked_for_utilization,
-            "DRC is not locked for utilization"
-        );
-        // change the status of the drc to utilized
-        drc.status = DrcStatus.utilized;
-        // update the drc
-        drcStorage.updateDrc(application.drcId, drc);
-        emit DrcUtilized(application.drcId, application.farUtilized);
+    function createDucFromDrc(DRC memory drc, uint farUtilized, bytes32 id) internal{
+        DUC memory newDuc;
+        newDuc.id = id;
+        newDuc.noticeId = drc.noticeId;
+        newDuc.farUtilized = farUtilized;
+        newDuc.owners = drc.owners;
+        newDuc.circleRateSurrendered= drc.circleRateSurrendered;
+        newDuc.circleRateUtilization = drc.circleRateUtilization;
+
+
+        ducStorage.createDuc(newDuc);
+        // need to reduce the available area of the old drc
+        drc.farAvailable = drc.farAvailable - farUtilized;
+        if(drc.farAvailable==0){
+            drc.status=DrcStatus.utilized;
+        }
+        drcStorage.updateDrc(drc.id,drc);
+
+    }
+    function getDuc(bytes32 id) public returns(DUC memory){
+        return ducStorage.getDuc(id);
+    }
+    function getDucIdsForUser(bytes32 userId) public returns (bytes32[] memory){
+        return ducStorage.getDucIdsForUser(userId);
+    }
+    function linkDucToApplication(bytes32 ducId, bytes32 applicationId) public onlyManager{
+        DUC memory duc = ducStorage.getDuc(ducId);
+        if (duc.id =="") {
+            revert("no such DRC utilization certificate exists");
+        }
+        if(duc.applicationId !=""){
+            emit LogBytes("application already used", duc.applicationId );
+            revert("application already used in another application");
+        }
+        duc.applicationId=applicationId;
+        ducStorage.updateDuc(duc);
+        ducStorage.addDucToApplication(ducId,applicationId);
     }
 
-    // check if given user is one of the owner of the drc
-    function isOwnerOfDrc(bytes32 drcId, bytes32 userId)
-        internal
-        view
-        returns (bool)
-    {
-        DRC memory drc = drcStorage.getDrc(drcId);
-        for (uint256 i = 0; i < drc.owners.length; i++) {
-            if (drc.owners[i] == userId) {
-                return true;
-            }
-        }
-        return false;
-    }
-    // This function adds application to drc
-    // also reduced the available area by the area in drc. This need to be removed
-    //    function addApplicationToDrc(bytes32 drcId,bytes32 applicationId, uint farConsumed) internal {
-    //        DRC memory drc = drcStorage.getDrc(drcId);
-    ////        drc.farAvailable = drc.farAvailable - farConsumed;
-    //        bytes32[] memory newApplications = new bytes32[](drc.applications.length+1);
-    //        for (uint i=0; i< drc.applications.length; i++){
-    //            newApplications[i]=drc.applications[i];
-    //        }
-    //        newApplications[drc.applications.length]=applicationId;
-    //        drcStorage.updateDrc(drc.id,drc);
-    //
-    //    }
+//    // Utilize DRC
+//    function utilizeDrc(bytes32 applicationId) public {
+//        DUA memory application = duaStorage.getApplication(applicationId);
+//        // msg.sender should be in the owner list of the drc
+//        require(isOwnerOfDrc(application.drcId, userManager.getUserId(msg.sender)), "User is not the owner of the DRC");
+//        DRC memory drc = drcStorage.getDrc(application.drcId);
+//        // check if the drc is approved
+//        require(application.status == ApplicationStatus.approved, "DRC Utilization Application is not approved");
+//        require(drc.status != DrcStatus.locked_for_utilization, "DRC is not locked for utilization");
+//        // change the status of the drc to utilized
+//        drc.status = DrcStatus.utilized;
+//        // update the drc
+//        drcStorage.updateDrc(application.drcId,drc);
+//        emit DrcUtilized(application.drcId,application.farUtilized);
+//    }
+//
+//    // check if given user is one of the owner of the drc
+//    function isOwnerOfDrc(bytes32 drcId, bytes32 userId) internal view returns(bool){
+//        DRC memory drc = drcStorage.getDrc(drcId);
+//        for(uint i=0;i<drc.owners.length;i++){
+//            if(drc.owners[i] == userId){
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 }
