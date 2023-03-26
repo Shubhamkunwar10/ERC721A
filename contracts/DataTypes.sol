@@ -179,11 +179,17 @@ enum NoticeStatus {
         bytes32 officerId;
         bool isVerified;
     }
+
     struct VerificationStatus {
         bool verified;
         bytes32 verifierId;
         Role verifierRole;
-        SubVerificationStatus subVerifierStatus;
+        SubVerificationStatus landVerification;
+        SubVerificationStatus planningVerification;
+        SubVerificationStatus engineeringVerification;
+        SubVerificationStatus propertyVerification;
+        SubVerificationStatus salesVerification;
+        SubVerificationStatus legalVerification;
     }
     struct nomineeApplication {
         bytes32 applicationId;

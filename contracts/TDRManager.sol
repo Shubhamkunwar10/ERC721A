@@ -274,11 +274,10 @@ contract TDRManager {
      * @param adrs Address of the user to check
      * @return Boolean indicating if the user has signed the application
      */
-    function hasUserSignedApplication(bytes32 _applicationId, address adrs)
-        public
-        view
-        returns (bool)
-    {
+    function hasUserSignedApplication(
+        bytes32 _applicationId,
+        address adrs
+    ) public view returns (bool) {
         // Get the TDR application by its id
         TdrApplication memory application = tdrStorage.getApplication(
             _applicationId
@@ -303,10 +302,10 @@ contract TDRManager {
     }
 
     // This function uses address to see whether the user has signed the application or not
-    function getApplicantsPosition(bytes32 _applicationId, address adrs)
-        public
-        returns (uint256)
-    {
+    function getApplicantsPosition(
+        bytes32 _applicationId,
+        address adrs
+    ) public returns (uint256) {
         TdrApplication memory application = tdrStorage.getApplication(
             _applicationId
         );
@@ -323,10 +322,10 @@ contract TDRManager {
         return 0;
     }
 
-    function signApplicationAtPos(bytes32 _applicationId, uint256 pos)
-        private
-        returns (TdrApplication memory)
-    {
+    function signApplicationAtPos(
+        bytes32 _applicationId,
+        uint256 pos
+    ) private returns (TdrApplication memory) {
         if (pos == 0) {
             emit Logger("Applicant not found  in the application");
         }
@@ -349,10 +348,9 @@ contract TDRManager {
         return application;
     }
 
-    function getApplication(bytes32 _applicationId)
-        public
-        returns (TdrApplication memory)
-    {
+    function getApplication(
+        bytes32 _applicationId
+    ) public returns (TdrApplication memory) {
         TdrApplication memory application = tdrStorage.getApplication(
             _applicationId
         );
@@ -414,11 +412,9 @@ contract TDRManager {
      * @dev return whether all the user of the application has signed the application
      * @param application The application to check signature of all applicants
      */
-    function hasAllUserSignedTdrApplication(TdrApplication memory application)
-        private
-        pure
-        returns (bool)
-    {
+    function hasAllUserSignedTdrApplication(
+        TdrApplication memory application
+    ) private pure returns (bool) {
         for (uint256 i = 0; i < application.applicants.length; i++) {
             Signatory memory s = application.applicants[i];
             if (!s.hasUserSigned) {
@@ -429,9 +425,10 @@ contract TDRManager {
     }
 
     // This function mark the application as verified
-    function rejectApplication(bytes32 applicationId, string memory reason)
-        public
-    {
+    function rejectApplication(
+        bytes32 applicationId,
+        string memory reason
+    ) public {
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // Check if notice is issued
@@ -557,11 +554,9 @@ contract TDRManager {
         }
     }
 
-    function getVerificationStatus(bytes32 applicationId)
-        public
-        view
-        returns (bool)
-    {
+    function getVerificationStatus(
+        bytes32 applicationId
+    ) public view returns (bool) {
         VerificationStatus memory status = tdrStorage.getVerificationStatus(
             applicationId
         );
@@ -589,10 +584,19 @@ contract TDRManager {
         if (notice.status == NoticeStatus.ISSUED) {
             revert("DRC already issued against this notice");
         }
+        if (
+            officer.role == Role.VERIFIER || officer.role == Role.SUB_VERIFIER
+        ) {
+            require(
+                officer.zone == tdrStorage.getZone(applicationId),
+                "Officer zone needs to be same as application zone"
+            );
+        }
         if (officer.role == Role.VERIFIER) {
             status.verified = true;
             status.verifierId = officer.userId;
             status.verifierRole = officer.role;
+
             // update Application
             tdrApplication.status = ApplicationStatus.VERIFIED;
             tdrStorage.updateApplication(tdrApplication);
@@ -621,19 +625,6 @@ contract TDRManager {
                 applicationId,
                 getApplicantIdsFromTdrApplication(tdrApplication)
             );
-            if (checkIfAllSubverifiersSigned(status)) {
-                status.verified = true;
-                // set application status as verified
-                tdrApplication.status = ApplicationStatus.VERIFIED;
-                // update Application
-                tdrStorage.updateApplication(tdrApplication);
-                emit Logger("Appliction verified by all sub verifier");
-                emit TdrApplicationVerified(
-                    officer,
-                    applicationId,
-                    getApplicantIdsFromTdrApplication(tdrApplication)
-                );
-            }
             tdrStorage.storeVerificationStatus(applicationId, status);
         } else {
             revert("user not authorized");
@@ -669,11 +660,9 @@ contract TDRManager {
         return allSigned;
     }
 
-    function getApplicationForUser(bytes32 userId)
-        public
-        view
-        returns (bytes32[] memory)
-    {
+    function getApplicationForUser(
+        bytes32 userId
+    ) public view returns (bytes32[] memory) {
         return tdrStorage.getApplicationForUser(userId);
     }
 
@@ -706,22 +695,18 @@ contract TDRManager {
         emit DrcIssued(drc, getApplicantIdsFromTdrApplication(tdrApplication));
     }
 
-    function getTdrNotice(bytes32 noticeId)
-        public
-        view
-        returns (TdrNotice memory)
-    {
+    function getTdrNotice(
+        bytes32 noticeId
+    ) public view returns (TdrNotice memory) {
         return tdrStorage.getNotice(noticeId);
     }
 
     /*
     Returns the tdrApplicationIds for notice id
     */
-    function getTdrApplicationsIdsForTdrNotice(bytes32 noticeId)
-        public
-        view
-        returns (bytes32[] memory)
-    {
+    function getTdrApplicationsIdsForTdrNotice(
+        bytes32 noticeId
+    ) public view returns (bytes32[] memory) {
         return tdrStorage.getApplicationsForNotice(noticeId);
     }
 

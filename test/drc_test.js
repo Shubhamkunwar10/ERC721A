@@ -54,7 +54,7 @@ contract("DrcStorage", (accounts) => {
       };
 
       // Call the createDrc function to create the new DRC
-      await storage.createDrc(newDrc, { from: tdrManager });
+      await storage.createDrc(newDrc, { from: tdrManager || manager });
 
       // Get the created DRC object from the contract
       let createdDrc = await storage.getDrc(newDrc.id);
