@@ -9,8 +9,7 @@ pragma solidity ^0.8.16;
     UTILIZED
 }
 
-S
-enum ApplicationStatus {
+    enum ApplicationStatus {
     PENDING,
     SUBMITTED,
     APPROVED,

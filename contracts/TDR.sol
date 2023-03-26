@@ -249,9 +249,10 @@ contract TdrStorage {
             revert("Application does not exist");
         }
         addApplicationToMap(_application);
-        emit ApplicationUpdated(
+        emit TdrApplicationUpdated(
             _application.noticeId,
-            _application.applicationId
+            _application.applicationId,
+            getApplicantIdsFromTdrApplication(_application)
         ); // emit this event
     }
 
@@ -475,5 +476,3 @@ contract TdrStorage {
         delete applicationZoneMap[_applicationId];
     }
 }
-
-
