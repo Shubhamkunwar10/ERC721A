@@ -9,13 +9,14 @@ pragma solidity ^0.8.16;
     UTILIZED
 }
 
-enum ApplicationStatus {
+    enum ApplicationStatus {
     PENDING,
     SUBMITTED,
     APPROVED,
     REJECTED,
     DRCISSUED,
-    VERIFIED
+    VERIFIED,
+    SENT_BACK_FOR_CORRECTION
 }
 
 enum NoticeStatus {
@@ -56,7 +57,17 @@ enum NoticeStatus {
         bytes32[] owners;
         uint timeStamp;
     }
-
+// DRC Utilization Certificate
+    struct DUC {
+        bytes32 id;
+        bytes32 applicationId; // application id of application in BPAS
+        bytes32 noticeId;
+        uint farUtilized;
+        uint circleRateSurrendered;
+        uint circleRateUtilization;
+        bytes32[] owners;
+        uint timeStamp;
+    }
     struct DrcOwner{
         bytes32 userId;
         uint area;
@@ -174,9 +185,9 @@ enum NoticeStatus {
         Role verifierRole;
         SubVerificationStatus subVerifierStatus;
     }
-struct nomineeApplication {
-    bytes32 applicationId;
-    bytes32 userId;
-    bytes32[] nominees;
-    ApplicationStatus status;
-}
+    struct nomineeApplication {
+        bytes32 applicationId;
+        bytes32 userId;
+        bytes32[] nominees;
+        ApplicationStatus status;
+    }
