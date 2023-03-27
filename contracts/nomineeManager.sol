@@ -76,7 +76,7 @@ contract NomineeManager is KdaCommon{
         applicationId: applicationId,
         userId: userId,
         nominees: _nominees,
-        status: ApplicationStatus.submitted
+        status: ApplicationStatus.SUBMITTED
         });
         nomineeStorage.createNomineeApplication(newApplication);
         emit addNomineeApplicationSubmitted(applicationId, userId);
@@ -87,10 +87,10 @@ contract NomineeManager is KdaCommon{
             revert("application does not exist");
         }
         nomineeApplication memory oldApplication = nomineeStorage.getNomineeApplication(applicationId);
-        if(oldApplication.status==ApplicationStatus.rejected) {
+        if(oldApplication.status==ApplicationStatus.REJECTED) {
             revert("application already rejected");
         }
-        if(oldApplication.status==ApplicationStatus.approved) {
+        if(oldApplication.status==ApplicationStatus.APPROVED) {
             revert("application already approved");
         }
         bytes32 userId = userManager.getUserId(msg.sender);
@@ -98,7 +98,7 @@ contract NomineeManager is KdaCommon{
         applicationId: applicationId,
         userId: userId,
         nominees: _nominees,
-        status: ApplicationStatus.submitted
+        status: ApplicationStatus.SUBMITTED
         });
         nomineeStorage.updateNomineeApplication(newApplication);
         emit updateNomineeApplicationSubmitted(applicationId, userId);
@@ -115,7 +115,7 @@ contract NomineeManager is KdaCommon{
         applicationId: applicationId,
         userId: userId,
         nominees: _nominees,
-        status: ApplicationStatus.approved
+        status: ApplicationStatus.APPROVED
         });
         nomineeStorage.createNomineeApplication(newApplication);
         emit addNomineeApplicationSubmitted(applicationId, userId);
@@ -126,13 +126,13 @@ contract NomineeManager is KdaCommon{
         //fetch the application
         nomineeApplication memory application = nomineeStorage.getNomineeApplication(applicationId);
         //application should not be already approved
-        require(application.status != ApplicationStatus.approved,"Application already approved");
-        require(application.status != ApplicationStatus.rejected,"Application already rejected");
-        require(application.status == ApplicationStatus.submitted,"Application is not submitted");
+        require(application.status != ApplicationStatus.APPROVED,"Application already approved");
+        require(application.status != ApplicationStatus.REJECTED,"Application already rejected");
+        require(application.status == ApplicationStatus.SUBMITTED,"Application is not submitted");
         if (officer.role == Role.SUPER_ADMIN || officer.role== Role.ADMIN ||
             officer.role==Role.APPROVER || officer.role==Role.VC) {
                 // update Application
-                application.status = ApplicationStatus.approved;
+                application.status = ApplicationStatus.APPROVED;
                 nomineeStorage.updateNomineeApplication(application);
                 emit NomineeApplicationApproved(applicationId, application.userId);
             } else {
@@ -146,15 +146,15 @@ contract NomineeManager is KdaCommon{
         //fetch the application
         nomineeApplication memory application = nomineeStorage.getNomineeApplication(applicationId);
         //application should not be already approved
-        require(application.status != ApplicationStatus.approved,"Application already approved");
-        require(application.status != ApplicationStatus.rejected,"Application already rejected");
-        require(application.status == ApplicationStatus.submitted,"Application is not submitted");
+        require(application.status != ApplicationStatus.APPROVED,"Application already approved");
+        require(application.status != ApplicationStatus.REJECTED,"Application already rejected");
+        require(application.status == ApplicationStatus.SUBMITTED,"Application is not submitted");
 
 
     if (officer.role == Role.SUPER_ADMIN || officer.role== Role.ADMIN ||
         officer.role==Role.APPROVER || officer.role==Role.VC) {
             // update Application
-            application.status = ApplicationStatus.rejected;
+            application.status = ApplicationStatus.REJECTED;
             nomineeStorage.updateNomineeApplication(application);
             emit NomineeApplicationApproved(applicationId, application.userId);
         } else {
