@@ -431,7 +431,7 @@ contract TdrStorage is KdaCommon{
         require(_applicationId !="", "Application ID cannot be empty");
         applicationZoneMap[_applicationId] = _zone;
         TdrApplication memory application = applicationMap[_applicationId];
-        emit zoneSet(_applicationId, _zone, getApplicantIdsFromTdrApplication(applicationMap));
+        emit zoneSet(_applicationId, _zone, getApplicantIdsFromTdrApplication(application));
     }
 
     function getZone(bytes32 _applicationId) public view returns(Zone){

@@ -127,6 +127,12 @@ contract TDRManager is KdaCommon {
             if (!tdrStorage.isApplicationCreated(_applicationId)){
                 revert("No such application found");
             }
+            TdrApplication memory application = tdrStorage.getApplication(
+                _applicationId
+            );
+            if (application.status== ApplicationStatus.PENDING){
+                revert("Application not yet submitted");
+            }
             tdrStorage.setZone(_applicationId, _zone);
         } else {
             revert("User not authorized");
