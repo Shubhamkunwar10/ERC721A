@@ -421,6 +421,8 @@ contract DRCManager is KdaCommon {
         newDrc.areaSurrendered = drc.areaSurrendered;
         newDrc.circleRateSurrendered = drc.circleRateSurrendered;
         newDrc.circleRateUtilization = drc.circleRateUtilization;
+        newDrc.hasPrevious = true;
+        newDrc.previousDRC = drc.id;
         drcStorage.createDrc(newDrc);
         // need to reduce the available area of the old drc
         drc.farAvailable = drc.farAvailable - application.farTransferred;
@@ -874,6 +876,21 @@ contract DRCManager is KdaCommon {
         ducStorage.addDucToApplication(ducId,applicationId);
     }
 
+    //Aim of this funciton is to get the last 10 DRC from the drc id
+    /*
+    Aim of this function is to get the last 10 DRC.
+    */
+    function getDrcHistory(bytes32 currentDrcId) public view returns (DRC[] memory) {
+        DRC[] memory history = new DRC[](10); // set maximum history length to 10
+        uint i = 0;
+        while (currentDrcId != bytes32(0) && i < 10) {
+            DRC memory drc = drcStorage.getDrc(currentDrcId);
+            history[i] = drc;
+            currentDrcId = drc.previousDRC;
+            i++;
+        }
+        return history;
+    }
 //    // Utilize DRC
 //    function utilizeDrc(bytes32 applicationId) public {
 //        DUA memory application = duaStorage.getApplication(applicationId);
