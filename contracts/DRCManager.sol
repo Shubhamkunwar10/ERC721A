@@ -423,6 +423,7 @@ contract DRCManager is KdaCommon {
         newDrc.circleRateUtilization = drc.circleRateUtilization;
         newDrc.hasPrevious = true;
         newDrc.previousDRC = drc.id;
+        newDrc.timeStamp = block.timestamp;
         drcStorage.createDrc(newDrc);
         // need to reduce the available area of the old drc
         drc.farAvailable = drc.farAvailable - application.farTransferred;
