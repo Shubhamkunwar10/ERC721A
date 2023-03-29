@@ -672,6 +672,7 @@ contract TDRManager is KdaCommon {
         drc.applicationId = tdrApplication.applicationId;
         drc.owners = new bytes32[](tdrApplication.applicants.length);
         drc.timeStamp = timeStamp;
+        drc.hasPrevious = false;
         for (uint256 i = 0; i < tdrApplication.applicants.length; i++) {
             drc.owners[i] = tdrApplication.applicants[i].userId;
         }

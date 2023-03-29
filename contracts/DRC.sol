@@ -20,12 +20,12 @@ contract DrcStorage is KdaCommon {
     mapping(bytes32 => bytes32[] ) public drcDuaMap; // drcId => applicationId []
 
     // Events
-    event DrcCreated(bytes32 drcId, bytes32[] owners);
+    event DrcCreated(bytes32 drcId, DRC drc, bytes32[] owners);
+    event DrcUpdated(bytes32 drcId, DRC drc, bytes32[] owners);
     event DtaAddedToDrc(bytes32 dtaId, bytes32 applicationId);
     event DuaAddedToDrc(bytes32 dtaId, bytes32 applicationId);
     event DrcAddedToOwner(bytes32 drcId, bytes32 ownerId);
 
-    
     address public tdrManager;
 
     // Constructor function to set the initial values of the contract
@@ -52,7 +52,7 @@ contract DrcStorage is KdaCommon {
         require(!isDrcCreated(_drc.id),"DRC already exists");
         addDrcToOwners(_drc);
         storeDrcInMap(_drc);
-        emit DrcCreated(_drc.id, _drc.owners);
+        emit DrcCreated(_drc.id, _drc, _drc.owners);
     }
     // Create a function to update a Drc in the mapping
     function updateDrc(bytes32 _id, DRC memory _drc) public onlyManager {
@@ -62,7 +62,12 @@ contract DrcStorage is KdaCommon {
         require(isDrcCreated(_drc.id),"DRC does not exists");
         // insertDrc((_drc));
         storeDrcInMap(_drc);
+        emit DrcUpdated(_drc.id, _drc, _drc.owners);
+
     }
+    
+
+
     function addDrcToOwners(DRC memory drc) internal {
         for (uint i=0; i< drc.owners.length; i++){
             addDrcToOwner(drc.id,drc.owners[i]);
@@ -227,6 +232,8 @@ contract DrcStorage is KdaCommon {
         drc.circleRateSurrendered = _drc.circleRateSurrendered;
         drc.circleRateUtilization = _drc.circleRateUtilization;
         drc.timeStamp = _drc.timeStamp;
+        drc.hasPrevious = _drc.hasPrevious;
+        drc.previousDRC = _drc.previousDRC;
 ////        for(uint i =0; i<_drc.applications.length; i++){
 ////            drc.applications[i]= _drc.applications[i];
 ////        }

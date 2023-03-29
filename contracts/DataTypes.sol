@@ -56,6 +56,8 @@ enum NoticeStatus {
         uint circleRateUtilization;
         bytes32[] owners;
         uint timeStamp;
+        bool hasPrevious;
+        bytes32 previousDRC;
     }
 // DRC Utilization Certificate
     struct DUC {
