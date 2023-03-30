@@ -137,6 +137,7 @@ contract TDRManager {
     @dev Revert if user is not authorized to create notice
     */
     function createNotice(TdrNotice memory tdrNotice) public onlyNoticeCreator{
+        // status is set from the userData
         emit Logger("START: createNotice");
         tdrStorage.createNotice(tdrNotice);
     }

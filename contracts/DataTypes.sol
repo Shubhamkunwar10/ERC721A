@@ -18,7 +18,7 @@ pragma solidity ^0.8.16;
                             verified
                         }
 
-    enum NoticeStatus{pending, issued}
+    enum NoticeStatus{pending, issued, cancelled}
 
     enum AreaType {
                     DEVELOPED,

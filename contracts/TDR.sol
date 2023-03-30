@@ -129,6 +129,10 @@ contract TdrStorage {
         if(!isNoticeCreated(tdrNotice)){
             revert("no such notice exists, reverting");
         }
+        TdrNotice memory _tdrNotice = noticeMap[tdrNotice.noticeId];
+        if (_tdrNotice.status == NoticeStatus.cancelled) {
+            revert("notice Already cancelled, reverting");
+        }
         saveNoticeInMap(tdrNotice);
         emit NoticeUpdated(tdrNotice.noticeId,tdrNotice);
 
