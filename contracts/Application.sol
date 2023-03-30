@@ -14,9 +14,9 @@ contract DrcTransferApplicationStorage is KdaCommon{
 
     //events
    
-    event DTACreatedForUser(bytes32 userId, bytes32 applicationId);
-    event DTACreated(bytes32 applicationId);
-    event DTAUpdated(bytes32 applicationId);
+    event DtaAddedToUser(bytes32 userId, bytes32 applicationId);
+    event DtaCreated(bytes32 applicationId, DrcTransferApplication dta, bytes32[] applicants);
+    event DtaUpdated(bytes32 applicationId, DrcTransferApplication dta, bytes32[] applicants);
 
     // Constructor function to set the initial values of the contract
 constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
@@ -31,7 +31,7 @@ constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
         );
         storeApplicationInMap(dta);
         storeApplicationForUser(dta);
-        emit DTACreated(dta.applicationId);
+        emit DtaCreated(dta.applicationId, dta, getApplicantIdsFromApplication(dta));
     }
 
     function createApplication(
@@ -48,8 +48,7 @@ constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
             "application already exist"
         );
         emit Logger("application created in dta storage");
-        storeApplicationInMap(
-            DrcTransferApplication(
+        DrcTransferApplication memory dta =  DrcTransferApplication(
                 _applicationId,
                 _drcId,
                 _farTransferred,
@@ -57,20 +56,32 @@ constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
                 _buyers,
                 _status,
                 _timeStamp
-            )
-        );
-        storeApplicationForUser(
-            DrcTransferApplication(
-                _applicationId,
-                _drcId,
-                _farTransferred,
-                _signatories,
-                _buyers,
-                _status,
-                _timeStamp
-            )
-        );
-        emit DTACreated(_applicationId);
+            );
+        storeApplicationInMap(dta);
+        storeApplicationForUser(dta);
+        // storeApplicationInMap(
+        //     DrcTransferApplication(
+        //         _applicationId,
+        //         _drcId,
+        //         _farTransferred,
+        //         _signatories,
+        //         _buyers,
+        //         _status,
+        //         _timeStamp
+        //     )
+        // );
+        // storeApplicationForUser(
+        //     DrcTransferApplication(
+        //         _applicationId,
+        //         _drcId,
+        //         _farTransferred,
+        //         _signatories,
+        //         _buyers,
+        //         _status,
+        //         _timeStamp
+        //     )
+        // );
+        emit DtaCreated(_applicationId,dta, getApplicantIdsFromApplication(dta));
     }
 
     function updateApplication(
@@ -81,7 +92,7 @@ constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
             "application does not exist"
         );
         storeApplicationInMap(dta);
-        emit DTAUpdated(dta.applicationId);
+        emit DtaUpdated(dta.applicationId,dta, getApplicantIdsFromApplication(dta));
     }
 
     function getApplication(
@@ -152,7 +163,7 @@ constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
             bytes32[] storage applicationIds = userApplicationMap[userId];
             applicationIds.push(application.applicationId);
             userApplicationMap[userId] = applicationIds;
-            emit DTACreatedForUser(
+            emit DtaAddedToUser(
                 application.applicants[i].userId,
                 application.applicationId
             );
@@ -190,5 +201,21 @@ constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
     function deleteUserApplicationList(bytes32 userId) public onlyManager {
         delete userApplicationMap[userId];
         emit deletedDtaListForUser(userId);
+    }
+
+
+    function getApplicantIdsFromApplication(
+        DrcTransferApplication memory _dta
+    ) 
+    internal 
+    pure 
+    returns (bytes32[] memory) {
+        bytes32[] memory applicantList = new bytes32[](
+            _dta.applicants.length
+        );
+        for (uint i = 0; i < _dta.applicants.length; i++) {
+            applicantList[i] = _dta.applicants[i].userId;
+        }
+        return applicantList;
     }
 }

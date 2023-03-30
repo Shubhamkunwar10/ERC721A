@@ -515,7 +515,7 @@ contract TDRManager is KdaCommon {
         bytes32 newDrcId,
         uint256 farGranted,
         uint256 timeStamp
-    ) internal {
+    ) public {
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // Check if notice is issued

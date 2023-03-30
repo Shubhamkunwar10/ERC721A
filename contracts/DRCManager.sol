@@ -655,11 +655,11 @@ contract DRCManager is KdaCommon {
         );
         signDrcUtilizationApplication(applicationId);
         drcStorage.addDuaToDrc(drc.id, applicationId);
-        emit DuaCreated(
-            applicationId,
-            far,
-            getApplicantIdsFromApplicants(duaSignatories)
-        );
+        // emit DuaCreated(
+        //     applicationId,
+        //     far,
+        //     getApplicantIdsFromApplicants(duaSignatories)
+        // );
     }
 
     function signDrcUtilizationApplication(bytes32 applicationId) public {
