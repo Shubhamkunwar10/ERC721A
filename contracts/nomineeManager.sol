@@ -24,10 +24,8 @@ contract NomineeManager is KdaCommon{
     
     event LogOfficer(string message, KdaOfficer officer);
 
-    event addNomineeApplicationSubmitted(bytes32 applicationId, bytes32 userId);
-    event updateNomineeApplicationSubmitted(bytes32 applicationId, bytes32 userId);
-    event NomineeApplicationApproved(bytes32 applicationId, bytes32 userId);
-    event NomineeApplicationRejected(bytes32 applicationId, bytes32 userId);
+    event NomineeApplicationApproved(bytes32 applicationId, bytes32 applicant);
+    event NomineeApplicationRejected(bytes32 applicationId, bytes32 applicant);
     /**
     * @dev Constructor function to set the initial values of the contract.
      * @param _admin The address of the contract admin.
@@ -79,30 +77,30 @@ contract NomineeManager is KdaCommon{
         status: ApplicationStatus.SUBMITTED
         });
         nomineeStorage.createNomineeApplication(newApplication);
-        emit addNomineeApplicationSubmitted(applicationId, userId);
+        // emit addNomineeApplicationSubmitted(applicationId, userId);
     }
 
-    function updateNomineeApplication(bytes32 applicationId, bytes32[] memory _nominees) public {
-        if (!nomineeStorage.isApplicationCreated(applicationId)){
-            revert("application does not exist");
-        }
-        nomineeApplication memory oldApplication = nomineeStorage.getNomineeApplication(applicationId);
-        if(oldApplication.status==ApplicationStatus.REJECTED) {
-            revert("application already rejected");
-        }
-        if(oldApplication.status==ApplicationStatus.APPROVED) {
-            revert("application already approved");
-        }
-        bytes32 userId = userManager.getUserId(msg.sender);
-        nomineeApplication memory newApplication = nomineeApplication({
-        applicationId: applicationId,
-        userId: userId,
-        nominees: _nominees,
-        status: ApplicationStatus.SUBMITTED
-        });
-        nomineeStorage.updateNomineeApplication(newApplication);
-        emit updateNomineeApplicationSubmitted(applicationId, userId);
-    }
+    // function updateNomineeApplication(bytes32 applicationId, bytes32[] memory _nominees) public {
+    //     if (!nomineeStorage.isApplicationCreated(applicationId)){
+    //         revert("application does not exist");
+    //     }
+    //     nomineeApplication memory oldApplication = nomineeStorage.getNomineeApplication(applicationId);
+    //     if(oldApplication.status==ApplicationStatus.REJECTED) {
+    //         revert("application already rejected");
+    //     }
+    //     if(oldApplication.status==ApplicationStatus.APPROVED) {
+    //         revert("application already approved");
+    //     }
+    //     bytes32 userId = userManager.getUserId(msg.sender);
+    //     nomineeApplication memory newApplication = nomineeApplication({
+    //     applicationId: applicationId,
+    //     userId: userId,
+    //     nominees: _nominees,
+    //     status: ApplicationStatus.SUBMITTED
+    //     });
+    //     nomineeStorage.updateNomineeApplication(newApplication);
+    //     emit updateNomineeApplicationSubmitted(applicationId, userId);
+    // }
 
     /**
     This function has to be called by the admin. He would create an approve the application at the same time
@@ -115,11 +113,12 @@ contract NomineeManager is KdaCommon{
         applicationId: applicationId,
         userId: userId,
         nominees: _nominees,
-        status: ApplicationStatus.APPROVED
+        status: ApplicationStatus.SUBMITTED
         });
         nomineeStorage.createNomineeApplication(newApplication);
-        emit addNomineeApplicationSubmitted(applicationId, userId);
-        nomineeStorage.addNominee(newApplication.applicationId, newApplication.nominees);
+        approveNomineeApplication(applicationId);
+        // emit addNomineeApplicationSubmitted(applicationId, userId);
+        // nomineeStorage.addNominee(newApplication.applicationId, newApplication.nominees);
     }
     function approveNomineeApplication(bytes32 applicationId) public {
         KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
@@ -129,14 +128,11 @@ contract NomineeManager is KdaCommon{
         require(application.status != ApplicationStatus.APPROVED,"Application already approved");
         require(application.status != ApplicationStatus.REJECTED,"Application already rejected");
         require(application.status == ApplicationStatus.SUBMITTED,"Application is not submitted");
-        if (officer.role == Role.SUPER_ADMIN || officer.role== Role.ADMIN ||
-            officer.role==Role.APPROVER || officer.role==Role.VC) {
-                // update Application
+        if (officer.role== Role.ADMIN){
                 application.status = ApplicationStatus.APPROVED;
                 nomineeStorage.updateNomineeApplication(application);
                 emit NomineeApplicationApproved(applicationId, application.userId);
             } else {
-                emit Logger("User not authorized");
                 revert("User not authorized");
             }
         nomineeStorage.addNominee(application.userId, application.nominees);
@@ -151,14 +147,12 @@ contract NomineeManager is KdaCommon{
         require(application.status == ApplicationStatus.SUBMITTED,"Application is not submitted");
 
 
-    if (officer.role == Role.SUPER_ADMIN || officer.role== Role.ADMIN ||
-        officer.role==Role.APPROVER || officer.role==Role.VC) {
+    if (officer.role== Role.ADMIN) {
             // update Application
             application.status = ApplicationStatus.REJECTED;
             nomineeStorage.updateNomineeApplication(application);
-            emit NomineeApplicationApproved(applicationId, application.userId);
+            emit NomineeApplicationRejected(applicationId, application.userId);
         } else {
-            emit Logger("User not authorized");
             revert("User not authorized");
         }
     }

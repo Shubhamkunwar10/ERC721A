@@ -24,6 +24,9 @@ contract NomineeStorage is KdaCommon  {
     event nomineesAdded(bytes32 user);
     event nomineesUpdated(bytes32 user);
     event nomineesDeleted(bytes32 user);
+    event nomineeApplicationCreated(bytes32 applicationId, bytes32 applicant);
+    event nomineeApplicationUpdated(bytes32 applicationId, bytes32 applicant);
+    event nomineeApplicationDeleted(bytes32 applicationId, bytes32 applicant);
 
     /**
     * @dev Adds nominees to the mapping for a particular user
@@ -79,9 +82,6 @@ contract NomineeStorage is KdaCommon  {
         }
         return arr.length;
     }
-    event nomineeApplicationAdded(bytes32 applicationId, bytes32 userId);
-    event nomineeApplicationUpdated(bytes32 applicationId, bytes32 userId);
-    event nomineeApplicationDeleted(bytes32 applicationId, bytes32 userId);
 
     function createNomineeApplication(nomineeApplication memory application) onlyManager public {
         // check whether the application exists or not
@@ -89,7 +89,7 @@ contract NomineeStorage is KdaCommon  {
             revert("application already created");
         }
         nomineeApplicationMap[application.applicationId] = application;
-        emit nomineeApplicationAdded(application.applicationId, application.userId);
+        emit nomineeApplicationCreated(application.applicationId, application.userId);
     }
     
     function updateNomineeApplication(nomineeApplication memory application) onlyManager public {
