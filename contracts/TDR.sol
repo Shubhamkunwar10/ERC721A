@@ -202,7 +202,13 @@ contract TdrStorage {
 
     function updateApplication(TdrApplication memory _application) public {
         emit LogBytes("begin update application",_application.applicationId);
-        TdrApplication storage application = applicationMap[_application.applicationId];
+        TdrApplication memory application = applicationMap[_application.applicationId];
+        // assuming the sequence is also the same
+        for (uint256 i = 0; i < application.applicants.length; i++) {
+            if (application.applicants[i].userId != _application.applicants[i].userId) {
+                revert("Applicants can't be updated");
+            }
+        }
         if(! isApplicationCreated(_application.applicationId)){
             revert("Application does not exist");
         }
