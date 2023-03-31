@@ -312,12 +312,17 @@ contract DRCManager is KdaCommon {
         DrcTransferApplication memory dta = dtaStorage.getApplication(
             applicationId
         );
+        if(dta.status == ApplicationStatus.VERIFIED){
+            revert("Application already verified");
+        }
+        if(dta.status == ApplicationStatus.REJECTED){
+            revert("Application already rejected");
+        }
         require(
             dta.status == ApplicationStatus.SUBMITTED,
             "Application is not submitted"
         );
         if (
-            officer.role == Role.SUPER_ADMIN ||
             officer.role == Role.ADMIN ||
             officer.role == Role.VERIFIER ||
             officer.role == Role.VC

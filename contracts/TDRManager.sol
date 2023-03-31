@@ -526,6 +526,12 @@ contract TDRManager is KdaCommon {
         if (notice.status == NoticeStatus.ISSUED) {
             revert("DRC already issued against this notice");
         }
+        if(tdrApplication.applicationId==""){
+            revert("Application does not exist");
+        }
+        if(tdrApplication.status!= ApplicationStatus.APPROVED){
+            revert("Application must be approved to issue drc");
+        }
         if (
             officer.role == Role.VC
         ) {
