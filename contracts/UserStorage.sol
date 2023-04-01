@@ -10,7 +10,7 @@ import "./DataTypes.sol";
 import "./KdaCommon.sol";
 
 
-contract UserData is KdaCommon {
+contract UserStorage is KdaCommon {
     // Mapping from user id to user address
     mapping(bytes32 => address) public userMap;
     mapping(address => bytes32) public reverseUserMap;
