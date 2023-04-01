@@ -90,21 +90,21 @@ FILES_TO_COMPILE = [
     "../contracts/UserStorage.sol"
 ]
 CONTRACTS = ["DrcTransferApplicationStorage", "DrcStorage", "DRCManager", "TdrStorage", "TDRManager", "UserManager",
-             "DuaStorage", "NomineeStorage", "NomineeManager", "DucStorage", "UserData"]
+             "DuaStorage", "NomineeStorage", "NomineeManager", "DucStorage", "UserStorage"]
 # SKIPPED_CONTRACTS = ["UserManager","TdrStorage","DrcStorage","NomineeStorage"]
-# SKIPPED_CONTRACTS = ["UserManager", "TdrStorage", "NomineeStorage"]
-SKIPPED_CONTRACTS = [
-                    "DrcTransferApplicationStorage",
-                     "DrcStorage",
-                     "DRCManager",
-                     "TdrStorage",
-                     # "TDRManager",
-                     "UserManager",
-                     "DuaStorage",
-                     "NomineeStorage",
-                     "NomineeManager",
-                     "UserStorage",
-                     ]
+SKIPPED_CONTRACTS = ["UserStorage", "TdrStorage", "NomineeStorage"]
+# SKIPPED_CONTRACTS = [
+#                     "DrcTransferApplicationStorage",
+#                      "DrcStorage",
+#                      "DRCManager",
+#                      "TdrStorage",
+#                      "TDRManager",
+#                      "UserManager",
+#                      "DuaStorage",
+#                      "NomineeStorage",
+#                      "NomineeManager",
+#                      "UserStorage",
+#                      ]
 # SKIPPED_CONTRACTS = []
 logger.info('following files would be compiled')
 logger.info(FILES_TO_COMPILE)
@@ -311,6 +311,7 @@ def instantiate(contract_address, compiled_contracts):
     nominee_storage_address = contract_address.get('NomineeStorage')
     nominee_manager_address = contract_address.get('NomineeManager')
     duc_storage_address = contract_address.get('DucStorage')
+    user_storage_address = contract_address.get('UserStorage')
 
     # load tdr manager abi
     tdr_storage_contract = w3.eth.contract(address=tdr_storage_address,
@@ -333,7 +334,8 @@ def instantiate(contract_address, compiled_contracts):
                                                abi=compiled_contracts.get('NomineeManager').get('abi'))
     duc_storage_contract = w3.eth.contract(address=duc_storage_address,
                                            abi=compiled_contracts.get('DucStorage').get('abi'))
-
+    user_storage_contract = w3.eth.contract(address=user_storage_address,
+                                           abi=compiled_contracts.get('UserStorage').get('abi'))
     # # updating storage in tdr manager
     # update_tdr_storage_method = tdr_manager_contract.functions.updateTdrStorage(tdr_storage_address)
     # logger.debug("updating  tdr storage in tdr manager contract")
@@ -416,8 +418,10 @@ def instantiate(contract_address, compiled_contracts):
                          "update user manager in nominee manager")
     set_contract_address(nominee_storage_contract, 'setManager', nominee_manager_address,
                          "update nominee manager in nominee storage")
-
-
+    set_contract_address(user_storage_contract, 'setManager', user_manager_address,
+                         "update user manager in user storage")
+    set_contract_address(user_manager_contract, 'loadUserStorage', user_storage_address,
+                         "update user storage in user manager")
 def main():
     """
     The main function
