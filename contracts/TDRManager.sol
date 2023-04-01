@@ -55,7 +55,7 @@ contract TDRManager is KdaCommon {
 
 
     modifier onlyNoticeCreator() {
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         if (officer.role != Role.SUPER_ADMIN && officer.role != Role.ADMIN) {
             revert("Only user with role admin can create notice");
@@ -121,7 +121,7 @@ contract TDRManager is KdaCommon {
     }
 
     function setZone(bytes32 _applicationId, Zone _zone) public {
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
 
         if (officer.role == Role.ADMIN || officer.role == Role.VC) {
             if (!tdrStorage.isApplicationCreated(_applicationId)){
@@ -401,7 +401,7 @@ contract TDRManager is KdaCommon {
     function rejectApplication(bytes32 applicationId, string memory reason)
         public
     {
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // Check if notice is issued
         TdrApplication memory tdrApplication = tdrStorage.getApplication(
@@ -437,7 +437,7 @@ contract TDRManager is KdaCommon {
     function rejectVerificationTdrApplication(bytes32 applicationId, string memory reason)
         public
     {
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // Check if notice is issued
         TdrApplication memory tdrApplication = tdrStorage.getApplication(
@@ -480,7 +480,7 @@ contract TDRManager is KdaCommon {
 // only admin can approve the application 
 // admin can approve the rejected application too
     function approveApplication(bytes32 applicationId) public {
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // Check if notice is issued
         TdrApplication memory tdrApplication = tdrStorage.getApplication(
@@ -516,7 +516,7 @@ contract TDRManager is KdaCommon {
         uint256 farGranted,
         uint256 timeStamp
     ) public {
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // Check if notice is issued
         TdrApplication memory tdrApplication = tdrStorage.getApplication(
@@ -588,7 +588,7 @@ contract TDRManager is KdaCommon {
         VerificationStatus memory status = tdrStorage.getVerificationStatus(
             applicationId
         );
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // Check if notice is issued
         TdrApplication memory tdrApplication = tdrStorage.getApplication(

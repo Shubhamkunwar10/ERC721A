@@ -12,13 +12,13 @@ import "./KdaCommon.sol";
 
 contract UserStorage is KdaCommon {
     // Mapping from user id to user address
-    mapping(bytes32 => address) public userMap;
-    mapping(address => bytes32) public reverseUserMap;
+    mapping(bytes32 => address) public userMap; // id => address
+    mapping(address => bytes32) public reverseUserMap; //address => id
 
     // List of verifier addresses
-    mapping(bytes32 => KdaOfficer) public officerMap;
-    mapping(bytes32 => address) public officerAddressMap;
-    mapping(address => bytes32) public reverseOfficerMap;
+    mapping(bytes32 => KdaOfficer) public officerMap; // id => officer Struct
+    mapping(bytes32 => address) public officerAddressMap; // id => address
+    mapping(address => bytes32) public reverseOfficerMap; // address => id
 
 
     // Event emitted after a user is updated
@@ -100,7 +100,6 @@ contract UserStorage is KdaCommon {
         userMap[userId] = userAddress;
         reverseUserMap[userAddress]=userId;
 
-
         // Emit the UserUpdated event
         emit UserUpdated(userId, userAddress);
     }
@@ -135,7 +134,7 @@ contract UserStorage is KdaCommon {
     get user address from user Id
     */
     function getUserAddress(bytes32 userId) public view returns (address){
-        return UserMap[userId];
+        return userMap[userId];
     }
 
 
@@ -218,15 +217,22 @@ contract UserStorage is KdaCommon {
     }
 
 
-    function getRole(bytes32 id) view public returns(KdaOfficer memory){
+    function getOfficer(bytes32 id) view public returns(KdaOfficer memory){
         return officerMap[id];
+    }
+    function getRole(bytes32 id) view public returns(Role){
+        return officerMap[id].role;
     }
     function getOfficerAddress(bytes32 id) view public returns(address ){
         return officerAddressMap[id];
     }
-    function getRoleByAddress(address _address) view public returns(KdaOfficer memory){
+    function getOfficerByAddress(address _address) view public returns(KdaOfficer memory){
         bytes32 id = reverseOfficerMap[_address];
         return officerMap[id];
+    }
+    function getRoleByAddress(address _address) view public returns(Role ){
+        bytes32 id = reverseOfficerMap[_address];
+        return officerMap[id].role;
     }
     function getOfficerIdByAddress(address _address) view public returns(bytes32){
         return reverseOfficerMap[_address];

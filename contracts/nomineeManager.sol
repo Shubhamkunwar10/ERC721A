@@ -121,7 +121,7 @@ contract NomineeManager is KdaCommon{
         // nomineeStorage.addNominee(newApplication.applicationId, newApplication.nominees);
     }
     function approveNomineeApplication(bytes32 applicationId) public {
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         //fetch the application
         nomineeApplication memory application = nomineeStorage.getNomineeApplication(applicationId);
         //application should not be already approved
@@ -138,7 +138,7 @@ contract NomineeManager is KdaCommon{
         nomineeStorage.addNominee(application.userId, application.nominees);
     }
     function rejectNomineeApplication(bytes32 applicationId) public {
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         //fetch the application
         nomineeApplication memory application = nomineeStorage.getNomineeApplication(applicationId);
         //application should not be already approved

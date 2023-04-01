@@ -127,7 +127,6 @@ contract DRCManager is KdaCommon {
         dtaStorageAddress = _dtaStorageAddress;
         dtaStorage = DrcTransferApplicationStorage(dtaStorageAddress);
     }
-    //#############333333@return
     function loadDucStorage(address _ducStorageAddress) public {
         ducStorageAddress = _ducStorageAddress;
         ducStorage = DucStorage(ducStorageAddress);
@@ -139,7 +138,6 @@ contract DRCManager is KdaCommon {
     }
 
 
-    //##################333333
 
     function loadDuaStorage(address _duaStorageAddress) public {
         duaStorageAddress = _duaStorageAddress;
@@ -172,7 +170,7 @@ contract DRCManager is KdaCommon {
         uint256 _farCredited,
         uint256 _farAvailable
     ) public {
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         if (officer.role == Role.ADMIN) {
             DRC memory drc = drcStorage.getDrc(_drcId);
             require(drcStorage.isDrcCreated(_drcId), "DRC not created");
@@ -306,7 +304,7 @@ contract DRCManager is KdaCommon {
         VerificationStatus memory status = dtaStorage.getVerificationStatus(
             applicationId
         );
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // fetch application. Reverts if application is not created
         DrcTransferApplication memory dta = dtaStorage.getApplication(
@@ -347,7 +345,7 @@ contract DRCManager is KdaCommon {
 
     // this function is called by the admin to approve the transfer
     function approveDta(bytes32 applicationId, bytes32 newDrcId) public {
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         //fetch the application
         DrcTransferApplication memory application = dtaStorage.getApplication(
@@ -443,7 +441,7 @@ contract DRCManager is KdaCommon {
     function rejectDrcTransfer(bytes32 applicationId, string memory reason)
         public
     {
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // Check if notice is issued
         DrcTransferApplication memory application = dtaStorage.getApplication(
@@ -728,7 +726,7 @@ contract DRCManager is KdaCommon {
     */
     function transferAllDrcToNominees(bytes32 userId) public {
         // check whether the role is admin or application
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         if (
             officer.role == Role.SUPER_ADMIN ||
