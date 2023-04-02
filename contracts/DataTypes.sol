@@ -20,7 +20,11 @@ pragma solidity ^0.8.16;
     SENT_BACK_FOR_CORRECTION
 }
 
-    enum NoticeStatus{pending, issued, cancelled}
+    enum NoticeStatus{
+        PENDING,
+        ISSUED,
+        CANCELLED
+    }
 
     enum AreaType {
                     DEVELOPED,
@@ -147,7 +151,10 @@ pragma solidity ^0.8.16;
         VERIFIER,
         SUB_VERIFIER,
         VC,
-        APPROVER
+        APPROVER,
+        CHEIF_TOWN_AND_COUNTRY_PLANNER,
+        CHIEF_ENGINEER,
+        DM
     }
 
     enum Department {

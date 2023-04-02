@@ -127,9 +127,9 @@ contract TdrStorage is KdaCommon{
         if (!isNoticeCreated(tdrNotice)) {
             revert("no such notice exists, reverting");
         }
-        TdrNotice memory _tdrNotice = noticeMap[tdrNotice.noticeId];
-        if (_tdrNotice.status == NoticeStatus.cancelled) {
+        if (_tdrNotice.status == NoticeStatus.CANCELLED) {
             revert("notice Already cancelled, reverting");
+        }
         if(_tdrNotice.status == NoticeStatus.ISSUED){
             revert("DRC already issued against the notice");
         }
@@ -137,7 +137,7 @@ contract TdrStorage is KdaCommon{
         emit NoticeUpdated(tdrNotice.noticeId, tdrNotice);
     }
 
-    function deleteNotice(bytes32 noticeId) public onlyManager {
+    function deleteNotice (bytes32 noticeId) public onlyManager {
         delete noticeMap[noticeId];
     }
 
