@@ -127,6 +127,9 @@ contract TdrStorage is KdaCommon{
         if (!isNoticeCreated(tdrNotice)) {
             revert("no such notice exists, reverting");
         }
+        TdrNotice memory _tdrNotice = noticeMap[tdrNotice.noticeId];
+        if (_tdrNotice.status == NoticeStatus.cancelled) {
+            revert("notice Already cancelled, reverting");
         if(_tdrNotice.status == NoticeStatus.ISSUED){
             revert("DRC already issued against the notice");
         }
@@ -206,11 +209,16 @@ contract TdrStorage is KdaCommon{
         emit TDRUpdated(application.noticeId, application.applicationId);
     }
 
-    function updateApplication(
-        TdrApplication memory _application
-    ) public onlyManager {
-        emit LogBytes("begin update application", _application.applicationId);
-        if (!isApplicationCreated(_application.applicationId)) {
+    function updateApplication(TdrApplication memory _application) public {
+        emit LogBytes("begin update application",_application.applicationId);
+        TdrApplication memory application = applicationMap[_application.applicationId];
+        // assuming the sequence is also the same
+        for (uint256 i = 0; i < application.applicants.length; i++) {
+            if (application.applicants[i].userId != _application.applicants[i].userId) {
+                revert("Applicants can't be updated");
+            }
+        }
+        if(! isApplicationCreated(_application.applicationId)){
             revert("Application does not exist");
         }
         addApplicationToMap(_application);
