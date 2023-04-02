@@ -85,23 +85,27 @@ FILES_TO_COMPILE = [
     "../contracts/UserManager.sol",
     "../contracts/UtilizationApplication.sol",
     "../contracts/nomineeStorage.sol",
-    "../contracts/nomineeManager.sol"
+    "../contracts/nomineeManager.sol",
+    "../contracts/DucStorage.sol",
+    "../contracts/UserStorage.sol"
 ]
 CONTRACTS = ["DrcTransferApplicationStorage", "DrcStorage", "DRCManager", "TdrStorage", "TDRManager", "UserManager",
-             "DuaStorage", "NomineeStorage", "NomineeManager"]
-# SKIPPED_CONTRACTS = ["UserManager"]
-# SKIPPED_CONTRACTS = [
-#                     "DrcTransferApplicationStorage",
-#                      "DrcStorage",
-#                      "DRCManager",
-#                      "TdrStorage",
-#                      # "TDRManager",
-#                      "UserManager",
-#                      "DuaStorage",
-#                      "NomineeStorage",
-#                      "NomineeManager"
-#                      ]
-SKIPPED_CONTRACTS = []
+             "DuaStorage", "NomineeStorage", "NomineeManager", "DucStorage", "UserData"]
+# SKIPPED_CONTRACTS = ["UserManager","TdrStorage","DrcStorage","NomineeStorage"]
+# SKIPPED_CONTRACTS = ["UserManager", "TdrStorage", "NomineeStorage"]
+SKIPPED_CONTRACTS = [
+                    "DrcTransferApplicationStorage",
+                     "DrcStorage",
+                     "DRCManager",
+                     "TdrStorage",
+                     # "TDRManager",
+                     "UserManager",
+                     "DuaStorage",
+                     "NomineeStorage",
+                     "NomineeManager",
+                     "UserStorage",
+                     ]
+# SKIPPED_CONTRACTS = []
 logger.info('following files would be compiled')
 logger.info(FILES_TO_COMPILE)
 
@@ -306,6 +310,7 @@ def instantiate(contract_address, compiled_contracts):
     dua_storage_address = contract_address.get('DuaStorage')
     nominee_storage_address = contract_address.get('NomineeStorage')
     nominee_manager_address = contract_address.get('NomineeManager')
+    duc_storage_address = contract_address.get('DucStorage')
 
     # load tdr manager abi
     tdr_storage_contract = w3.eth.contract(address=tdr_storage_address,
@@ -323,9 +328,11 @@ def instantiate(contract_address, compiled_contracts):
     dua_storage_contract = w3.eth.contract(address=dua_storage_address,
                                            abi=compiled_contracts.get('DuaStorage').get('abi'))
     nominee_storage_contract = w3.eth.contract(address=nominee_storage_address,
-                                           abi=compiled_contracts.get('NomineeStorage').get('abi'))
+                                               abi=compiled_contracts.get('NomineeStorage').get('abi'))
     nominee_manager_contract = w3.eth.contract(address=nominee_manager_address,
-                                           abi=compiled_contracts.get('NomineeManager').get('abi'))
+                                               abi=compiled_contracts.get('NomineeManager').get('abi'))
+    duc_storage_contract = w3.eth.contract(address=duc_storage_address,
+                                           abi=compiled_contracts.get('DucStorage').get('abi'))
 
     # # updating storage in tdr manager
     # update_tdr_storage_method = tdr_manager_contract.functions.updateTdrStorage(tdr_storage_address)
@@ -391,13 +398,24 @@ def instantiate(contract_address, compiled_contracts):
     # updating dua storage in drc manager
     set_contract_address(drc_manager_contract, 'updateDuaStorage', dua_storage_address,
                          "update dua storage in drc manager")
+
+    set_contract_address(duc_storage_contract, 'setManager', drc_manager_address,
+                         "update drc manager in duc storage")
+    # updating duc storage in drc manager
+    set_contract_address(drc_manager_contract, 'updateDucStorage', duc_storage_address,
+                         "update duc storage in drc manager")
+
     set_contract_address(drc_storage_contract, 'setTdrManager', tdr_manager_address,
                          "update tdr manager in drc storage")
     set_contract_address(drc_storage_contract, 'setManager', drc_manager_address, "update drc manager in drc storage")
-    set_contract_address(drc_manager_contract, 'loadNomineeManager', nominee_manager_address, "update nominee manager in drc manager")
-    set_contract_address(nominee_manager_contract, 'loadNomineeStorage', nominee_storage_address, "update nominee storage in nominee manager")
-    set_contract_address(nominee_manager_contract, 'loadUserManager', user_manager_address, "update user manager in nominee manager")
-    set_contract_address(nominee_storage_contract, 'setManager', nominee_manager_address, "update nominee manager in nominee storage")
+    set_contract_address(drc_manager_contract, 'loadNomineeManager', nominee_manager_address,
+                         "update nominee manager in drc manager")
+    set_contract_address(nominee_manager_contract, 'loadNomineeStorage', nominee_storage_address,
+                         "update nominee storage in nominee manager")
+    set_contract_address(nominee_manager_contract, 'loadUserManager', user_manager_address,
+                         "update user manager in nominee manager")
+    set_contract_address(nominee_storage_contract, 'setManager', nominee_manager_address,
+                         "update nominee manager in nominee storage")
 
 
 def main():

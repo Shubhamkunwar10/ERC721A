@@ -4,65 +4,34 @@ import "./TDR.sol";
 import "./DataTypes.sol";
 //import "./lib/Counters.sol";
 //import "./lib/SafeMath.sol";
+import "./KdaCommon.sol";
 
-contract DrcStorage {
+contract DrcStorage is KdaCommon {
 
 //    using SafeMath for uint256;
 //    using Counters for Counters.Counter;
-
-    // Define the struct that we will be using for our CRUD operations
-
-
 
     // Mappings
     // Create a mapping to store the DRC against Drc id
     mapping(bytes32 => DRC) public drcMap;  // drcId => drc
     mapping(bytes32 => bytes32[]) public ownerMap; //ownerId => drcId
-//    mapping(bytes32 => bytes32[] ) public userApplicationMap; // onwerid => applicationId[]
+    //mapping(bytes32 => bytes32[] ) public userApplicationMap; // onwerid => applicationId[]
     mapping(bytes32 => bytes32[] ) public drcDtaMap; // drcId => applicationId []
     mapping(bytes32 => bytes32[] ) public drcDuaMap; // drcId => applicationId []
 
     // Events
-    event DrcCreated(bytes32 drcId, bytes32[] owners);
-    event Logger(string log);
-    event LogAddress(string addressInfo, address _address);
-    event LogBytes(string messgaeInfo, bytes32 _bytes);
-    event LogBool(string messageInfo, bool message);
-    event LogApplication(string message, TdrApplication application);
+    event DrcCreated(bytes32 drcId, DRC drc, bytes32[] owners);
+    event DrcUpdated(bytes32 drcId, DRC drc, bytes32[] owners);
     event DtaAddedToDrc(bytes32 dtaId, bytes32 applicationId);
     event DuaAddedToDrc(bytes32 dtaId, bytes32 applicationId);
     event DrcAddedToOwner(bytes32 drcId, bytes32 ownerId);
 
-    
-    address owner;
-    address admin;
-    address manager;
-    address tdrManager;
+    address public tdrManager;
 
     // Constructor function to set the initial values of the contract
-    constructor(address _admin, address _manager) {
-        // Set the contract owner to the caller
-        owner = msg.sender;
+    constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
 
-        // Set the contract admin
-        admin = _admin;
-        manager = _manager;
-    }
-    // Modifier to check if the caller is the TDR manager
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Caller is not the TDR manager");
-        _;
-    }
 
-    // Modifier to check if the caller is the contract admin
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Caller is not the contract admin");
-        _;
-    }
-    modifier onlyManager() {
-        require(msg.sender == manager, "Caller is not the contract manager");
-        _;
-    }
     modifier onlyDrcCreator() {
         // Drc is created only in two ways, either through land acquisition or through transfer.manager
         // In case of land acquisition, tdr manager would create the drc
@@ -71,25 +40,19 @@ contract DrcStorage {
         _;
     }
 
-    function setAdmin(address _newAdmin) onlyOwner public{
-        admin = _newAdmin;
-    }
-    function setOwner(address _newOwner) onlyOwner public {
-        owner = _newOwner;
-    }
-    function setManager(address _newManager) onlyOwner public {
-        manager = _newManager;
-    }
     function setTdrManager(address _newTdrManager) onlyOwner public {
         tdrManager = _newTdrManager;
     }
     // Create a function to add a new Drc to the mapping
     function createDrc(DRC memory _drc) public onlyDrcCreator{
+         if (_drc.owners.length <= 0) {
+            revert("DRC has 0 owners");
+        } 
         //check whether the DRC already exists
         require(!isDrcCreated(_drc.id),"DRC already exists");
         addDrcToOwners(_drc);
         storeDrcInMap(_drc);
-        emit DrcCreated(_drc.id, _drc.owners);
+        emit DrcCreated(_drc.id, _drc, _drc.owners);
     }
     // Create a function to update a Drc in the mapping
     function updateDrc(bytes32 _id, DRC memory _drc) public onlyManager {
@@ -99,6 +62,22 @@ contract DrcStorage {
         require(isDrcCreated(_drc.id),"DRC does not exists");
         // insertDrc((_drc));
         storeDrcInMap(_drc);
+        emit DrcUpdated(_drc.id, _drc, _drc.owners);
+
+    }
+    
+
+
+    function addDrcToOwners(DRC memory drc) internal {
+        for (uint i=0; i< drc.owners.length; i++){
+            addDrcToOwner(drc.id,drc.owners[i]);
+        }
+    }
+    function addDrcToOwner(bytes32 drcId, bytes32 ownerId) internal {
+        bytes32[] storage drcList = ownerMap[ownerId];
+        drcList.push(drcId);
+        ownerMap[ownerId]=drcList;
+        emit DrcAddedToOwner(drcId,ownerId);
     }
 
 
@@ -114,21 +93,9 @@ contract DrcStorage {
 
 
     // Create a function to delete a Drc from the mapping
-    function deleteDrc(bytes32 _id) public onlyOwner{
+    function deleteDrc(bytes32 _id) public onlyAdmin{
         // Delete the Drc from the mapping
         delete drcMap[_id];
-    }
-
-    function addDrcToOwners(DRC memory drc) public {
-        for (uint i=0; i< drc.owners.length; i++){
-            addDrcToOwner(drc.id,drc.owners[i]);
-        }
-    }
-    function addDrcToOwner(bytes32 drcId, bytes32 ownerId) public {
-        bytes32[] storage drcList = ownerMap[ownerId];
-        drcList.push(drcId);
-        ownerMap[ownerId]=drcList;
-        emit DrcAddedToOwner(drcId,ownerId);
     }
 
     /**
@@ -170,9 +137,6 @@ contract DrcStorage {
             return false;
     }
     // ideally these functions should be moved to manager contract
-    /**
-    This function add an owner to drc
-    */
     function addDrcOnwer(bytes32 _drcId, bytes32  newOwner)public {
         require(isDrcCreated(_drcId),"DRC does not exists");
         DRC storage drc = drcMap[_drcId];
@@ -197,11 +161,7 @@ contract DrcStorage {
 ////    drcMap[_drcId] = drc;
 //  }
 
-    /**
-    Deletes the owner from drc.
-    Also deletes the drc from ownerMap
-    */
-  function removeOwnerFromDrc(bytes32 _drcId, bytes32 ownerId) public{
+  function deleteOwner(bytes32 _drcId, bytes32 ownerId) public{
     // assume singkle occurance of the ownerID
     // Funtion searches for owners and deletes it. Assume that there are multiple owner with same owner id.
     DRC storage drc = drcMap[_drcId];
@@ -257,7 +217,7 @@ contract DrcStorage {
 //    return emptyDrcOwner;
     }
 
-    function storeDrcInMap (DRC memory _drc) public {
+    function storeDrcInMap (DRC memory _drc) internal{
 //        drcMap[_drc.id]=_drc;
 //
         DRC storage drc = drcMap[_drc.id];
@@ -272,6 +232,8 @@ contract DrcStorage {
         drc.circleRateSurrendered = _drc.circleRateSurrendered;
         drc.circleRateUtilization = _drc.circleRateUtilization;
         drc.timeStamp = _drc.timeStamp;
+        drc.hasPrevious = _drc.hasPrevious;
+        drc.previousDRC = _drc.previousDRC;
 ////        for(uint i =0; i<_drc.applications.length; i++){
 ////            drc.applications[i]= _drc.applications[i];
 ////        }
@@ -298,7 +260,8 @@ contract DrcStorage {
     }
     // add application to drc
     event AllDTaForDrc(bytes32 drcId, bytes32[] applicationIds);
-    function addDtaToDrc(bytes32 drcId,bytes32 applicationId) public {
+
+    function addDtaToDrc(bytes32 drcId,bytes32 applicationId) public onlyManager {
         bytes32[] storage applications = drcDtaMap[drcId];
         applications.push(applicationId);
         drcDtaMap[drcId]=applications;
@@ -339,7 +302,8 @@ CRUD operations on the drc DTA Map
 
     // add application to drc
     event AllDuaForDrc(bytes32 drcId, bytes32[] applicationIds);
-    function addDuaToDrc(bytes32 drcId,bytes32 applicationId) public {
+
+    function addDuaToDrc(bytes32 drcId,bytes32 applicationId) public onlyManager{
         bytes32[] storage applications = drcDuaMap[drcId];
         applications.push(applicationId);
         drcDuaMap[drcId]=applications;
