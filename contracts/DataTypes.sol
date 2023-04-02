@@ -16,6 +16,7 @@ pragma solidity ^0.8.16;
     REJECTED,
     DRCISSUED,
     VERIFIED,
+    VERIFICATION_REJECTED,
     SENT_BACK_FOR_CORRECTION
 }
 

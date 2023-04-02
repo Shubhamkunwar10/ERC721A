@@ -55,7 +55,7 @@ contract TDRManager is KdaCommon {
 
 
     modifier onlyNoticeCreator() {
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         if (officer.role != Role.SUPER_ADMIN && officer.role != Role.ADMIN) {
             revert("Only user with role admin can create notice");
@@ -121,7 +121,7 @@ contract TDRManager is KdaCommon {
     }
 
     function setZone(bytes32 _applicationId, Zone _zone) public {
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
 
         if (officer.role == Role.ADMIN || officer.role == Role.VC) {
             if (!tdrStorage.isApplicationCreated(_applicationId)){
@@ -397,10 +397,11 @@ contract TDRManager is KdaCommon {
     }
 
     // This function mark the application as verified
+    // Only officer with the role admin can reject the application
     function rejectApplication(bytes32 applicationId, string memory reason)
         public
     {
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // Check if notice is issued
         TdrApplication memory tdrApplication = tdrStorage.getApplication(
@@ -413,34 +414,61 @@ contract TDRManager is KdaCommon {
         );
         // No need to check notice, as application can be rejected even when DRC is issued.
 
-        if (
-            officer.role == Role.SUPER_ADMIN ||
-            officer.role == Role.ADMIN ||
-            officer.role == Role.APPROVER ||
-            officer.role == Role.VC
-        ) {
-            if (officer.role == Role.VC) {
-                require(
-                    tdrApplication.status == ApplicationStatus.SUBMITTED,
-                    "Application not in submitted state"
-                );
-            } if(officer.role == Role.APPROVER){
-                require(
-                    tdrApplication.status == ApplicationStatus.VERIFIED,
-                    "Application not in Approver state"
-                );
-            }
-
-            tdrApplication.status = ApplicationStatus.REJECTED;
-            tdrStorage.updateApplication(tdrApplication);
-            emit TdrApplicationRejected(
-                applicationId,
-                reason,
-                getApplicantIdsFromTdrApplication(tdrApplication)
-            );
-        } else {
-            revert("User not authorized");
+        if (officer.role != Role.ADMIN) {
+            revert("Only admin can reject the application");
         }
+        if(tdrApplication.status!=ApplicationStatus.VERIFIED){
+            revert("Only verified application can be rejected");
+        }
+
+        tdrApplication.status = ApplicationStatus.REJECTED;
+        tdrStorage.updateApplication(tdrApplication);
+        emit TdrApplicationRejected(
+            applicationId,
+            reason,
+            getApplicantIdsFromTdrApplication(tdrApplication)
+        );
+
+        // store the reason for rejection of application
+    }
+
+    // This function mark the application as verified
+    // Only officer with the role admin can reject the application
+    function rejectVerificationTdrApplication(bytes32 applicationId, string memory reason)
+        public
+    {
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        emit LogOfficer("Officer in action", officer);
+        // Check if notice is issued
+        TdrApplication memory tdrApplication = tdrStorage.getApplication(
+            applicationId
+        );
+        if(tdrApplication.status==ApplicationStatus.REJECTED ||
+            tdrApplication.status==ApplicationStatus.APPROVED){
+            revert("Application already verified");
+        }
+        if(tdrApplication.status==ApplicationStatus.REJECTED){
+            revert("Application already rejected");
+        }
+        require(tdrApplication.status == ApplicationStatus.SUBMITTED ||
+                tdrApplication.status==ApplicationStatus.VERIFIED,
+            "Only submitted or verified application can be rejected"
+        );
+        // No need to check notice, as application can be rejected even when DRC is issued.
+
+        if (officer.role != Role.VERIFIER) {
+            revert("Only verifier can reject the application");
+        }
+
+
+        tdrApplication.status = ApplicationStatus.VERIFICATION_REJECTED;
+        tdrStorage.updateApplication(tdrApplication);
+        emit TdrApplicationRejected(
+            applicationId,
+            reason,
+            getApplicantIdsFromTdrApplication(tdrApplication)
+        );
+
         // store the reason for rejection of application
     }
 
@@ -449,43 +477,36 @@ contract TDRManager is KdaCommon {
         bytes32 applicationId,
         bytes32[] applicants
     );
-
+// only admin can approve the application 
+// admin can approve the rejected application too
     function approveApplication(bytes32 applicationId) public {
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // Check if notice is issued
         TdrApplication memory tdrApplication = tdrStorage.getApplication(
             applicationId
         );
-
+    /*
+    Applicaiton should either  be verified or rejected
+    */
+        if (officer.role == Role.ADMIN) {
         require(
-            tdrApplication.status == ApplicationStatus.VERIFIED,
-            "application should be verified before approval"
+            tdrApplication.status == ApplicationStatus.VERIFIED||
+            tdrApplication.status == ApplicationStatus.REJECTED,
+            "application should be verified or rejected before approval"
+        );
+        } 
+        else {
+                revert("User not authorized");
+        }
+        tdrApplication.status = ApplicationStatus.APPROVED;
+        tdrStorage.updateApplication(tdrApplication);
+        emit TdrApplicationApproved(
+            officer,
+            applicationId,
+            getApplicantIdsFromTdrApplication(tdrApplication)
         );
 
-        TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-        if (notice.status == NoticeStatus.ISSUED) {
-            revert("DRC already issued against this notice");
-        }
-        if (officer.role == Role.ADMIN) {
-            if (tdrApplication.status == ApplicationStatus.REJECTED) {
-                tdrApplication.status = ApplicationStatus.APPROVED;
-            }
-        }
-        if (
-            officer.role == Role.VC
-        ) {
-            // update Application
-            tdrApplication.status = ApplicationStatus.APPROVED;
-            tdrStorage.updateApplication(tdrApplication);
-            emit TdrApplicationApproved(
-                officer,
-                applicationId,
-                getApplicantIdsFromTdrApplication(tdrApplication)
-            );
-        } else {
-            revert("User not authorized");
-        }
     }
 
     // This function mark the application as verified
@@ -494,8 +515,8 @@ contract TDRManager is KdaCommon {
         bytes32 newDrcId,
         uint256 farGranted,
         uint256 timeStamp
-    ) internal {
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+    ) public {
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // Check if notice is issued
         TdrApplication memory tdrApplication = tdrStorage.getApplication(
@@ -505,9 +526,13 @@ contract TDRManager is KdaCommon {
         if (notice.status == NoticeStatus.ISSUED) {
             revert("DRC already issued against this notice");
         }
+        if(tdrApplication.applicationId==""){
+            revert("Application does not exist");
+        }
+        if(tdrApplication.status!= ApplicationStatus.APPROVED){
+            revert("Application must be approved to issue drc");
+        }
         if (
-            officer.role == Role.SUPER_ADMIN ||
-            officer.role == Role.ADMIN ||
             officer.role == Role.VC
         ) {
             // set application status as verified
@@ -531,7 +556,7 @@ contract TDRManager is KdaCommon {
             //             drcManager.issueDRC(tdrApplication, far);
             // emit events
         } else {
-            revert("User not authorized");
+            revert("Only VC can issue DRC");
         }
     }
 
@@ -553,11 +578,17 @@ contract TDRManager is KdaCommon {
         bytes32[] applicants
     );
 
+/**
+ * verification of tdr application
+ * application needs to be in submitted state
+ * verifier can verify application
+ * verifier and sub-verifier has to be from same zone
+ * */
     function verifyTdrApplication(bytes32 applicationId) public {
         VerificationStatus memory status = tdrStorage.getVerificationStatus(
             applicationId
         );
-        KdaOfficer memory officer = userManager.getRoleByAddress(msg.sender);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // Check if notice is issued
         TdrApplication memory tdrApplication = tdrStorage.getApplication(
@@ -566,6 +597,9 @@ contract TDRManager is KdaCommon {
         TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
         if (notice.status == NoticeStatus.ISSUED) {
             revert("DRC already issued against this notice");
+        }
+        if(tdrApplication.status!= ApplicationStatus.SUBMITTED){
+            revert("Only submitted application can be verified");
         }
         if (
             officer.role == Role.VERIFIER || officer.role == Role.SUB_VERIFIER

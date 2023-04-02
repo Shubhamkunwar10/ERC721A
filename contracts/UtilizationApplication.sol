@@ -10,9 +10,9 @@ contract DuaStorage is KdaCommon {
     mapping(bytes32 => bytes32[]) public userApplicationMap; //userId => application id list
 
     //logger events
-    event DUACreatedForUser(bytes32 userId, bytes32 applicationId);
-    event DUACreated(bytes32 applicationId);
-    event DUAUpdated(bytes32 applicationId);
+    event DuaAddedToUser(bytes32 userId, bytes32 applicationId);
+    event DuaCreated(bytes32 applicationId, DUA dua, bytes32[] applicants);
+    event DuaUpdated(bytes32 applicationId);
 
 
   // Constructor function to set the initial values of the contract
@@ -26,7 +26,7 @@ contract DuaStorage is KdaCommon {
         );
         storeApplicationInMap(dua);
         storeApplicationForUser(dua);
-        emit DUACreated(dua.applicationId);
+        emit DuaCreated(dua.applicationId,dua,getApplicantIdsFromApplication(dua));
     }
 
     function createApplication(
@@ -41,27 +41,39 @@ contract DuaStorage is KdaCommon {
             applicationMap[_applicationId].applicationId == "",
             "application already exist"
         );
-        storeApplicationInMap(
-            DUA(
+        
+        DUA memory dua = DUA(
                 _applicationId,
                 _drcId,
                 _farTransferred,
                 _signatories,
                 _status,
                 _timeStamp
-            )
-        );
-        storeApplicationForUser(
-            DUA(
-                _applicationId,
-                _drcId,
-                _farTransferred,
-                _signatories,
-                _status,
-                _timeStamp
-            )
-        );
-        emit DUACreated(_applicationId);
+            );
+        storeApplicationInMap(dua);
+        storeApplicationForUser(dua);
+
+        // storeApplicationInMap(
+        //     DUA(
+        //         _applicationId,
+        //         _drcId,
+        //         _farTransferred,
+        //         _signatories,
+        //         _status,
+        //         _timeStamp
+        //     )
+        // );
+        // storeApplicationForUser(
+        //     DUA(
+        //         _applicationId,
+        //         _drcId,
+        //         _farTransferred,
+        //         _signatories,
+        //         _status,
+        //         _timeStamp
+        //     )
+        // );
+        emit DuaCreated(_applicationId,dua,getApplicantIdsFromApplication(dua));
     }
 
     function updateApplication(DUA memory dua) public onlyManager {
@@ -70,7 +82,7 @@ contract DuaStorage is KdaCommon {
             "application does not exist"
         );
         storeApplicationInMap(dua);
-        emit DUAUpdated(dua.applicationId);
+        emit DuaUpdated(dua.applicationId);
     }
 
     function updateApplication(
@@ -95,7 +107,7 @@ contract DuaStorage is KdaCommon {
                 _timeStamp
             )
         );
-        emit DUAUpdated(_applicationId);
+        emit DuaUpdated(_applicationId);
     }
 
     function getApplication(bytes32 _id) public view returns (DUA memory) {
@@ -142,7 +154,7 @@ contract DuaStorage is KdaCommon {
             bytes32[] storage applicationIds = userApplicationMap[userId];
             applicationIds.push(application.applicationId);
             userApplicationMap[userId] = applicationIds;
-            emit DUACreatedForUser(
+            emit DuaAddedToUser(
                 application.signatories[i].userId,
                 application.applicationId
             );
@@ -180,5 +192,19 @@ contract DuaStorage is KdaCommon {
     function deleteUserApplicationList(bytes32 userId) public onlyManager {
         delete userApplicationMap[userId];
         emit deletedDuaListForUser(userId);
+    }
+    function getApplicantIdsFromApplication(
+        DUA memory _dua
+    ) 
+    internal 
+    pure 
+    returns (bytes32[] memory) {
+        bytes32[] memory applicantList = new bytes32[](
+            _dua.signatories.length
+        );
+        for (uint i = 0; i < _dua.signatories.length; i++) {
+            applicantList[i] = _dua.signatories[i].userId;
+        }
+        return applicantList;
     }
 }
