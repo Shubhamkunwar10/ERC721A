@@ -477,6 +477,7 @@ contract TDRManager is KdaCommon {
     );
 // only admin can approve the application 
 // admin can approve the rejected application too
+    event approvalStatus(ApprovalStatus approvalStatus);
     function approveApplication(bytes32 applicationId) public {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
@@ -513,6 +514,7 @@ contract TDRManager is KdaCommon {
                 getApplicantIdsFromTdrApplication(tdrApplication)
             );
         }
+        emit approvalStatus(status);
         tdrStorage.storeApprovalStatus(applicationId,status);
         tdrStorage.updateApplication(tdrApplication);
     }
