@@ -26,6 +26,7 @@ contract TdrStorage is KdaCommon{
     // Application zone mapping
     mapping(bytes32 => Zone) public applicationZoneMap;
     // TDR struct definition
+    mapping(bytes32 => ApprovalStatus) public approvalStatusMap; //app Id => verification
 
     // Event emitted after a TDR is created
     event TdrApplicationUpdated(bytes32 noticeId, bytes32 applicationId, bytes32[] applicants);
@@ -127,9 +128,9 @@ contract TdrStorage is KdaCommon{
         if (!isNoticeCreated(tdrNotice)) {
             revert("no such notice exists, reverting");
         }
-        TdrNotice memory _tdrNotice = noticeMap[tdrNotice.noticeId];
-        if (_tdrNotice.status == NoticeStatus.cancelled) {
+        if (_tdrNotice.status == NoticeStatus.CANCELLED) {
             revert("notice Already cancelled, reverting");
+        }
         if(_tdrNotice.status == NoticeStatus.ISSUED){
             revert("DRC already issued against the notice");
         }
@@ -137,7 +138,7 @@ contract TdrStorage is KdaCommon{
         emit NoticeUpdated(tdrNotice.noticeId, tdrNotice);
     }
 
-    function deleteNotice(bytes32 noticeId) public onlyManager {
+    function deleteNotice (bytes32 noticeId) public onlyManager {
         delete noticeMap[noticeId];
     }
 
@@ -323,6 +324,27 @@ contract TdrStorage is KdaCommon{
     )  public {
         delete verificationStatusMap[id];
     }
+
+// CRUD operation for approval status
+    function storeApprovalStatus(
+        bytes32 id,
+        ApprovalStatus memory status
+    ) public {
+        approvalStatusMap[id] = status;
+    }
+
+    function getApprovalStatus(
+        bytes32 id
+    ) public view returns (ApprovalStatus memory) {
+        return approvalStatusMap[id];
+    }
+
+    function deleteApprovalStatus(
+        bytes32 id
+    ) public {
+        delete approvalStatusMap[id];
+    }
+
 
     function getApplicationsForNotice(
         bytes32 noticeId

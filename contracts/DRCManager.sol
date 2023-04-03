@@ -171,7 +171,7 @@ contract DRCManager is KdaCommon {
         uint256 _farAvailable
     ) public {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
-        if (officer.role == Role.ADMIN) {
+        if (officer.role == Role.VC) {
             DRC memory drc = drcStorage.getDrc(_drcId);
             require(drcStorage.isDrcCreated(_drcId), "DRC not created");
             drc.farCredited = _farCredited;
@@ -179,10 +179,15 @@ contract DRCManager is KdaCommon {
             drcStorage.updateDrc(_drcId, drc);
 
             emit FarValueUpdate(_drcId, _farCredited, _farAvailable);
+        } else {
+            revert("Only VC can change the FAR of DRC");
         }
     }
 
-    function changeOwnerDrc(bytes32 _drcId, bytes32[] memory _owner) public onlyAdmin {
+    function changeOwnerDrc(bytes32 _drcId, bytes32[] memory _owner) public {
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+
+        require(officer.role == Role.VC, "Only VC can change the owner of DRC");
         DRC memory drc = drcStorage.getDrc(_drcId);
 
         bytes32[] memory drcOwnerList = drc.owners;
@@ -320,11 +325,7 @@ contract DRCManager is KdaCommon {
             dta.status == ApplicationStatus.SUBMITTED,
             "Application is not submitted"
         );
-        if (
-            officer.role == Role.ADMIN ||
-            officer.role == Role.VERIFIER ||
-            officer.role == Role.VC
-        ) {
+        if (userManager.isOfficerDtaVerifier(msg.sender)) {
             status.verified = true;
             status.verifierId = officer.userId;
             status.verifierRole = officer.role;
@@ -352,41 +353,27 @@ contract DRCManager is KdaCommon {
             applicationId
         );
         //application should not be already approved
+        if(officer.role== Role.VC){
         require(
-            application.status == ApplicationStatus.VERIFIED,
-            "Application not verified"
+            application.status == ApplicationStatus.VERIFIED ||
+            application.status == ApplicationStatus.REJECTED,
+            "Application should be verified or rejected"
         );
-        require(
-            application.status != ApplicationStatus.APPROVED,
-            "Application already approved"
-        );
-
-        if (officer.role == Role.ADMIN) {
-            if (application.status == ApplicationStatus.REJECTED) {
-                application.status = ApplicationStatus.APPROVED;
-            }
-        }
-
-        if (
-            officer.role == Role.SUPER_ADMIN ||
-            officer.role == Role.ADMIN ||
-            officer.role == Role.APPROVER ||
-            officer.role == Role.VC
-        ) {
-            // update Application
-            application.status = ApplicationStatus.APPROVED;
-            dtaStorage.updateApplication(application);
-            emit DtaApplicationApproved(
-                officer,
-                applicationId,
-                getApplicantIdsFromApplicants(application.applicants),
-                application.buyers
-            );
-            // one drc transfer is approved, new drc should be created
-            genNewDrcFromApplication(application, newDrcId);
+        } else if(userManager.isOfficerDtaApprover(msg.sender)){
+            require(application.status == ApplicationStatus.VERIFIED);
         } else {
             revert("User not authorized");
         }
+        application.status = ApplicationStatus.APPROVED;
+        dtaStorage.updateApplication(application);
+        emit DtaApplicationApproved(
+            officer,
+            applicationId,
+            getApplicantIdsFromApplicants(application.applicants),
+            application.buyers
+        );
+        // one drc transfer is approved, new drc should be created
+        genNewDrcFromApplication(application, newDrcId);
         emit DrcIssuedByTransfer(
             applicationId,
             getApplicantIdsFromApplicants(application.applicants),
@@ -447,39 +434,28 @@ contract DRCManager is KdaCommon {
         DrcTransferApplication memory application = dtaStorage.getApplication(
             applicationId
         );
-        require(
-            application.status != ApplicationStatus.APPROVED,
-            "Application is already approved"
-        );
-        require(
-            application.status == ApplicationStatus.SUBMITTED,
-            "Application is not yet submitted"
-        );
-
-        // No need to check notice, as application can be rejected even when DRC is issued.
-        if (
-            officer.role == Role.SUPER_ADMIN ||
-            officer.role == Role.ADMIN ||
-            officer.role == Role.APPROVER ||
-            officer.role == Role.VC
-        ) {
-            // update Application
-            application.status = ApplicationStatus.REJECTED;
-            dtaStorage.updateApplication(application);
-            emit DtaApplicationRejected(
-                applicationId,
-                reason,
-                getApplicantIdsFromApplicants(application.applicants),
-                application.buyers
+        //application should not be already approved
+        if(officer.role== Role.VC){
+            require(
+                application.status == ApplicationStatus.VERIFIED ||
+                application.status == ApplicationStatus.APPROVED,
+                "Application should be verified or approved"
             );
-
-            // change the status of sub-drc
-            //            DRC memory drc = drcStorage.getDrc(application.drcId);
-            //            drc.farAvailable = drc.farAvailable+application.farTransferred;
-            //            drcStorage.updateDrc(drc.id,drc);
+        } else if(userManager.isOfficerDtaApprover(msg.sender)){
+            require(application.status == ApplicationStatus.VERIFIED);
         } else {
-            emit Logger("User not authorized");
+            revert("User not authorized");
         }
+        // No need to check notice, as application can be rejected even when DRC is issued.
+            // update Application
+        application.status = ApplicationStatus.REJECTED;
+        dtaStorage.updateApplication(application);
+        emit DtaApplicationRejected(
+            applicationId,
+            reason,
+            getApplicantIdsFromApplicants(application.applicants),
+            application.buyers
+        );
     }
 
     function hasUserSignedDta(bytes32 _applicationId, address _address)
@@ -729,9 +705,7 @@ contract DRCManager is KdaCommon {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         if (
-            officer.role == Role.SUPER_ADMIN ||
             officer.role == Role.ADMIN ||
-            officer.role == Role.APPROVER ||
             officer.role == Role.VC
         ) {
             // fetch all replaceUserByNominees

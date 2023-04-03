@@ -33,33 +33,6 @@ contract UserStorage is KdaCommon {
     event OfficerUpdated(bytes32 officerId, address officerAddress);
     // Event emitted after a officer is deleted
     event OfficerDeleted(bytes32 officerId);
-//
-//    // Event emitted after a verifier is added
-//    event VerifierAdded(bytes32 verifierId, address verifierAddress);
-//    // Event emitted after a verifier is updated
-//    event VerifierUpdated(bytes32 verifierId, address verifierAddress);
-//    // Event emitted after a verifier is deleted
-//    event VerifierDeleted(bytes32 verifierId);
-//
-//
-//    // Event emitted after a approver is added
-//    event ApproverAdded(bytes32 approverId, address approverAddress);
-//    // Event emitted after a approver is updated
-//    event ApproverUpdated(bytes32 approverId, address approverAddress);
-//    // Event emitted after a approver is deleted
-//    event ApproverDeleted(bytes32 approverId);
-
-
-//    // Event emitted after a issuer is added
-//    event IssuerAdded(bytes32 issuerId, address issuerAddress);
-//    // Event emitted after a issuer is updated
-//    event IssuerUpdated(bytes32 issuerId, address issuerAddress);
-//    // Event emitted after a issuer is deleted
-//    event IssuerDeleted(bytes32 issuerId);
-//
-//    // Event emitted after an issuer list is updated
-//    event IssuerListUpdated(address[] issuerAddresses);
-
 
     // Constructor function to set the initial values of the contract
     constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
@@ -153,6 +126,9 @@ contract UserStorage is KdaCommon {
     */
     function addOfficer (KdaOfficer memory officer) public onlyManager {
         address officerAddress = userMap[officer.userId];
+        if(officerAddress == address(0)){
+            revert("Officer account not created");
+        }
         // check role of the user should be admin only if not manager
 
         // check is user already does not exist

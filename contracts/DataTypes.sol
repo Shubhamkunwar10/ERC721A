@@ -20,7 +20,11 @@ pragma solidity ^0.8.16;
     SENT_BACK_FOR_CORRECTION
 }
 
-    enum NoticeStatus{pending, issued, cancelled}
+    enum NoticeStatus{
+        PENDING,
+        ISSUED,
+        CANCELLED
+    }
 
     enum AreaType {
                     DEVELOPED,
@@ -142,12 +146,14 @@ pragma solidity ^0.8.16;
 
     enum Role {
         NONE,
-        SUPER_ADMIN,
         ADMIN,
         VERIFIER,
         SUB_VERIFIER,
         VC,
-        APPROVER
+        APPROVER,
+        CHIEF_TOWN_AND_COUNTRY_PLANNER,
+        CHIEF_ENGINEER,
+        DM
     }
 
     enum Department {
@@ -196,4 +202,10 @@ pragma solidity ^0.8.16;
         bytes32 userId;
         bytes32[] nominees;
         ApplicationStatus status;
+    }
+    struct ApprovalStatus {
+        bool approved;
+        bool hasTownPlannerApproved;
+        bool hasChiefEngineerApproved;
+        bool hasDMApproved;
     }
