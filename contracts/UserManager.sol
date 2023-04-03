@@ -60,11 +60,11 @@ contract UserManager is KdaCommon {
 
     function addOfficer(KdaOfficer memory officer) public {
         Role senderRole = userStorage.getRoleByAddress(msg.sender);
-        if (officer.role == Role.SUPER_ADMIN) {
+        if (officer.role == Role.ADMIN) {
             // this should be admin, and not manager
-            require(msg.sender == manager, "Only contract admin can add super admin"); // only admin can add super user
+            require(msg.sender == manager, "Only contract admin can add  admin"); // only admin can add  user
         } else {
-            require(senderRole == Role.SUPER_ADMIN, "Only Super Admin can add officers");
+            require(senderRole == Role.ADMIN, "Only  Admin can add officers");
         }
 
         userStorage.addOfficer(officer);
@@ -79,11 +79,11 @@ contract UserManager is KdaCommon {
      */
     function updateOfficer (KdaOfficer memory officer) public {
         Role senderRole = userStorage.getRoleByAddress(msg.sender);
-        if (officer.role == Role.SUPER_ADMIN) {
+        if (officer.role == Role.ADMIN) {
             // this should be admin, and not manager
-            require(msg.sender == manager, "Only contract admin can add super admin"); // only admin can add super user
+            require(msg.sender == manager, "Only contract admin can add  admin"); // only admin can add ADMIN
         } else {
-            require(senderRole == Role.SUPER_ADMIN, "Only Super Admin can update officers");
+            require(senderRole == Role.ADMIN, "Only admin can update officers");
         }
 
         userStorage.updateOfficer(officer);
@@ -98,7 +98,7 @@ contract UserManager is KdaCommon {
      */
     function deleteOfficer(bytes32 id) public {
         Role senderRole = userStorage.getRoleByAddress(msg.sender);
-        require(senderRole == Role.SUPER_ADMIN, "Only Super Admin can delete officers");
+        require(senderRole == Role.ADMIN, "Only admin can delete officers");
         userStorage.deleteOfficer(id);
     }
 
@@ -121,6 +121,62 @@ contract UserManager is KdaCommon {
         return userStorage.getOfficerByAddress(_address);
     }
 
+    function isOfficerTDRSubVerifier(address _address) view public returns(bool){
+        KdaOfficer memory officer = getOfficerByAddress(_address);
+        if(officer.role == Role.SUB_VERIFIER) {
+            return true;
+        }
+    return false;
+    }
 
+    function isOfficerTDRVerifier(address _address) view public returns(bool){
+        KdaOfficer memory officer = getOfficerByAddress(_address);
+        if(officer.role == Role.CHIEF_TOWN_AND_COUNTRY_PLANNER ||
+            officer.role == Role.VC ||
+            officer.role == Role.VERIFIER) {
+            return true;
+        }
+        return false;
+    }
+    function isOfficerTdrApprover(address _address) view public returns(bool){
+        KdaOfficer memory officer = getOfficerByAddress(_address);
+        if(officer.role == Role.CHIEF_TOWN_AND_COUNTRY_PLANNER ||
+            officer.role == Role.DM ||
+            officer.role == Role.CHIEF_ENGINEER) {
+            return true;
+        }
+        return false;
+    }
+    function isOfficerDrcIssuer(address _address) view public returns(bool){
+        KdaOfficer memory officer = getOfficerByAddress(_address);
+        if(officer.role == Role.VC){
+            return true;
+        }
+        return false;
+    }
+    function isOfficerDtaVerifier(address _address) view public returns(bool){
+        KdaOfficer memory officer = getOfficerByAddress(_address);
+        if(officer.role == Role.ADMIN ||
+            officer.role == Role.VC) {
+            return true;
+        }
+        return false;
+    }
+    function isOfficerDtaApprover(address _address) view public returns(bool){
+        KdaOfficer memory officer = getOfficerByAddress(_address);
+        if(officer.role == Role.VC||
+            officer.role==Role.APPROVER){
+            return true;
+        }
+        return false;
+    }
+    function isOfficerNoticeCreator(address _address) view public returns(bool){
+        KdaOfficer memory officer = getOfficerByAddress(_address);
+        if(officer.role == Role.VC||
+            officer.role==Role.ADMIN){
+            return true;
+        }
+        return false;
+    }
 
 }

@@ -55,11 +55,8 @@ contract TDRManager is KdaCommon {
 
 
     modifier onlyNoticeCreator() {
-        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
-        emit LogOfficer("Officer in action", officer);
-        if (officer.role != Role.SUPER_ADMIN && officer.role != Role.ADMIN) {
-            revert("Only user with role admin can create notice");
-        }
+        require(userManager.isOfficerNoticeCreator(msg.sender),
+            "only admin can create notice");
         _;
     }
 
@@ -124,7 +121,7 @@ contract TDRManager is KdaCommon {
     function setZone(bytes32 _applicationId, Zone _zone) public {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
 
-        if (officer.role == Role.ADMIN || officer.role == Role.VC) {
+        if (userManager.isOfficerTDRVerifier(msg.sender)) {
             if (!tdrStorage.isApplicationCreated(_applicationId)){
                 revert("No such application found");
             }
@@ -415,7 +412,7 @@ contract TDRManager is KdaCommon {
         );
         // No need to check notice, as application can be rejected even when DRC is issued.
 
-        if (officer.role != Role.ADMIN) {
+        if (!userManager.isOfficerTdrApprover(msg.sender)) {
             revert("Only admin can reject the application");
         }
         if(tdrApplication.status!=ApplicationStatus.VERIFIED){
@@ -457,7 +454,7 @@ contract TDRManager is KdaCommon {
         );
         // No need to check notice, as application can be rejected even when DRC is issued.
 
-        if (officer.role != Role.VERIFIER) {
+        if (!userManager.isOfficerTDRVerifier(msg.sender)) {
             revert("Only verifier can reject the application");
         }
 
@@ -490,24 +487,34 @@ contract TDRManager is KdaCommon {
     /*
     Applicaiton should either  be verified or rejected
     */
-        if (officer.role == Role.ADMIN) {
-        require(
-            tdrApplication.status == ApplicationStatus.VERIFIED||
+        if (userManager.isOfficerTdrApprover(msg.sender)) {
+        require(tdrApplication.status == ApplicationStatus.VERIFIED||
             tdrApplication.status == ApplicationStatus.REJECTED,
-            "application should be verified or rejected before approval"
-        );
+            "application should be verified or rejected before approval");
         } 
         else {
                 revert("User not authorized");
         }
-        tdrApplication.status = ApplicationStatus.APPROVED;
+        ApprovalStatus memory status = tdrStorage.getApprovalStatus(applicationId);
+        // mark verified
+        if(officer.role == Role.CHIEF_TOWN_AND_COUNTRY_PLANNER){
+            status.hasTownPlannerApproved = true;
+        } else if(officer.role == Role.CHIEF_ENGINEER){
+            status.hasChiefEngineerApproved = true;
+        } else if(officer.role == Role.DM){
+            status.hasDMApproved = true;
+        }
+        if (hasAllApproverSigned(status)){
+            status.approved = true;
+            tdrApplication.status=ApplicationStatus.APPROVED;
+            emit TdrApplicationApproved(
+                officer,
+                applicationId,
+                getApplicantIdsFromTdrApplication(tdrApplication)
+            );
+        }
+        tdrStorage.storeApprovalStatus(applicationId,status);
         tdrStorage.updateApplication(tdrApplication);
-        emit TdrApplicationApproved(
-            officer,
-            applicationId,
-            getApplicantIdsFromTdrApplication(tdrApplication)
-        );
-
     }
 
     // This function mark the application as verified
@@ -534,7 +541,7 @@ contract TDRManager is KdaCommon {
             revert("Application must be approved to issue drc");
         }
         if (
-            officer.role == Role.VC
+            userManager.isOfficerDrcIssuer(msg.sender)
         ) {
             // set application status as verified
             tdrApplication.status = ApplicationStatus.DRCISSUED;
@@ -602,15 +609,12 @@ contract TDRManager is KdaCommon {
         if(tdrApplication.status!= ApplicationStatus.SUBMITTED){
             revert("Only submitted application can be verified");
         }
-        if (
-            officer.role == Role.VERIFIER || officer.role == Role.SUB_VERIFIER
-        ) {
-            require(
-                officer.zone == tdrStorage.getZone(applicationId),
-                "Officer zone needs to be same as application zone"
-            );
+        if (userManager.isOfficerTDRSubVerifier(msg.sender)) {
+            require(officer.zone == tdrStorage.getZone(applicationId),
+                "Officer zone needs to be same as application zone");
         }
-        if (officer.role == Role.VERIFIER) {
+
+        if (userManager.isOfficerTDRVerifier(msg.sender)) {
             status.verified = true;
             status.verifierId = officer.userId;
             status.verifierRole = officer.role;
@@ -638,11 +642,11 @@ contract TDRManager is KdaCommon {
             } else if (officer.department == Department.LEGAL) {
                 status.legalVerification.isVerified = true;
             }
-            emit TdrApplicationVerified(
-                officer,
-                applicationId,
-                getApplicantIdsFromTdrApplication(tdrApplication)
-            );
+            // emit TdrApplicationVerified(
+            //     officer,
+            //     applicationId,
+            //     getApplicantIdsFromTdrApplication(tdrApplication)
+            // );
             tdrStorage.storeVerificationStatus(applicationId, status);
         } else {
             revert("user not authorized");
@@ -675,6 +679,24 @@ contract TDRManager is KdaCommon {
             allSigned = false;
         }
 
+        return allSigned;
+    }
+    function hasAllApproverSigned(
+        ApprovalStatus memory approvalStatus
+
+    ) internal pure returns (bool) {
+        bool allSigned = true;
+
+        // Check the status of each subverifier
+        if (!approvalStatus.hasTownPlannerApproved) {
+            allSigned = false;
+        }
+        if (!approvalStatus.hasChiefEngineerApproved) {
+            allSigned = false;
+        }
+        if (!approvalStatus.hasDMApproved) {
+            allSigned = false;
+        }
         return allSigned;
     }
 
