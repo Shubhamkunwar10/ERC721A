@@ -476,21 +476,33 @@ contract TDRManager is KdaCommon {
             tdrStorage.storeVerificationStatus(applicationId, status);
         } else if (officer.role == Role.SUB_VERIFIER) {
             if (officer.department == Department.LAND) {
+                status.landVerification.dep = officer.department;
+                status.landVerification.officerId = officer.userId;
                 status.landVerification.isVerified = false;
                 status.landVerification.comment = reason;
             } else if (officer.department == Department.PLANNING) {
+                status.planningVerification.dep = officer.department;
+                status.planningVerification.officerId = officer.userId;
                 status.planningVerification.isVerified = false;
                 status.planningVerification.comment = reason;
             } else if (officer.department == Department.ENGINEERING) {
+                status.engineeringVerification.dep = officer.department;
+                status.engineeringVerification.officerId = officer.userId;
                 status.engineeringVerification.isVerified = false;
                 status.engineeringVerification.comment = reason;
             } else if (officer.department == Department.PROPERTY) {
+                status.propertyVerification.dep = officer.department;
+                status.propertyVerification.officerId = officer.userId;
                 status.propertyVerification.isVerified = false;
                 status.propertyVerification.comment = reason;
             } else if (officer.department == Department.SALES) {
+                status.salesVerification.dep = officer.department;
+                status.salesVerification.officerId = officer.userId;
                 status.salesVerification.isVerified = false;
                 status.salesVerification.comment = reason;
             } else if (officer.department == Department.LEGAL) {
+                status.legalVerification.dep = officer.department;
+                status.legalVerification.officerId = officer.userId;
                 status.legalVerification.isVerified = false;
                 status.legalVerification.comment = reason;
             }
@@ -680,16 +692,28 @@ contract TDRManager is KdaCommon {
             tdrStorage.storeVerificationStatus(applicationId, status);
         } else if (officer.role == Role.SUB_VERIFIER) {
             if (officer.department == Department.LAND) {
+                status.landVerification.dep = officer.department;
+                status.landVerification.officerId = officer.userId;
                 status.landVerification.isVerified = true;
             } else if (officer.department == Department.PLANNING) {
+                status.planningVerification.dep = officer.department;
+                status.planningVerification.officerId = officer.userId;
                 status.planningVerification.isVerified = true;
             } else if (officer.department == Department.ENGINEERING) {
+                status.engineeringVerification.dep = officer.department;
+                status.engineeringVerification.officerId = officer.userId;
                 status.engineeringVerification.isVerified = true;
             } else if (officer.department == Department.PROPERTY) {
+                status.propertyVerification.dep = officer.department;
+                status.propertyVerification.officerId = officer.userId;
                 status.propertyVerification.isVerified = true;
             } else if (officer.department == Department.SALES) {
+                status.salesVerification.dep = officer.department;
+                status.salesVerification.officerId = officer.userId;
                 status.salesVerification.isVerified = true;
             } else if (officer.department == Department.LEGAL) {
+                status.legalVerification.dep = officer.department;
+                status.legalVerification.officerId = officer.userId;
                 status.legalVerification.isVerified = true;
             }
             // emit TdrApplicationVerified(
