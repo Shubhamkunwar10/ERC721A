@@ -159,13 +159,13 @@ contract DRCManager is KdaCommon {
         nomineeManager = NomineeManager(nomineeManagerAddress);
     }
 
-    event FarValueUpdate(
-        bytes32 indexed drcId,
-        uint256 indexed farCredited,
-        uint256 indexed farAvailable
-    );
+    // event FarUpdated(
+    //     bytes32 indexed drcId,
+    //     uint256 indexed farCredited,
+    //     uint256 indexed farAvailable
+    // );
 
-    function updateFarValue(
+    function updateFar(
         bytes32 _drcId,
         uint256 _farCredited,
         uint256 _farAvailable
@@ -177,29 +177,28 @@ contract DRCManager is KdaCommon {
             drc.farCredited = _farCredited;
             drc.farAvailable = _farAvailable;
             drcStorage.updateDrc(_drcId, drc);
-
-            emit FarValueUpdate(_drcId, _farCredited, _farAvailable);
+            // Since DRC update event is already emitted
+            // emit FarUpdated(_drcId, _farCredited, _farAvailable);
         } else {
             revert("Only VC can change the FAR of DRC");
         }
     }
 
-    function changeOwnerDrc(bytes32 _drcId, bytes32[] memory _owner) public {
+    function addOwnerToDrc(bytes32 _drcId, bytes32[] memory ownerList) public {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
 
         require(officer.role == Role.VC, "Only VC can change the owner of DRC");
-        DRC memory drc = drcStorage.getDrc(_drcId);
-
-        bytes32[] memory drcOwnerList = drc.owners;
-
-        if (drcOwnerList.length > 0) {
-            for (uint256 i = 0; i < drc.owners.length; i++) {
-                delete drcOwnerList[i];
-            }
+        for (uint i =0; i < ownerList.length; i++){
+            drcStorage.addDrcOwner(_drcId, ownerList[i]);
         }
+    }
+    function deleteOwnerFromDrc(bytes32 _drcId, bytes32[] memory ownerList) public {
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
 
-        drc.owners = _owner;
-        drcStorage.updateDrc(_drcId, drc );
+        require(officer.role == Role.VC, "Only VC can change the owner of DRC");
+        for (uint i =0; i < ownerList.length; i++){
+            drcStorage.deleteOwner(_drcId, ownerList[i]);
+        }
     }
 
     // This function begins the drd transfer application
@@ -306,7 +305,7 @@ contract DRCManager is KdaCommon {
         //     applicationId
         // );
     function verifyDTA(bytes32 applicationId) public {
-        VerificationStatus memory status = dtaStorage.getVerificationStatus(
+        DtaVerificationStatus memory status = dtaStorage.getVerificationStatus(
             applicationId
         );
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
@@ -328,7 +327,7 @@ contract DRCManager is KdaCommon {
         if (userManager.isOfficerDtaVerifier(msg.sender)) {
             status.verified = true;
             status.verifierId = officer.userId;
-            status.verifierRole = officer.role;
+            // status.verifierRole = officer.role;
             // update Application
             dta.status = ApplicationStatus.VERIFIED;
             dtaStorage.updateApplication(dta);
@@ -531,7 +530,7 @@ contract DRCManager is KdaCommon {
         view
         returns (bool)
     {
-        VerificationStatus memory status = dtaStorage.getVerificationStatus(
+        DtaVerificationStatus memory status = dtaStorage.getVerificationStatus(
             applicationId
         );
         return status.verified;
@@ -582,21 +581,6 @@ contract DRCManager is KdaCommon {
         return drcStorage.getDrcIdsForUser(userId);
     }
 
-    //------
-    //        require(msg.sender == admin,"Only admin can reject the Transfer");
-    //        DrcTransferApplication  memory application = dtaStorage.getApplication(applicationId);
-    //        require(application.status != ApplicationStatus.approved,"Application is already approved");
-    //        require(application.status == ApplicationStatus.submitted,"Application is not yet submitted");
-    //
-    //        // change the status of the application
-    //        application.status = ApplicationStatus.rejected;
-    //        dtaStorage.updateApplication(application);
-    //        // applicationMap[applicationId]=application;
-    //        // change the status of the sub-drc
-    //        DRC memory drc = drcStorage.getDrc(application.drcId);
-    //        drc.farAvailable = drc.farAvailable+application.farTransferred;
-    //        drcStorage.updateDrc(drc.id,drc);
-    //    }
 
     // what other details, like building application are needed fro utilization application
     function createUtilizationApplication(
