@@ -1,24 +1,30 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.16;
 //import "./TDR.sol";
-    enum DrcStatus {
-                    available,
-                    locked_for_transfer, 
-                    locked_for_utilization, 
-                    transferred, 
-                    utilized
-                }
+   enum DrcStatus {
+    AVAILABLE,
+    LOCKED_FOR_TRANSFER,
+    LOCKED_FOR_UTILIZATION,
+    TRANSFERRED,
+    UTILIZED
+}
 
     enum ApplicationStatus {
-                            pending, 
-                            submitted, 
-                            approved, 
-                            rejected,
-                            drcIssued,
-                            verified
-                        }
+    PENDING,
+    SUBMITTED,
+    APPROVED,
+    REJECTED,
+    DRCISSUED,
+    VERIFIED,
+    VERIFICATION_REJECTED,
+    SENT_BACK_FOR_CORRECTION
+}
 
-    enum NoticeStatus{pending, issued}
+    enum NoticeStatus{
+        PENDING,
+        ISSUED,
+        CANCELLED
+    }
 
     enum AreaType {
                     DEVELOPED,
@@ -37,7 +43,8 @@ pragma solidity ^0.8.16;
         PLOTTED_RESIDENTIAL,
         INDUSTRIAL
     }
-    // DRC would be stored in this struct. knowing this DRC one should know the owner of the DRC, area and the status of the DRC
+    // DRC would be stored in this struct. knowing this DRC one should know the owner of the DRC,
+    //  area and the status of the DRC
     // Everything else, is static data, not to be interpreted by blockchain.
     struct DRC {
         bytes32 id;
@@ -51,8 +58,20 @@ pragma solidity ^0.8.16;
         uint circleRateUtilization;
         bytes32[] owners;
         uint timeStamp;
+        bool hasPrevious;
+        bytes32 previousDRC;
     }
-
+// DRC Utilization Certificate
+    struct DUC {
+        bytes32 id;
+        bytes32 applicationId; // application id of application in BPAS
+        bytes32 noticeId;
+        uint farUtilized;
+        uint circleRateSurrendered;
+        uint circleRateUtilization;
+        bytes32[] owners;
+        uint timeStamp;
+    }
     struct DrcOwner{
         bytes32 userId;
         uint area;
@@ -127,12 +146,14 @@ pragma solidity ^0.8.16;
 
     enum Role {
         NONE,
-        SUPER_ADMIN,
         ADMIN,
         VERIFIER,
         SUB_VERIFIER,
         VC,
-        APPROVER
+        APPROVER,
+        CHIEF_TOWN_AND_COUNTRY_PLANNER,
+        CHIEF_ENGINEER,
+        DM
     }
 
     enum Department {
@@ -158,23 +179,40 @@ pragma solidity ^0.8.16;
         Department department;
         Zone zone;
     }
-    struct SubVerifierStatus {
-        bool land;
-        bool planning;
-        bool engineering;
-        bool property;
-        bool sales;
-        bool legal;
+    
+    struct SubVerificationStatus {
+        Department dep;
+        bytes32 officerId;
+        bool isVerified;
+        string comment;
     }
+
     struct VerificationStatus {
         bool verified;
         bytes32 verifierId;
-        Role verifierRole;
-        SubVerifierStatus subVerifierStatus;
+        string verifierComment;
+        SubVerificationStatus landVerification;
+        SubVerificationStatus planningVerification;
+        SubVerificationStatus engineeringVerification;
+        SubVerificationStatus propertyVerification;
+        SubVerificationStatus salesVerification;
+        SubVerificationStatus legalVerification;
     }
-struct nomineeApplication {
-    bytes32 applicationId;
-    bytes32 userId;
-    bytes32[] nominees;
-    ApplicationStatus status;
-}
+    struct DtaVerificationStatus {
+        bool verified;
+        bytes32 verifierId;
+        string verifierComment;
+    }
+
+    struct nomineeApplication {
+        bytes32 applicationId;
+        bytes32 userId;
+        bytes32[] nominees;
+        ApplicationStatus status;
+    }
+    struct ApprovalStatus {
+        bool approved;
+        bool hasTownPlannerApproved;
+        bool hasChiefEngineerApproved;
+        bool hasDMApproved;
+    }
