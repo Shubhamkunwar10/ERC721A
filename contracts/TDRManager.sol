@@ -474,7 +474,7 @@ contract TDRManager is KdaCommon {
                 getApplicantIdsFromTdrApplication(tdrApplication)
             );
             tdrStorage.storeVerificationStatus(applicationId, status);
-        } else if (officer.role == Role.SUB_VERIFIER) {
+        } else if (userManager.ifOfficerHasRole(officer, Role.SUB_VERIFIER)) {
             if (officer.department == Department.LAND) {
                 status.landVerification.dep = officer.department;
                 status.landVerification.officerId = officer.userId;
@@ -557,11 +557,11 @@ contract TDRManager is KdaCommon {
         }
         ApprovalStatus memory status = tdrStorage.getApprovalStatus(applicationId);
         // mark verified
-        if(officer.role == Role.CHIEF_TOWN_AND_COUNTRY_PLANNER){
+        if(userManager.ifOfficerHasRole(officer, Role.CHIEF_TOWN_AND_COUNTRY_PLANNER)){
             status.hasTownPlannerApproved = true;
-        } else if(officer.role == Role.CHIEF_ENGINEER){
+        } else if(userManager.ifOfficerHasRole(officer,Role.CHIEF_ENGINEER)){
             status.hasChiefEngineerApproved = true;
-        } else if(officer.role == Role.DM){
+        } else if(userManager.ifOfficerHasRole(officer,Role.DM)){
             status.hasDMApproved = true;
         }
         if (hasAllApproverSigned(status)){
@@ -690,7 +690,7 @@ contract TDRManager is KdaCommon {
                 getApplicantIdsFromTdrApplication(tdrApplication)
             );
             tdrStorage.storeVerificationStatus(applicationId, status);
-        } else if (officer.role == Role.SUB_VERIFIER) {
+        } else if (userManager.ifOfficerHasRole(officer,Role.SUB_VERIFIER)) {
             if (officer.department == Department.LAND) {
                 status.landVerification.dep = officer.department;
                 status.landVerification.officerId = officer.userId;

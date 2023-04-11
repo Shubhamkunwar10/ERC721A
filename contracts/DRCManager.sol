@@ -171,7 +171,7 @@ contract DRCManager is KdaCommon {
         uint256 _farAvailable
     ) public {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
-        if (officer.role == Role.VC) {
+        if (userManager.ifOfficerHasRole(officer, Role.VC)) {
             DRC memory drc = drcStorage.getDrc(_drcId);
             require(drcStorage.isDrcCreated(_drcId), "DRC not created");
             drc.farCredited = _farCredited;
@@ -187,7 +187,7 @@ contract DRCManager is KdaCommon {
     function addOwnerToDrc(bytes32 _drcId, bytes32[] memory ownerList) public {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
 
-        require(officer.role == Role.VC, "Only VC can change the owner of DRC");
+        require(userManager.ifOfficerHasRole(officer, Role.VC), "Only VC can change the owner of DRC");
         for (uint i =0; i < ownerList.length; i++){
             drcStorage.addDrcOwner(_drcId, ownerList[i]);
         }
@@ -195,7 +195,7 @@ contract DRCManager is KdaCommon {
     function deleteOwnerFromDrc(bytes32 _drcId, bytes32[] memory ownerList) public {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
 
-        require(officer.role == Role.VC, "Only VC can change the owner of DRC");
+        require(userManager.ifOfficerHasRole(officer, Role.VC), "Only VC can change the owner of DRC");
         for (uint i =0; i < ownerList.length; i++){
             drcStorage.deleteOwner(_drcId, ownerList[i]);
         }
@@ -352,7 +352,7 @@ contract DRCManager is KdaCommon {
             applicationId
         );
         //application should not be already approved
-        if(officer.role== Role.VC){
+        if(userManager.ifOfficerHasRole(officer, Role.VC)){
         require(
             application.status == ApplicationStatus.VERIFIED ||
             application.status == ApplicationStatus.REJECTED,
@@ -434,7 +434,7 @@ contract DRCManager is KdaCommon {
             applicationId
         );
         //application should not be already approved
-        if(officer.role== Role.VC){
+        if(userManager.ifOfficerHasRole(officer, Role.VC)){
             require(
                 application.status == ApplicationStatus.VERIFIED ||
                 application.status == ApplicationStatus.APPROVED,
@@ -689,8 +689,8 @@ contract DRCManager is KdaCommon {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         if (
-            officer.role == Role.ADMIN ||
-            officer.role == Role.VC
+            userManager.ifOfficerHasRole(officer, Role.ADMIN) ||
+           userManager.ifOfficerHasRole(officer, Role.VC)
         ) {
             // fetch all replaceUserByNominees
             bytes32[] memory nominees = nomineeManager.getNominees(userId);
