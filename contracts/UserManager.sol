@@ -58,13 +58,13 @@ contract UserManager is KdaCommon {
    officer.role == Role.Admin, msg.sender should have role superAdmin, else msg.sender should have
     */
 
-    function addOfficer(KdaOfficer memory officer) public {
-        Role senderRole = userStorage.getRoleByAddress(msg.sender);
-        if (officer.role == Role.ADMIN) {
+    function addOfficer(KdaOfficer memory officer) public {  
+        KdaOfficer memory officerToSign =getOfficerByAddress(msg.sender);
+        if (userStorage.ifOfficerHasRole(officer,Role.ADMIN)) {
             // this should be admin, and not manager
             require(msg.sender == manager, "Only contract admin can add  admin"); // only admin can add  user
         } else {
-            require(senderRole == Role.ADMIN, "Only  Admin can add officers");
+            require(userStorage.ifOfficerHasRole(officerToSign,Role.ADMIN), "Only  Admin can add officers");
         }
 
         userStorage.addOfficer(officer);
@@ -78,12 +78,12 @@ contract UserManager is KdaCommon {
      * emit the OfficerUpdated event.
      */
     function updateOfficer (KdaOfficer memory officer) public {
-        Role senderRole = userStorage.getRoleByAddress(msg.sender);
-        if (officer.role == Role.ADMIN) {
+        KdaOfficer memory officerToSign =getOfficerByAddress(msg.sender);
+        if (userStorage.ifOfficerHasRole(officer,Role.ADMIN)) {
             // this should be admin, and not manager
             require(msg.sender == manager, "Only contract admin can add  admin"); // only admin can add ADMIN
         } else {
-            require(senderRole == Role.ADMIN, "Only admin can update officers");
+            require(userStorage.ifOfficerHasRole(officerToSign,Role.ADMIN), "Only admin can update officers");
         }
 
         userStorage.updateOfficer(officer);
@@ -97,8 +97,8 @@ contract UserManager is KdaCommon {
      * emit the OfficerDeleted event.
      */
     function deleteOfficer(bytes32 id) public {
-        Role senderRole = userStorage.getRoleByAddress(msg.sender);
-        require(senderRole == Role.ADMIN, "Only admin can delete officers");
+        KdaOfficer memory officerToSign =getOfficerByAddress(msg.sender);
+        require(userStorage.ifOfficerHasRole(officerToSign,Role.ADMIN), "Only admin can delete officers");
         userStorage.deleteOfficer(id);
     }
 
@@ -114,8 +114,8 @@ contract UserManager is KdaCommon {
     function getOfficer(bytes32 id) view public returns(KdaOfficer memory){
         return userStorage.getOfficer(id);
     }
-    function getRole(bytes32 id) view public returns(Role){
-        return userStorage.getRole(id);
+    function getRoles(bytes32 id) view public returns(Role[] memory){
+        return userStorage.getRoles(id);
     }
     function getOfficerByAddress(address _address) view public returns(KdaOfficer memory){
         return userStorage.getOfficerByAddress(_address);
@@ -123,7 +123,7 @@ contract UserManager is KdaCommon {
 
     function isOfficerTDRSubVerifier(address _address) view public returns(bool){
         KdaOfficer memory officer = getOfficerByAddress(_address);
-        if(officer.role == Role.SUB_VERIFIER) {
+        if(userStorage.ifOfficerHasRole(officer,Role.SUB_VERIFIER)) {
             return true;
         }
     return false;
@@ -131,49 +131,49 @@ contract UserManager is KdaCommon {
 
     function isOfficerTDRVerifier(address _address) view public returns(bool){
         KdaOfficer memory officer = getOfficerByAddress(_address);
-        if(officer.role == Role.CHIEF_TOWN_AND_COUNTRY_PLANNER ||
-            officer.role == Role.VC ||
-            officer.role == Role.VERIFIER) {
+        if(userStorage.ifOfficerHasRole(officer,Role.CHIEF_TOWN_AND_COUNTRY_PLANNER)  ||
+            userStorage.ifOfficerHasRole(officer,Role.VC) ||
+            userStorage.ifOfficerHasRole(officer,Role.VERIFIER)) {
             return true;
         }
         return false;
     }
     function isOfficerTdrApprover(address _address) view public returns(bool){
         KdaOfficer memory officer = getOfficerByAddress(_address);
-        if(officer.role == Role.CHIEF_TOWN_AND_COUNTRY_PLANNER ||
-            officer.role == Role.DM ||
-            officer.role == Role.CHIEF_ENGINEER) {
+       if(userStorage.ifOfficerHasRole(officer,Role.CHIEF_TOWN_AND_COUNTRY_PLANNER)  ||
+            userStorage.ifOfficerHasRole(officer,Role.DM) ||
+            userStorage.ifOfficerHasRole(officer,Role.ENGINEER)) {
             return true;
         }
         return false;
     }
     function isOfficerDrcIssuer(address _address) view public returns(bool){
         KdaOfficer memory officer = getOfficerByAddress(_address);
-        if(officer.role == Role.VC){
+        if( userStorage.ifOfficerHasRole(officer,Role.VC)){
             return true;
         }
         return false;
     }
     function isOfficerDtaVerifier(address _address) view public returns(bool){
         KdaOfficer memory officer = getOfficerByAddress(_address);
-        if(officer.role == Role.ADMIN ||
-            officer.role == Role.VC) {
+        if( userStorage.ifOfficerHasRole(officer,Role.ADMIN) ||
+             userStorage.ifOfficerHasRole(officer,Role.VC)) {
             return true;
         }
         return false;
     }
     function isOfficerDtaApprover(address _address) view public returns(bool){
         KdaOfficer memory officer = getOfficerByAddress(_address);
-        if(officer.role == Role.VC||
-            officer.role==Role.APPROVER){
+        if( userStorage.ifOfficerHasRole(officer,Role.VC)||
+             userStorage.ifOfficerHasRole(officer,Role.APPROVER)){
             return true;
         }
         return false;
     }
     function isOfficerNoticeCreator(address _address) view public returns(bool){
         KdaOfficer memory officer = getOfficerByAddress(_address);
-        if(officer.role == Role.VC||
-            officer.role==Role.ADMIN){
+     if( userStorage.ifOfficerHasRole(officer,Role.ADMIN) ||
+             userStorage.ifOfficerHasRole(officer,Role.VC)){
             return true;
         }
         return false;

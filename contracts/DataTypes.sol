@@ -144,7 +144,7 @@ pragma solidity ^0.8.16;
         AreaType areaType;
     }
 
-    enum Role {
+    enum Designation {
         NONE,
         ADMIN,
         VERIFIER,
@@ -165,6 +165,41 @@ pragma solidity ^0.8.16;
         SALES,
         LEGAL
     }
+
+    enum Role{
+
+        NONE,
+        USER_MANAGER,                       //add, update, delete KDA officer  
+        KDA_REGISTRAR,                      //KDA  Registeration 
+
+        TDR_APPLICATION_MANAGER,            //create or update TDR Notice
+        TDR_APPLICATION_VERIFIER, 
+        TDR_APPLICATION_APPROVER,
+        TDR_APPLICATION_ZONE_ISSUER,
+
+        DRC_ISSUER,                         //issue drc
+        DRC_TRANSFER_VERIFIER,
+        DRC_TRANSFER_APPROVER,
+
+        DRC_DTA_CANCELLER,
+        DRC_DTA_VERIFIER,
+        DRC_DTA_APPROVER,
+
+
+
+
+        DM,
+        ADMIN,
+        CHIEF_TOWN_AND_COUNTRY_PLANNER,
+        VERIFIER,
+        SUB_VERIFIER,
+        VC,
+        ENGINEER,
+        APPROVER
+    }
+
+
+
     enum Zone {
         NONE,
         ZONE_1,
@@ -175,10 +210,13 @@ pragma solidity ^0.8.16;
 
     struct KdaOfficer {
         bytes32 userId;
-        Role role;
+        Role[] roles;
         Department department;
         Zone zone;
+        Designation designation;
     }
+
+
     
     struct SubVerificationStatus {
         Department dep;
