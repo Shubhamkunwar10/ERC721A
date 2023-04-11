@@ -22,6 +22,8 @@ contract DrcStorage is KdaCommon {
     // Events
     event DrcCreated(bytes32 drcId, DRC drc, bytes32[] owners);
     event DrcUpdated(bytes32 drcId, DRC drc, bytes32[] owners);
+    event OwnerAddedToDRC(bytes32 ownerId, bytes32 drcId, bytes32[] owners);
+    event OwnerDeletedFromDrc(bytes32 ownerId, bytes32 drcId, bytes32[] owners);
     event DtaAddedToDrc(bytes32 dtaId, bytes32 applicationId);
     event DuaAddedToDrc(bytes32 dtaId, bytes32 applicationId);
     event DrcAddedToOwner(bytes32 drcId, bytes32 ownerId);
@@ -137,34 +139,22 @@ contract DrcStorage is KdaCommon {
             return false;
     }
     // ideally these functions should be moved to manager contract
-    function addDrcOnwer(bytes32 _drcId, bytes32  newOwner)public {
-        require(isDrcCreated(_drcId),"DRC does not exists");
-        DRC storage drc = drcMap[_drcId];
+    function addDrcOwner(bytes32 drcId, bytes32  newOwner)public {
+        require(isDrcCreated(drcId),"DRC does not exists");
+        DRC storage drc = drcMap[drcId];
+        require(!isOwnerInDrc(drc, newOwner),"owner already in drc");
         drc.owners.push(newOwner);
-        drcMap[_drcId] = drc;
-        addDrcToOwner(_drcId,newOwner);
-//        bytes32[] storage drcList = ownerMap[newOwner];
-//        drcList.push(_drcId);
-//        ownerMap[newOwner] = drcList;
-    } 
+        drcMap[drcId] = drc;
+        addDrcToOwner(drcId,newOwner);
+        emit OwnerAddedToDRC(newOwner,drcId,drc.owners);
+    }
 
-//  function addDrcOnwers(bytes32 _drcId, DrcOwner[] memory newOwners)public {
-//    require(isDrcCreated(_drcId),"DRC does not exists");
-//    DRC storage drc = drcMap[_drcId];
-//    for(uint i= 0; i< newOwners.length;i++){
-////        addDrcOnwer(_drcId,newOwners[i]);
-////        drc.owners.push(newOwners[i]);
-////        bytes32[] storage drcList = ownerMap[newOwners[i].userId];
-////        drcList.push(_drcId);
-////        ownerMap[newOwners[i].userId] = drcList;
-//    }
-////    drcMap[_drcId] = drc;
-//  }
 
-  function deleteOwner(bytes32 _drcId, bytes32 ownerId) public{
-    // assume singkle occurance of the ownerID
+  function deleteOwner(bytes32 drcId, bytes32 ownerId) public{
+    // assume single occurance of the ownerID
     // Funtion searches for owners and deletes it. Assume that there are multiple owner with same owner id.
-    DRC storage drc = drcMap[_drcId];
+    DRC storage drc = drcMap[drcId];
+    bytes32[] memory oldOwners = drc.owners;
     // uint count =0;
     uint index=drc.owners.length;
     for(uint i=0; i<drc.owners.length; i++ ){
@@ -172,7 +162,6 @@ contract DrcStorage is KdaCommon {
             index = i;
             break;
         }
-
     }
     if(index ==drc.owners.length){
             revert("Owner not found");
@@ -185,21 +174,23 @@ contract DrcStorage is KdaCommon {
     bytes32[] storage drcList = ownerMap[ownerId];
     index = drcList.length;
     for (uint i=0; i<drcList.length; i++){
-        if(_drcId == drcList[i]){
+        if(drcId == drcList[i]){
             index =i;
             break;
         }
 
     }
     if(index==drcList.length){
-            revert ("error. Owner not found");
+            revert ("error. DRC not found");
         }
     for(uint i=index; i<drcList.length-1;i++){
         drcList[i]=drcList[i+1];
     }
     drcList.pop;
     ownerMap[ownerId]=drcList;
-    }
+    emit OwnerDeletedFromDrc(ownerId,drcId,oldOwners);
+
+  }
 
     /**
     This function is outdated.
@@ -377,6 +368,14 @@ CRUD operations on the drc DTA Map
         return true;
     }
 
+    function isOwnerInDrc(DRC memory drc, bytes32 owner) public returns (bool){
+        for (uint i=0; i < drc.owners.length; i++){
+            if (drc.owners[i]==owner){
+                return true;
+            }
+        }
+        return false;
+    }
 
 
 //    //Generate DRCId

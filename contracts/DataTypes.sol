@@ -184,12 +184,13 @@ pragma solidity ^0.8.16;
         Department dep;
         bytes32 officerId;
         bool isVerified;
+        string comment;
     }
 
     struct VerificationStatus {
         bool verified;
         bytes32 verifierId;
-        Role verifierRole;
+        string verifierComment;
         SubVerificationStatus landVerification;
         SubVerificationStatus planningVerification;
         SubVerificationStatus engineeringVerification;
@@ -197,6 +198,12 @@ pragma solidity ^0.8.16;
         SubVerificationStatus salesVerification;
         SubVerificationStatus legalVerification;
     }
+    struct DtaVerificationStatus {
+        bool verified;
+        bytes32 verifierId;
+        string verifierComment;
+    }
+
     struct nomineeApplication {
         bytes32 applicationId;
         bytes32 userId;
