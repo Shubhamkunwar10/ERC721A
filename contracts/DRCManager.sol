@@ -86,7 +86,7 @@ contract DRCManager is KdaCommon {
     event DuaCreated(bytes32 applicationId, uint256 far, bytes32[] applicants);
     event DrcUtilized(bytes32 applicationId, uint256 farUtilized);
     event genDRCFromApplication(DRC application);
-
+    event DrcCancelled(bytes32 drcId, bytes32[] applicants);
    // Constructor function to set the initial values of the contract
     constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {} 
 
@@ -171,7 +171,7 @@ contract DRCManager is KdaCommon {
         uint256 _farAvailable
     ) public {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
-        if (userManager.ifOfficerHasRole(officer, Role.VC)) {
+        if (userManager.isOfficerDrcManager(msg.sender)) {
             DRC memory drc = drcStorage.getDrc(_drcId);
             require(drcStorage.isDrcCreated(_drcId), "DRC not created");
             drc.farCredited = _farCredited;
@@ -187,7 +187,7 @@ contract DRCManager is KdaCommon {
     function addOwnerToDrc(bytes32 _drcId, bytes32[] memory ownerList) public {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
 
-        require(userManager.ifOfficerHasRole(officer, Role.VC), "Only VC can change the owner of DRC");
+        require(userManager.isOfficerDrcManager(msg.sender), "Only VC can change the owner of DRC");
         for (uint i =0; i < ownerList.length; i++){
             drcStorage.addDrcOwner(_drcId, ownerList[i]);
         }
@@ -195,9 +195,24 @@ contract DRCManager is KdaCommon {
     function deleteOwnerFromDrc(bytes32 _drcId, bytes32[] memory ownerList) public {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
 
-        require(userManager.ifOfficerHasRole(officer, Role.VC), "Only VC can change the owner of DRC");
+        require(userManager.isOfficerDrcManager(msg.sender), "Only VC can change the owner of DRC");
         for (uint i =0; i < ownerList.length; i++){
             drcStorage.deleteOwner(_drcId, ownerList[i]);
+        }
+    }
+    // cancel DRC to be done by admin only
+    function cancelDrc(bytes32 drcId) public {
+        // check whether the role is admin or application
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        emit LogOfficer("Officer in action",officer);
+        if(userManager.isOfficerDrcManager(msg.sender)){
+            DRC memory drc = drcStorage.getDrc(drcId);
+            // increase the available drc count
+            drc.status = DrcStatus.CANCELLED;
+            drcStorage.updateDrc(drcId,drc);
+            emit DrcCancelled(drcId, drc.owners);
+        }else {
+            revert("user not authorized");
         }
     }
 
@@ -352,7 +367,7 @@ contract DRCManager is KdaCommon {
             applicationId
         );
         //application should not be already approved
-        if(userManager.ifOfficerHasRole(officer, Role.VC)){
+        if(userManager.isOfficerDtaApprover(msg.sender)){
         require(
             application.status == ApplicationStatus.VERIFIED ||
             application.status == ApplicationStatus.REJECTED,
@@ -392,7 +407,7 @@ contract DRCManager is KdaCommon {
     function genNewDrcFromApplication(
         DrcTransferApplication memory application,
         bytes32 newDrcId
-    ) public {
+    ) internal {
         DRC memory drc = drcStorage.getDrc(application.drcId);
         emit LogBytes("id of the drc fetched in gen new drc is", drc.id);
         emit LogBytes(
@@ -434,14 +449,11 @@ contract DRCManager is KdaCommon {
             applicationId
         );
         //application should not be already approved
-        if(userManager.ifOfficerHasRole(officer, Role.VC)){
+        if(userManager.isOfficerDtaApprover(msg.sender)){
             require(
-                application.status == ApplicationStatus.VERIFIED ||
-                application.status == ApplicationStatus.APPROVED,
-                "Application should be verified or approved"
+                application.status == ApplicationStatus.VERIFIED,
+                "Only verified applications can be rejected"
             );
-        } else if(userManager.isOfficerDtaApprover(msg.sender)){
-            require(application.status == ApplicationStatus.VERIFIED);
         } else {
             revert("User not authorized");
         }
@@ -688,19 +700,13 @@ contract DRCManager is KdaCommon {
         // check whether the role is admin or application
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
-        if (
-            userManager.ifOfficerHasRole(officer, Role.ADMIN) ||
-           userManager.ifOfficerHasRole(officer, Role.VC)
-        ) {
-            // fetch all replaceUserByNominees
-            bytes32[] memory nominees = nomineeManager.getNominees(userId);
-            // fetch all drc id
-            bytes32[] memory drcIds = drcStorage.getDrcIdsForUser(userId);
-            for (uint256 i = 0; i < drcIds.length; i++) {
-                transferDrcToNominee(drcIds[i], userId, nominees);
-            }
-        } else {
-            revert("user not authorized");
+        require(userManager.isOfficerDrcManager(msg.sender), "Only VC can transfer DRC to nominee");
+        // fetch all replaceUserByNominees
+        bytes32[] memory nominees = nomineeManager.getNominees(userId);
+        // fetch all drc id
+        bytes32[] memory drcIds = drcStorage.getDrcIdsForUser(userId);
+        for (uint256 i = 0; i < drcIds.length; i++) {
+            transferDrcToNominee(drcIds[i], userId, nominees);
         }
         drcStorage.deleteDrcIdsOfOwner(userId);
         emit Logger("All drc successfully transferred to nominees");
@@ -719,7 +725,7 @@ contract DRCManager is KdaCommon {
         bytes32 drcId,
         bytes32 userId,
         bytes32[] memory nominees
-    ) public {
+    ) internal {
         //fetch the drc
         DRC memory drc = drcStorage.getDrc(drcId);
         // replace the user with the nominee
@@ -853,30 +859,5 @@ contract DRCManager is KdaCommon {
         }
         return history;
     }
-//    // Utilize DRC
-//    function utilizeDrc(bytes32 applicationId) public {
-//        DUA memory application = duaStorage.getApplication(applicationId);
-//        // msg.sender should be in the owner list of the drc
-//        require(isOwnerOfDrc(application.drcId, userManager.getUserId(msg.sender)), "User is not the owner of the DRC");
-//        DRC memory drc = drcStorage.getDrc(application.drcId);
-//        // check if the drc is approved
-//        require(application.status == ApplicationStatus.approved, "DRC Utilization Application is not approved");
-//        require(drc.status != DrcStatus.locked_for_utilization, "DRC is not locked for utilization");
-//        // change the status of the drc to utilized
-//        drc.status = DrcStatus.utilized;
-//        // update the drc
-//        drcStorage.updateDrc(application.drcId,drc);
-//        emit DrcUtilized(application.drcId,application.farUtilized);
-//    }
-//
-//    // check if given user is one of the owner of the drc
-//    function isOwnerOfDrc(bytes32 drcId, bytes32 userId) internal view returns(bool){
-//        DRC memory drc = drcStorage.getDrc(drcId);
-//        for(uint i=0;i<drc.owners.length;i++){
-//            if(drc.owners[i] == userId){
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
+
 }

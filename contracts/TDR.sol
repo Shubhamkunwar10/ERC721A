@@ -200,7 +200,7 @@ contract TdrStorage is KdaCommon{
         // Update the application in the mapping
         applicationMap[_applicationId] = application;
         // check for the notice
-        if (_status == ApplicationStatus.DRCISSUED) {
+        if (_status == ApplicationStatus.DRC_ISSUED) {
             TdrNotice storage notice = noticeMap[application.noticeId];
             notice.status = NoticeStatus.ISSUED;
             noticeMap[application.noticeId] = notice;

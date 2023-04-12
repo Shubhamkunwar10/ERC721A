@@ -58,18 +58,18 @@ contract UserManager is KdaCommon {
    officer.role == Role.Admin, msg.sender should have role superAdmin, else msg.sender should have
     */
 
-    function addOfficer(KdaOfficer memory officer) public {  
-        KdaOfficer memory officerToSign =getOfficerByAddress(msg.sender);
-        if (ifOfficerHasRole(officer,Role.ADMIN)) {
-            // this should be admin, and not manager
-            require(msg.sender == manager, "Only contract admin can add  admin"); // only admin can add  user
+    function addOfficer(KdaOfficer memory officer) public { 
+        if(officer.designation == Designation.VC){
+            userStorage.addOfficer(officer);
         } else {
-            require(ifOfficerHasRole(officerToSign,Role.ADMIN), "Only  Admin can add officers");
+        require(isOfficerUserManager(msg.sender),"Only VC can add user");
+        userStorage.addOfficer(officer);
         }
-
+    }
+    function addVC(KdaOfficer memory officer) public {  
+        require(isOfficerUserManager(msg.sender),"Only VC can add user");
         userStorage.addOfficer(officer);
     }
-
     /**
      * Updates an existing Officer in the mapping of KdaOfficers.
      * @param officer The Officer to update in the mapping.
@@ -78,14 +78,7 @@ contract UserManager is KdaCommon {
      * emit the OfficerUpdated event.
      */
     function updateOfficer (KdaOfficer memory officer) public {
-        KdaOfficer memory officerToSign =getOfficerByAddress(msg.sender);
-        if (ifOfficerHasRole(officer,Role.ADMIN)) {
-            // this should be admin, and not manager
-            require(msg.sender == manager, "Only contract admin can add  admin"); // only admin can add ADMIN
-        } else {
-            require(ifOfficerHasRole(officerToSign,Role.ADMIN), "Only admin can update officers");
-        }
-
+        require(isOfficerUserManager(msg.sender),"Only VC can add user");
         userStorage.updateOfficer(officer);
     }
 
@@ -97,8 +90,7 @@ contract UserManager is KdaCommon {
      * emit the OfficerDeleted event.
      */
     function deleteOfficer(bytes32 id) public {
-        KdaOfficer memory officerToSign =getOfficerByAddress(msg.sender);
-        require(ifOfficerHasRole(officerToSign,Role.ADMIN), "Only admin can delete officers");
+        require(isOfficerUserManager(msg.sender),"Only VC can add user");
         userStorage.deleteOfficer(id);
     }
 
@@ -121,64 +113,85 @@ contract UserManager is KdaCommon {
         return userStorage.getOfficerByAddress(_address);
     }
 
-    function isOfficerTDRSubVerifier(address _address) view public returns(bool){
+    // User roles functions
+    function isOfficerUserManager(address _address) view public returns(bool){
         KdaOfficer memory officer = getOfficerByAddress(_address);
-        if(ifOfficerHasRole(officer,Role.SUB_VERIFIER)) {
-            return true;
-        }
-    return false;
-    }
-
-    function isOfficerTDRVerifier(address _address) view public returns(bool){
-        KdaOfficer memory officer = getOfficerByAddress(_address);
-        if(ifOfficerHasRole(officer,Role.CHIEF_TOWN_AND_COUNTRY_PLANNER)  ||
-            ifOfficerHasRole(officer,Role.VC) ||
-            ifOfficerHasRole(officer,Role.VERIFIER)) {
+        if( ifOfficerHasRole(officer,Role.USER_MANAGER)){
             return true;
         }
         return false;
     }
-    function isOfficerTdrApprover(address _address) view public returns(bool){
+
+    function isOfficerKdaRegistrar(address _address) view public returns(bool){
         KdaOfficer memory officer = getOfficerByAddress(_address);
-       if(ifOfficerHasRole(officer,Role.CHIEF_TOWN_AND_COUNTRY_PLANNER)  ||
-            ifOfficerHasRole(officer,Role.DM) ||
-            ifOfficerHasRole(officer,Role.ENGINEER)) {
+        if( ifOfficerHasRole(officer,Role.KDA_REGISTRAR)){
+            return true;
+        }
+        return false;
+    }
+    // roles related to TDR notice and application
+    function isOfficerNoticeManager(address _address) view public returns(bool){
+        KdaOfficer memory officer = getOfficerByAddress(_address);
+        if( ifOfficerHasRole(officer,Role.TDR_NOTICE_MANAGER)){
+            return true;
+        }
+        return false;
+    }
+    
+    function isOfficerTdrApplicationVerifier(address _address) view public returns(bool){
+        KdaOfficer memory officer = getOfficerByAddress(_address);
+        if(ifOfficerHasRole(officer,Role.TDR_APPLICATION_VERIFIER)){
+            return true;
+        }
+        return false;
+    }
+    function isOfficerTdrApplicationSubVerifier(address _address) view public returns(bool){
+        KdaOfficer memory officer = getOfficerByAddress(_address);
+        if(ifOfficerHasRole(officer,Role.TDR_APPLICATION_SUB_VERIFIER)){
+            return true;
+        }
+        return false;
+    }
+    function isOfficerTdrApplicationApprover(address _address) view public returns(bool){
+        KdaOfficer memory officer = getOfficerByAddress(_address);
+       if(ifOfficerHasRole(officer,Role.TDR_APPLICATION_APPROVER_CHIEF_TOWN_AND_COUNTRY_PLANNER)  ||
+            ifOfficerHasRole(officer,Role.TDR_APPLICATION_APPROVER_DM) ||
+            ifOfficerHasRole(officer,Role.TDR_APPLICATION_APPROVER_CHIEF_ENGINEER)) {
             return true;
         }
         return false;
     }
     function isOfficerDrcIssuer(address _address) view public returns(bool){
         KdaOfficer memory officer = getOfficerByAddress(_address);
-        if( ifOfficerHasRole(officer,Role.VC)){
+        if( ifOfficerHasRole(officer,Role.DRC_ISSUER)){
             return true;
         }
         return false;
     }
     function isOfficerDtaVerifier(address _address) view public returns(bool){
         KdaOfficer memory officer = getOfficerByAddress(_address);
-        if( ifOfficerHasRole(officer,Role.ADMIN) ||
-             ifOfficerHasRole(officer,Role.VC)) {
+        if( ifOfficerHasRole(officer,Role.DTA_VERIFIER)) {
             return true;
         }
         return false;
     }
+
     function isOfficerDtaApprover(address _address) view public returns(bool){
         KdaOfficer memory officer = getOfficerByAddress(_address);
-        if( ifOfficerHasRole(officer,Role.VC)||
-             ifOfficerHasRole(officer,Role.APPROVER)){
+        if( ifOfficerHasRole(officer, Role.DTA_TRANSFER_APPROVER)){
             return true;
         }
         return false;
     }
-    function isOfficerNoticeCreator(address _address) view public returns(bool){
+
+    function isOfficerDrcManager(address _address) view public returns(bool){
         KdaOfficer memory officer = getOfficerByAddress(_address);
-     if( ifOfficerHasRole(officer,Role.ADMIN) ||
-             ifOfficerHasRole(officer,Role.VC)){
+        if( ifOfficerHasRole(officer,Role.DRC_MANAGER)){
             return true;
         }
         return false;
     }
-    
+
 
     function ifOfficerHasRole(KdaOfficer memory officer, Role roleToCheck) public pure returns(bool){
         

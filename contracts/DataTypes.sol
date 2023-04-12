@@ -6,7 +6,8 @@ pragma solidity ^0.8.16;
     LOCKED_FOR_TRANSFER,
     LOCKED_FOR_UTILIZATION,
     TRANSFERRED,
-    UTILIZED
+    UTILIZED,
+    CANCELLED
 }
 
     enum ApplicationStatus {
@@ -14,7 +15,7 @@ pragma solidity ^0.8.16;
     SUBMITTED,
     APPROVED,
     REJECTED,
-    DRCISSUED,
+    DRC_ISSUED,
     VERIFIED,
     VERIFICATION_REJECTED,
     SENT_BACK_FOR_CORRECTION
@@ -153,7 +154,8 @@ pragma solidity ^0.8.16;
         APPROVER,
         CHIEF_TOWN_AND_COUNTRY_PLANNER,
         CHIEF_ENGINEER,
-        DM
+        DM,
+        OTHER
     }
 
     enum Department {
@@ -163,7 +165,8 @@ pragma solidity ^0.8.16;
         ENGINEERING,
         PROPERTY,
         SALES,
-        LEGAL
+        LEGAL,
+        OTHER
     }
 
     enum Role{
@@ -172,30 +175,20 @@ pragma solidity ^0.8.16;
         USER_MANAGER,                       //add, update, delete KDA officer  
         KDA_REGISTRAR,                      //KDA  Registeration 
 
-        TDR_APPLICATION_MANAGER,            //create or update TDR Notice
+        TDR_NOTICE_MANAGER,            //create or update TDR Notice
         TDR_APPLICATION_VERIFIER, 
-        TDR_APPLICATION_APPROVER,
-        TDR_APPLICATION_ZONE_ISSUER,
+        TDR_APPLICATION_SUB_VERIFIER,
+        TDR_APPLICATION_APPROVER_CHIEF_TOWN_AND_COUNTRY_PLANNER,
+        TDR_APPLICATION_APPROVER_CHIEF_ENGINEER,
+        TDR_APPLICATION_APPROVER_DM,
+        TDR_APPLICATION_ZONE_SETTER,
 
         DRC_ISSUER,                         //issue drc
-        DRC_TRANSFER_VERIFIER,
-        DRC_TRANSFER_APPROVER,
+        DTA_VERIFIER,
+        DTA_TRANSFER_APPROVER,
 
-        DRC_DTA_CANCELLER,
-        DRC_DTA_VERIFIER,
-        DRC_DTA_APPROVER,
+        DRC_MANAGER // manages drc after issuance
 
-
-
-
-        DM,
-        ADMIN,
-        CHIEF_TOWN_AND_COUNTRY_PLANNER,
-        VERIFIER,
-        SUB_VERIFIER,
-        VC,
-        ENGINEER,
-        APPROVER
     }
 
 
@@ -253,4 +246,7 @@ pragma solidity ^0.8.16;
         bool hasTownPlannerApproved;
         bool hasChiefEngineerApproved;
         bool hasDMApproved;
+        string townPlannerComment;
+        string chiefEngineerComment;
+        string DMComment;
     }

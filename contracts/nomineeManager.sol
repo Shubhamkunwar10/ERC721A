@@ -128,7 +128,7 @@ contract NomineeManager is KdaCommon{
         require(application.status != ApplicationStatus.APPROVED,"Application already approved");
         require(application.status != ApplicationStatus.REJECTED,"Application already rejected");
         require(application.status == ApplicationStatus.SUBMITTED,"Application is not submitted");
-        if (userManager.ifOfficerHasRole(officer, Role.ADMIN)){
+        if (userManager.ifOfficerHasRole(officer, Role.DRC_MANAGER)){
                 application.status = ApplicationStatus.APPROVED;
                 nomineeStorage.updateNomineeApplication(application);
                 emit NomineeApplicationApproved(applicationId, application.userId);
@@ -147,7 +147,7 @@ contract NomineeManager is KdaCommon{
         require(application.status == ApplicationStatus.SUBMITTED,"Application is not submitted");
 
 
-    if (userManager.ifOfficerHasRole(officer, Role.ADMIN)) {
+    if (userManager.ifOfficerHasRole(officer, Role.DRC_MANAGER)) {
             // update Application
             application.status = ApplicationStatus.REJECTED;
             nomineeStorage.updateNomineeApplication(application);
