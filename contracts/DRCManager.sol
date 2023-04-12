@@ -255,7 +255,7 @@ contract DRCManager is KdaCommon {
     }
 
     // this function is called by the user to approve the transfer
-    function signDrcTransferApplication(bytes32 applicationId) internal {
+    function signDrcTransferApplication(bytes32 applicationId) public {
         DrcTransferApplication memory application = dtaStorage.getApplication(
             applicationId
         );
