@@ -109,6 +109,8 @@ contract NomineeManager is KdaCommon{
         if (nomineeStorage.isApplicationCreated(applicationId)){
             revert("application already created");
         }
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        require(userManager.ifOfficerHasRole(officer, Role.NOMINEE_MANAGER), "User not authorized");
         nomineeApplication memory newApplication = nomineeApplication({
         applicationId: applicationId,
         userId: userId,
@@ -128,7 +130,7 @@ contract NomineeManager is KdaCommon{
         require(application.status != ApplicationStatus.APPROVED,"Application already approved");
         require(application.status != ApplicationStatus.REJECTED,"Application already rejected");
         require(application.status == ApplicationStatus.SUBMITTED,"Application is not submitted");
-        if (userManager.ifOfficerHasRole(officer, Role.DRC_MANAGER)){
+        if (userManager.ifOfficerHasRole(officer, Role.NOMINEE_MANAGER)){
                 application.status = ApplicationStatus.APPROVED;
                 nomineeStorage.updateNomineeApplication(application);
                 emit NomineeApplicationApproved(applicationId, application.userId);
@@ -147,7 +149,7 @@ contract NomineeManager is KdaCommon{
         require(application.status == ApplicationStatus.SUBMITTED,"Application is not submitted");
 
 
-    if (userManager.ifOfficerHasRole(officer, Role.DRC_MANAGER)) {
+    if (userManager.ifOfficerHasRole(officer, Role.NOMINEE_MANAGER)) {
             // update Application
             application.status = ApplicationStatus.REJECTED;
             nomineeStorage.updateNomineeApplication(application);

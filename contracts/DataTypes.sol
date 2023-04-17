@@ -128,21 +128,27 @@ pragma solidity ^0.8.16;
         MasterPlanInfo masterPlanInfo;
         uint areaSurrendered;
         uint circleRateSurrendered;
-
         NoticeStatus status;
-
+        ConstructionDetails constructionDetails; // Warning for floating
     }
     struct LandInfo {
         bytes32 khasraOrPlotNo;
         bytes32 villageOrWard;
         bytes32 Tehsil;
         bytes32 district;
+        LandUse landUse;
     }
     struct MasterPlanInfo {
-        LandUse landUse;
         bytes32 masterPlan;
         uint roadWidth;
         AreaType areaType;
+    }
+// note since solidity does not have floating point number, it is in multiple of hundres
+    struct ConstructionDetails {
+        uint256 landArea;
+        uint256 buildUpArea;
+        uint256 carpetArea;
+        uint256 numFloors;
     }
 
     enum Designation {
@@ -172,22 +178,23 @@ pragma solidity ^0.8.16;
     enum Role{
 
         NONE,
-        USER_MANAGER,                       //add, update, delete KDA officer  
-        KDA_REGISTRAR,                      //KDA  Registeration 
+        USER_MANAGER,                       //add, update, delete KDA officer
+        KDA_REGISTRAR,                      //KDA  Registeration
 
         TDR_NOTICE_MANAGER,            //create or update TDR Notice
-        TDR_APPLICATION_VERIFIER, 
+        TDR_APPLICATION_VERIFIER,
         TDR_APPLICATION_SUB_VERIFIER,
         TDR_APPLICATION_APPROVER_CHIEF_TOWN_AND_COUNTRY_PLANNER,
         TDR_APPLICATION_APPROVER_CHIEF_ENGINEER,
         TDR_APPLICATION_APPROVER_DM,
         TDR_APPLICATION_ZONE_SETTER,
-
         DRC_ISSUER,                         //issue drc
         DTA_VERIFIER,
-        DTA_TRANSFER_APPROVER,
+        DTA_APPROVER,
 
-        DRC_MANAGER // manages drc after issuance
+        DRC_MANAGER, // manages drc after issuance
+        NOMINEE_MANAGER
+
 
     }
 
@@ -210,7 +217,7 @@ pragma solidity ^0.8.16;
     }
 
 
-    
+
     struct SubVerificationStatus {
         Department dep;
         bytes32 officerId;
