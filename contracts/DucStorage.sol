@@ -68,21 +68,23 @@ contract DucStorage {
         bytes32 id,
         bytes32 applicationId,
         bytes32 noticeId,
-        uint farUtilized,
+        uint farPermitted,
         uint circleRateSurrendered,
-        uint circleRateUtilization,
         bytes32[] memory owners,
-        uint timeStamp
+        uint timeStamp,
+        uint _tdrConsumed,
+        DrcUtilizationDetails memory _drcUtilizationDetails
     ) public {
         certMap[id] = DUC({
         id: id,
         applicationId: applicationId,
         noticeId: noticeId,
-        farUtilized: farUtilized,
+        farPermitted: farPermitted,
         circleRateSurrendered: circleRateSurrendered,
-        circleRateUtilization: circleRateUtilization,
         owners: owners,
-        timeStamp: timeStamp
+        timeStamp: timeStamp,
+        tdrConsumed: _tdrConsumed,
+        drcUtilizationDetails:_drcUtilizationDetails
         });
     }
     event DucCreated(bytes32 ducId, bytes32[] ownerIds);
@@ -111,22 +113,24 @@ contract DucStorage {
         bytes32 id,
         bytes32 applicationId,
         bytes32 noticeId,
-        uint farUtilized,
+        uint farPermitted,
         uint circleRateSurrendered,
-        uint circleRateUtilization,
         bytes32[] memory owners,
-        uint timeStamp
+        uint timeStamp,
+        uint _tdrConsumed,
+        DrcUtilizationDetails memory _drcUtilizationDetails
     ) public {
         require(certMap[id].id == id, "Cert does not exist");
         certMap[id] = DUC({
         id: id,
         applicationId: applicationId,
         noticeId: noticeId,
-        farUtilized: farUtilized,
+        farPermitted: farPermitted,
         circleRateSurrendered: circleRateSurrendered,
-        circleRateUtilization: circleRateUtilization,
         owners: owners,
-        timeStamp: timeStamp
+        timeStamp: timeStamp,
+        tdrConsumed: _tdrConsumed,
+        drcUtilizationDetails:_drcUtilizationDetails
         });
     }
 
@@ -161,10 +165,11 @@ contract DucStorage {
         duc.id = _duc.id;
         duc.applicationId = _duc.applicationId;
         duc.noticeId = _duc.noticeId;
-        duc.farUtilized = _duc.farUtilized;
+        duc.farPermitted = _duc.farPermitted;
         duc.circleRateSurrendered = _duc.circleRateSurrendered;
-        duc.circleRateUtilization = _duc.circleRateUtilization;
         duc.timeStamp = _duc.timeStamp;
+        duc.tdrConsumed=_duc.tdrConsumed;
+        duc.drcUtilizationDetails = _duc.drcUtilizationDetails;
         delete duc.owners;
         for(uint i =0; i<_duc.owners.length; i++){
             duc.owners.push(_duc.owners[i]);

@@ -62,17 +62,7 @@ pragma solidity ^0.8.16;
         bool hasPrevious;
         bytes32 previousDRC;
     }
-// DRC Utilization Certificate
-    struct DUC {
-        bytes32 id;
-        bytes32 applicationId; // application id of application in BPAS
-        bytes32 noticeId;
-        uint farUtilized;
-        uint circleRateSurrendered;
-        uint circleRateUtilization;
-        bytes32[] owners;
-        uint timeStamp;
-    }
+
     struct DrcOwner{
         bytes32 userId;
         uint area;
@@ -95,20 +85,44 @@ pragma solidity ^0.8.16;
         uint timeStamp;
     }
 
+
     struct Signatory {
         bytes32 userId;
         bool hasUserSigned;
     }
 
+    struct DrcUtilizationDetails {
+        LandUse landUse;
+        AreaType areaType;
+        uint roadWidth;
+        uint purchasableFar;
+        uint basicFar;
+        uint circleRateUtilization;
+    }
 
     struct DUA {
         bytes32 applicationId;
         bytes32 drcId;
         uint farUtilized;
+        uint farPermitted;
         Signatory[] signatories;
         ApplicationStatus status;
         uint timeStamp;
+        DrcUtilizationDetails drcUtilizationDetails;
+    }
 
+// DRC Utilization Certificate
+    struct DUC {
+        bytes32 id;
+        bytes32 applicationId; // application id of application in BPAS
+        bytes32 noticeId;
+        uint farPermitted;
+        uint circleRateSurrendered; //  from notice
+//        uint circleRateUtilization; // from drcUtilizationDetails. Remove it
+        bytes32[] owners;
+        uint timeStamp;
+        uint tdrConsumed;
+        DrcUtilizationDetails drcUtilizationDetails;
     }
 
     struct TdrApplication {

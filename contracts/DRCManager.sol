@@ -598,15 +598,17 @@ contract DRCManager is KdaCommon {
     function createUtilizationApplication(
         bytes32 drcId,
         bytes32 applicationId,
-        uint256 far,
-        uint256 timestamp
+        uint256 farUtilized,
+        uint256 farPermitted,
+        uint256 timestamp,
+        DrcUtilizationDetails memory drcUtilizationDetails
     ) public {
         // check drc exists or not
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
         DRC memory drc = drcStorage.getDrc(drcId);
-        // far should be less than available far.
+        // farUtilized should be less than available far available.
         require(
-            far <= drc.farAvailable,
+            farUtilized <= drc.farAvailable,
             "Utilized area is greater than the available area"
         );
         // add all the owners id from the drc to the mapping
@@ -623,10 +625,12 @@ contract DRCManager is KdaCommon {
         duaStorage.createApplication(
             applicationId,
             drc.id,
-            far,
+            farUtilized,
+            farPermitted,
             duaSignatories,
             timestamp,
-            ApplicationStatus.PENDING
+            ApplicationStatus.PENDING,
+            drcUtilizationDetails
         );
         signDrcUtilizationApplication(applicationId);
         drcStorage.addDuaToDrc(drc.id, applicationId);
@@ -675,7 +679,7 @@ contract DRCManager is KdaCommon {
             // reduce drc once Application is approved, and update the drc
             DRC memory drc = drcStorage.getDrc(application.drcId);
             // need to create unique Id
-            createDucFromDrc(drc, application.farUtilized, application.applicationId);
+            createDucFromDrc(drc, application );
         }
         duaStorage.updateApplication(application);
     }
@@ -805,19 +809,19 @@ contract DRCManager is KdaCommon {
         return tempArray;
     }
 
-    function createDucFromDrc(DRC memory drc, uint farUtilized, bytes32 id) internal{
+    function createDucFromDrc (DRC memory drc, DUA memory dua) internal {
+//uint farPermitted, uint tdrConsumed,DrcUtilizationDetails memory drcUtilizationDetails, bytes32 id) internal{
         DUC memory newDuc;
-        newDuc.id = id;
+        newDuc.id = dua.applicationId;
         newDuc.noticeId = drc.noticeId;
-        newDuc.farUtilized = farUtilized;
+        newDuc.farPermitted = dua.farPermitted;
         newDuc.owners = drc.owners;
         newDuc.circleRateSurrendered= drc.circleRateSurrendered;
-        newDuc.circleRateUtilization = drc.circleRateUtilization;
-
-
+        newDuc.drcUtilizationDetails = dua.drcUtilizationDetails;
+        newDuc.tdrConsumed = dua.farUtilized;
         ducStorage.createDuc(newDuc);
         // need to reduce the available area of the old drc
-        drc.farAvailable = drc.farAvailable - farUtilized;
+        drc.farAvailable = drc.farAvailable - dua.farUtilized;
         if(drc.farAvailable==0){
             drc.status=DrcStatus.UTILIZED;
         }
