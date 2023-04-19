@@ -178,7 +178,7 @@ contract UserManager is KdaCommon {
 
     function isOfficerDtaApprover(address _address) view public returns(bool){
         KdaOfficer memory officer = getOfficerByAddress(_address);
-        if( ifOfficerHasRole(officer, Role.DTA_TRANSFER_APPROVER)){
+        if( ifOfficerHasRole(officer, Role.DTA_APPROVER)){
             return true;
         }
         return false;
