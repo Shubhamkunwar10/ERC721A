@@ -87,22 +87,22 @@ contract DucStorage {
         drcUtilizationDetails:_drcUtilizationDetails
         });
     }
-    event DucCreated(bytes32 ducId, bytes32[] ownerIds);
-    event DucUpdated(bytes32 ducId, bytes32[] ownerIds);
+    event DucCreated(bytes32 ducId, DUC duc,bytes32[] ownerIds);
+    event DucUpdated(bytes32 ducId, DUC duc, bytes32[] ownerIds);
 
     function createDuc(DUC memory _duc) public onlyManager{
         //check whether the DRC already exists
         require(!isDucCreated(_duc.id),"certificate already exists");
         addDucToOwners(_duc);
         storeDucInMap(_duc);
-        emit DucCreated(_duc.id, _duc.owners);
+        emit DucCreated(_duc.id, _duc, _duc.owners);
     }
     function updateDuc(DUC memory _duc) public onlyManager{
         //check whether the DRC already exists
         require(isDucCreated(_duc.id),"certificate does not exists");
         addDucToOwners(_duc);
         storeDucInMap(_duc);
-        emit DucUpdated(_duc.id, _duc.owners);
+        emit DucUpdated(_duc.id, _duc, _duc.owners);
     }
 
     function getDuc(bytes32 id) public view returns (DUC memory) {
