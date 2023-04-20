@@ -682,10 +682,9 @@ contract TDRManager is KdaCommon {
 
         if (userManager.isOfficerTdrApplicationVerifier(msg.sender)) {
 
-            if(tdrApplication.status== ApplicationStatus.SUBMITTED||
-                tdrApplication.status== ApplicationStatus.VERIFICATION_REJECTED){
-                revert("Only submitted or rejected application can be verified");
-            }
+            require((tdrApplication.status== ApplicationStatus.SUBMITTED||
+                tdrApplication.status== ApplicationStatus.VERIFICATION_REJECTED),
+                "Only submitted or rejected application can be verified");
             status.verified = true;
             status.verifierId = officer.userId;
 //            status.verifierRole = officer.role;
