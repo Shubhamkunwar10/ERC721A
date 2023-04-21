@@ -18,6 +18,7 @@ contract DrcStorage is KdaCommon {
     //mapping(bytes32 => bytes32[] ) public userApplicationMap; // onwerid => applicationId[]
     mapping(bytes32 => bytes32[] ) public drcDtaMap; // drcId => applicationId []
     mapping(bytes32 => bytes32[] ) public drcDuaMap; // drcId => applicationId []
+    mapping(bytes32=> string) public cancelDrcMap; // drcId => cancellation reason
 
     // Events
     event DrcCreated(bytes32 drcId, DRC drc, bytes32[] owners);
@@ -377,6 +378,12 @@ CRUD operations on the drc DTA Map
         return false;
     }
 
+    function storeDrcCancellationReason(bytes32 drcId,string memory reason) public onlyManager {
+        cancelDrcMap[drcId]= reason;
+    }
+    function getDrcCancellationReason(bytes32 drcId) public returns(string memory) {
+        return cancelDrcMap[drcId];
+    }
 
 //    //Generate DRCId
 //    Counters.Counter private _drcIdCounter;

@@ -201,19 +201,26 @@ contract DRCManager is KdaCommon {
         }
     }
     // cancel DRC to be done by admin only
-    function cancelDrc(bytes32 drcId) public {
+    function cancelDrc(bytes32 drcId, string memory reason) public {
         // check whether the role is admin or application
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action",officer);
         if(userManager.isOfficerDrcManager(msg.sender)){
             DRC memory drc = drcStorage.getDrc(drcId);
+            if (!drcStorage.isDrcCreated(drcId)){
+                revert("DRC not creted");
+            }
             // increase the available drc count
             drc.status = DrcStatus.CANCELLED;
             drcStorage.updateDrc(drcId,drc);
             emit DrcCancelled(drcId, drc.owners);
+            drcStorage.storeDrcCancellationReason(drcId, reason);
         }else {
             revert("user not authorized");
         }
+    }
+    function getDrcCancellationReason(bytes32 drcId) public returns(string memory){
+        return drcStorage.getDrcCancellationReason(drcId);
     }
 
     // This function begins the drd transfer application
@@ -371,8 +378,7 @@ contract DRCManager is KdaCommon {
         require(
             application.status == ApplicationStatus.VERIFIED ||
             application.status == ApplicationStatus.REJECTED,
-            "Application should be verified or rejected"
-        );
+            "Application should be verified or rejected");
         } else if(userManager.isOfficerDtaApprover(msg.sender)){
             require(application.status == ApplicationStatus.VERIFIED);
         } else {
