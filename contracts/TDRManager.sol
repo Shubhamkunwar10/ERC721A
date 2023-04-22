@@ -652,6 +652,19 @@ contract TDRManager is KdaCommon {
         // return status.verified;
     }
 
+    function getApprovalStatus(bytes32 applicationId)
+        public
+        view
+        returns (ApprovalStatus memory)
+    {
+        ApprovalStatus memory status = tdrStorage.getApprovalStatus(
+            applicationId
+        );
+        return status;
+        // return status.verified;
+    }
+
+
     event LogOfficer(string message, KdaOfficer officer);
     event TdrApplicationVerified(
         KdaOfficer officer,
