@@ -37,19 +37,34 @@ contract DRCManager is KdaCommon {
 
     
     event LogOfficer(string message, KdaOfficer officer);
-    event DtaApplicationVerified(
+    event DtaVerified(
         KdaOfficer officer,
         bytes32 applicationId,
         bytes32[] applicants,
         bytes32[] buyers
     );
-    event DtaApplicationApproved(
+    event DtaSentBack(
+        KdaOfficer officer,
+        bytes32 applicationId,
+        string reason,
+        bytes32[] applicants,
+        bytes32[] buyers
+    );
+    event DtaApproved(
         KdaOfficer officer,
         bytes32 applicationId,
         bytes32[] applicants,
         bytes32[] buyers
     );
-    event DtaApplicationRejected(
+    event DtaRejected(
+        KdaOfficer officer,
+        bytes32 applicationId,
+        string reason,
+        bytes32[] applicants,
+        bytes32[] buyers
+    );
+    event DtaVerificationRejected(
+        KdaOfficer officer,
         bytes32 applicationId,
         string reason,
         bytes32[] applicants,
@@ -347,13 +362,13 @@ contract DRCManager is KdaCommon {
             "Application is not submitted"
         );
         if (userManager.isOfficerDtaVerifier(msg.sender)) {
-            status.verified = true;
+            status.verified = VerificationValues.VERIFIED;
             status.verifierId = officer.userId;
             // status.verifierRole = officer.role;
             // update Application
             dta.status = ApplicationStatus.VERIFIED;
             dtaStorage.updateApplication(dta);
-            emit DtaApplicationVerified(
+            emit DtaVerified(
                 officer,
                 applicationId,
                 getApplicantIdsFromApplicants(dta.applicants),
@@ -364,6 +379,87 @@ contract DRCManager is KdaCommon {
             revert("User not authorized");
         }
     }
+
+    function rejectVerificationDTA(bytes32 applicationId, string memory reason) public {
+        DtaVerificationStatus memory status = dtaStorage.getVerificationStatus(
+            applicationId
+        );
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        emit LogOfficer("Officer in action", officer);
+        // fetch application. Reverts if application is not created
+        DrcTransferApplication memory dta = dtaStorage.getApplication(
+            applicationId
+        );
+        if(dta.status == ApplicationStatus.VERIFIED){
+            revert("Application already verified");
+        }
+        if(dta.status == ApplicationStatus.REJECTED){
+            revert("Application already rejected");
+        }
+        require(
+            dta.status == ApplicationStatus.SUBMITTED,
+            "Application is not submitted"
+        );
+        if (userManager.isOfficerDtaVerifier(msg.sender)) {
+            status.verified = VerificationValues.REJECTED;
+            status.verifierId = officer.userId;
+            // status.verifierRole = officer.role;
+            // update Application
+            dta.status = ApplicationStatus.REJECTED;
+            dtaStorage.updateApplication(dta);
+            emit DtaVerificationRejected(
+                officer,
+                applicationId,
+                reason,
+                getApplicantIdsFromApplicants(dta.applicants),
+                dta.buyers
+            );
+            dtaStorage.storeVerificationStatus(applicationId, status);
+        } else {
+            revert("User not authorized");
+        }
+    }
+
+    function sendBackDTA(bytes32 applicationId, string memory reason) public {
+        DtaVerificationStatus memory status = dtaStorage.getVerificationStatus(
+            applicationId
+        );
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        emit LogOfficer("Officer in action", officer);
+        // fetch application. Reverts if application is not created
+        DrcTransferApplication memory dta = dtaStorage.getApplication(
+            applicationId
+        );
+        if(dta.status == ApplicationStatus.VERIFIED){
+            revert("Application already verified");
+        }
+        if(dta.status == ApplicationStatus.REJECTED){
+            revert("Application already rejected");
+        }
+        require(
+            dta.status == ApplicationStatus.SUBMITTED,
+            "Application is not submitted"
+        );
+        if (userManager.isOfficerDtaVerifier(msg.sender)) {
+            status.verified = VerificationValues.SENT_BACK_FOR_CORRECTION;
+            status.verifierId = officer.userId;
+            // status.verifierRole = officer.role;
+            // update Application
+            dta.status = ApplicationStatus.SENT_BACK_FOR_CORRECTION;
+            dtaStorage.updateApplication(dta);
+            emit DtaSentBack(
+                officer,
+                applicationId,
+                reason,
+                getApplicantIdsFromApplicants(dta.applicants),
+                dta.buyers
+            );
+            dtaStorage.storeVerificationStatus(applicationId, status);
+        } else {
+            revert("User not authorized");
+        }
+    }
+
 
     // this function is called by the admin to approve the transfer
     function approveDta(bytes32 applicationId, bytes32 newDrcId) public {
@@ -386,7 +482,7 @@ contract DRCManager is KdaCommon {
         }
         application.status = ApplicationStatus.APPROVED;
         dtaStorage.updateApplication(application);
-        emit DtaApplicationApproved(
+        emit DtaApproved(
             officer,
             applicationId,
             getApplicantIdsFromApplicants(application.applicants),
@@ -467,7 +563,8 @@ contract DRCManager is KdaCommon {
             // update Application
         application.status = ApplicationStatus.REJECTED;
         dtaStorage.updateApplication(application);
-        emit DtaApplicationRejected(
+        emit DtaRejected(
+            officer,
             applicationId,
             reason,
             getApplicantIdsFromApplicants(application.applicants),
@@ -546,12 +643,13 @@ contract DRCManager is KdaCommon {
     function getDtaVerificationStatus(bytes32 applicationId)
         public
         view
-        returns (bool)
+        returns (DtaVerificationStatus memory)
     {
         DtaVerificationStatus memory status = dtaStorage.getVerificationStatus(
             applicationId
         );
-        return status.verified;
+        return status;
+//        return (status.verified == VerificationValues.VERIFIED);
     }
 
     // I need to create two different get application method and then merge it

@@ -261,7 +261,7 @@ pragma solidity ^0.8.16;
         SubVerificationStatus legalVerification;
     }
     struct DtaVerificationStatus {
-        bool verified;
+        VerificationValues verified;
         bytes32 verifierId;
         string verifierComment;
     }
