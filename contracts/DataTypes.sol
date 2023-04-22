@@ -20,7 +20,18 @@ pragma solidity ^0.8.16;
     VERIFICATION_REJECTED,
     SENT_BACK_FOR_CORRECTION
 }
-
+    enum VerificationValues{
+        PENDING,
+        REJECTED,
+        VERIFIED,
+        SENT_BACK_FOR_CORRECTION
+    }
+    enum ApprovalValues{
+        PENDING,
+        APPROVED,
+        REJECTED,
+        SENT_BACK_FOR_CORRECTION
+    }
     enum NoticeStatus{
         PENDING,
         ISSUED,
@@ -233,14 +244,13 @@ pragma solidity ^0.8.16;
 
 
     struct SubVerificationStatus {
-        Department dep;
         bytes32 officerId;
-        bool isVerified;
+        VerificationValues verified;
         string comment;
     }
 
     struct VerificationStatus {
-        bool verified;
+        VerificationValues verified;
         bytes32 verifierId;
         string verifierComment;
         SubVerificationStatus landVerification;
@@ -263,10 +273,10 @@ pragma solidity ^0.8.16;
         ApplicationStatus status;
     }
     struct ApprovalStatus {
-        bool approved;
-        bool hasTownPlannerApproved;
-        bool hasChiefEngineerApproved;
-        bool hasDMApproved;
+        ApprovalValues approved;
+        ApprovalValues hasTownPlannerApproved;
+        ApprovalValues hasChiefEngineerApproved;
+        ApprovalValues hasDMApproved;
         string townPlannerComment;
         string chiefEngineerComment;
         string DMComment;
