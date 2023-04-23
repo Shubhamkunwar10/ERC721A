@@ -39,6 +39,7 @@ pragma solidity ^0.8.16;
     }
 
     enum AreaType {
+                    NONE,
                     DEVELOPED,
                     UNDEVELOPED,
                     NEWLY_DEVELOPED,
@@ -46,8 +47,9 @@ pragma solidity ^0.8.16;
                 }
 
     enum LandUse {
+        NONE,
         GROUP_HOUSING,
-        OFFICES_INSITITUTIONS_AND_COMMUNITY_FACILITIES,
+        OFFICES_INSTITUTIONS_AND_COMMUNITY_FACILITIES,
         MIXED_USE,
         COMMERCIAL,
         AGRICULTURAL,
@@ -155,6 +157,8 @@ pragma solidity ^0.8.16;
         uint circleRateSurrendered;
         NoticeStatus status;
         ConstructionDetails constructionDetails; // Warning for floating
+        PropertyOwner[] owners;
+        bytes32 propertyId;
     }
     struct LandInfo {
         bytes32 khasraOrPlotNo;
@@ -280,4 +284,12 @@ pragma solidity ^0.8.16;
         string townPlannerComment;
         string chiefEngineerComment;
         string DMComment;
+    }
+    struct PropertyOwner {
+        string name;
+        string soWo;
+        uint age;
+        string phone;
+        string email;
+        string ownerAddress;
     }
