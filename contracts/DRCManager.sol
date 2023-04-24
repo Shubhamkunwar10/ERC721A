@@ -715,6 +715,9 @@ contract DRCManager is KdaCommon {
             farUtilized <= drc.farAvailable,
             "Utilized area is greater than the available area"
         );
+       
+        require(drcStorage.isOwnerInDrc(drc, bytes32(uint(keccak256(abi.encodePacked(msg.sender))))), "You are not the owner of this DRC");
+       
         // add all the owners id from the drc to the mapping
 
         Signatory[] memory duaSignatories = new Signatory[](drc.owners.length);
