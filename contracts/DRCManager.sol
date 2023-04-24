@@ -258,7 +258,7 @@ contract DRCManager is KdaCommon {
             "Transfer area is greater than the available area"
         );
 
-
+        require(drcStorage.isOwnerInDrc(drc, bytes32(uint(keccak256(abi.encodePacked(msg.sender))))), "You are not the owner of this DRC");
 
         // Signatory[] memory applicants = new Signatory[](drc.owners.length);
 
@@ -717,8 +717,8 @@ contract DRCManager is KdaCommon {
         );
         // add all the owners id from the drc to the mapping
 
-        Signatory[] memory duaSignatories = new Signatory[](drc.owners.length);
-
+        require(drcStorage.isOwnerInDrc(drc, bytes32(uint(keccak256(abi.encodePacked(msg.sender))))), "You are not the owner of this DRC");
+        
         // no user has signed yet
         for (uint256 i = 0; i < drc.owners.length; i++) {
             Signatory memory s;
