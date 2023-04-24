@@ -122,6 +122,7 @@ pragma solidity ^0.8.16;
         ApplicationStatus status;
         uint timeStamp;
         DrcUtilizationDetails drcUtilizationDetails;
+        LandInfo landInfo;
     }
 
 // DRC Utilization Certificate
@@ -136,6 +137,7 @@ pragma solidity ^0.8.16;
         uint timeStamp;
         uint tdrConsumed;
         DrcUtilizationDetails drcUtilizationDetails;
+
     }
 
     struct TdrApplication {
