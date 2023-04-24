@@ -99,7 +99,8 @@ contract DuaStorage is KdaCommon {
         Signatory[] memory _signatories,
         uint _timeStamp,
         ApplicationStatus _status,
-        DrcUtilizationDetails memory _drcUtilizationDetails
+        DrcUtilizationDetails memory _drcUtilizationDetails,
+          LandInfo memory _landInfo
     ) public onlyManager {
         require(
             applicationMap[_applicationId].applicationId != "",
@@ -114,7 +115,8 @@ contract DuaStorage is KdaCommon {
                 _signatories,
                 _status,
                 _timeStamp,
-                _drcUtilizationDetails
+                _drcUtilizationDetails,
+                _landInfo
             )
         );
         emit DuaUpdated(_applicationId);
