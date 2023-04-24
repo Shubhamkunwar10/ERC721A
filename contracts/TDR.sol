@@ -118,8 +118,23 @@ contract TdrStorage is KdaCommon{
     }
 
     function saveNoticeInMap(TdrNotice memory _tdrNotice) public {
-        noticeMap[_tdrNotice.noticeId] = _tdrNotice;
+        TdrNotice storage tdrNotice = noticeMap[_tdrNotice.noticeId];
+        // copy each fields one by one
+        tdrNotice.noticeId = _tdrNotice.noticeId;
+        tdrNotice.timeStamp = _tdrNotice.timeStamp;
+        tdrNotice.landInfo = _tdrNotice.landInfo;
+        tdrNotice.masterPlanInfo = _tdrNotice.masterPlanInfo;
+        tdrNotice.areaSurrendered = _tdrNotice.areaSurrendered;
+        tdrNotice.circleRateSurrendered = _tdrNotice.circleRateSurrendered;
+        tdrNotice.status = _tdrNotice.status;
+        tdrNotice.constructionDetails = _tdrNotice.constructionDetails;
+        tdrNotice.propertyId = _tdrNotice.propertyId;
+
+        for (uint i = 0; i < _tdrNotice.owners.length; i++) {
+            tdrNotice.owners.push(_tdrNotice.owners[i]);
+        noticeMap[_tdrNotice.noticeId] = tdrNotice;
         emit LogBytes("notice saved in map", _tdrNotice.noticeId);
+         }
     }
 
     function updateNotice(TdrNotice memory tdrNotice) public onlyManager {

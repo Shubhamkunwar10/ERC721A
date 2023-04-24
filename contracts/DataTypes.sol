@@ -20,7 +20,18 @@ pragma solidity ^0.8.16;
     VERIFICATION_REJECTED,
     SENT_BACK_FOR_CORRECTION
 }
-
+    enum VerificationValues{
+        PENDING,
+        REJECTED,
+        VERIFIED,
+        SENT_BACK_FOR_CORRECTION
+    }
+    enum ApprovalValues{
+        PENDING,
+        APPROVED,
+        REJECTED,
+        SENT_BACK_FOR_CORRECTION
+    }
     enum NoticeStatus{
         PENDING,
         ISSUED,
@@ -28,6 +39,7 @@ pragma solidity ^0.8.16;
     }
 
     enum AreaType {
+                    NONE,
                     DEVELOPED,
                     UNDEVELOPED,
                     NEWLY_DEVELOPED,
@@ -35,8 +47,9 @@ pragma solidity ^0.8.16;
                 }
 
     enum LandUse {
+        NONE,
         GROUP_HOUSING,
-        OFFICES_INSITITUTIONS_AND_COMMUNITY_FACILITIES,
+        OFFICES_INSTITUTIONS_AND_COMMUNITY_FACILITIES,
         MIXED_USE,
         COMMERCIAL,
         AGRICULTURAL,
@@ -62,17 +75,7 @@ pragma solidity ^0.8.16;
         bool hasPrevious;
         bytes32 previousDRC;
     }
-// DRC Utilization Certificate
-    struct DUC {
-        bytes32 id;
-        bytes32 applicationId; // application id of application in BPAS
-        bytes32 noticeId;
-        uint farUtilized;
-        uint circleRateSurrendered;
-        uint circleRateUtilization;
-        bytes32[] owners;
-        uint timeStamp;
-    }
+
     struct DrcOwner{
         bytes32 userId;
         uint area;
@@ -95,20 +98,44 @@ pragma solidity ^0.8.16;
         uint timeStamp;
     }
 
+
     struct Signatory {
         bytes32 userId;
         bool hasUserSigned;
     }
 
+    struct DrcUtilizationDetails {
+        LandUse landUse;
+        AreaType areaType;
+        uint roadWidth;
+        uint purchasableFar;
+        uint basicFar;
+        uint circleRateUtilization;
+    }
 
     struct DUA {
         bytes32 applicationId;
         bytes32 drcId;
         uint farUtilized;
+        uint farPermitted;
         Signatory[] signatories;
         ApplicationStatus status;
         uint timeStamp;
+        DrcUtilizationDetails drcUtilizationDetails;
+    }
 
+// DRC Utilization Certificate
+    struct DUC {
+        bytes32 id;
+        bytes32 applicationId; // application id of application in BPAS
+        bytes32 noticeId;
+        uint farPermitted;
+        uint circleRateSurrendered; //  from notice
+//        uint circleRateUtilization; // from drcUtilizationDetails. Remove it
+        bytes32[] owners;
+        uint timeStamp;
+        uint tdrConsumed;
+        DrcUtilizationDetails drcUtilizationDetails;
     }
 
     struct TdrApplication {
@@ -130,6 +157,8 @@ pragma solidity ^0.8.16;
         uint circleRateSurrendered;
         NoticeStatus status;
         ConstructionDetails constructionDetails; // Warning for floating
+        PropertyOwner[] owners;
+        bytes32 propertyId;
     }
     struct LandInfo {
         bytes32 khasraOrPlotNo;
@@ -219,14 +248,13 @@ pragma solidity ^0.8.16;
 
 
     struct SubVerificationStatus {
-        Department dep;
         bytes32 officerId;
-        bool isVerified;
+        VerificationValues verified;
         string comment;
     }
 
     struct VerificationStatus {
-        bool verified;
+        VerificationValues verified;
         bytes32 verifierId;
         string verifierComment;
         SubVerificationStatus landVerification;
@@ -237,7 +265,7 @@ pragma solidity ^0.8.16;
         SubVerificationStatus legalVerification;
     }
     struct DtaVerificationStatus {
-        bool verified;
+        VerificationValues verified;
         bytes32 verifierId;
         string verifierComment;
     }
@@ -249,11 +277,19 @@ pragma solidity ^0.8.16;
         ApplicationStatus status;
     }
     struct ApprovalStatus {
-        bool approved;
-        bool hasTownPlannerApproved;
-        bool hasChiefEngineerApproved;
-        bool hasDMApproved;
+        ApprovalValues approved;
+        ApprovalValues hasTownPlannerApproved;
+        ApprovalValues hasChiefEngineerApproved;
+        ApprovalValues hasDMApproved;
         string townPlannerComment;
         string chiefEngineerComment;
         string DMComment;
+    }
+    struct PropertyOwner {
+        string name;
+        string soWo;
+        uint age;
+        string phone;
+        string email;
+        string ownerAddress;
     }

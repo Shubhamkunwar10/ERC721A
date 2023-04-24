@@ -37,19 +37,34 @@ contract DRCManager is KdaCommon {
 
     
     event LogOfficer(string message, KdaOfficer officer);
-    event DtaApplicationVerified(
+    event DtaVerified(
         KdaOfficer officer,
         bytes32 applicationId,
         bytes32[] applicants,
         bytes32[] buyers
     );
-    event DtaApplicationApproved(
+    event DtaSentBack(
+        KdaOfficer officer,
+        bytes32 applicationId,
+        string reason,
+        bytes32[] applicants,
+        bytes32[] buyers
+    );
+    event DtaApproved(
         KdaOfficer officer,
         bytes32 applicationId,
         bytes32[] applicants,
         bytes32[] buyers
     );
-    event DtaApplicationRejected(
+    event DtaRejected(
+        KdaOfficer officer,
+        bytes32 applicationId,
+        string reason,
+        bytes32[] applicants,
+        bytes32[] buyers
+    );
+    event DtaVerificationRejected(
+        KdaOfficer officer,
         bytes32 applicationId,
         string reason,
         bytes32[] applicants,
@@ -201,19 +216,26 @@ contract DRCManager is KdaCommon {
         }
     }
     // cancel DRC to be done by admin only
-    function cancelDrc(bytes32 drcId) public {
+    function cancelDrc(bytes32 drcId, string memory reason) public {
         // check whether the role is admin or application
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action",officer);
         if(userManager.isOfficerDrcManager(msg.sender)){
             DRC memory drc = drcStorage.getDrc(drcId);
+            if (!drcStorage.isDrcCreated(drcId)){
+                revert("DRC not creted");
+            }
             // increase the available drc count
             drc.status = DrcStatus.CANCELLED;
             drcStorage.updateDrc(drcId,drc);
             emit DrcCancelled(drcId, drc.owners);
+            drcStorage.storeDrcCancellationReason(drcId, reason);
         }else {
             revert("user not authorized");
         }
+    }
+    function getDrcCancellationReason(bytes32 drcId) public returns(string memory){
+        return drcStorage.getDrcCancellationReason(drcId);
     }
 
     // This function begins the drd transfer application
@@ -340,13 +362,13 @@ contract DRCManager is KdaCommon {
             "Application is not submitted"
         );
         if (userManager.isOfficerDtaVerifier(msg.sender)) {
-            status.verified = true;
+            status.verified = VerificationValues.VERIFIED;
             status.verifierId = officer.userId;
             // status.verifierRole = officer.role;
             // update Application
             dta.status = ApplicationStatus.VERIFIED;
             dtaStorage.updateApplication(dta);
-            emit DtaApplicationVerified(
+            emit DtaVerified(
                 officer,
                 applicationId,
                 getApplicantIdsFromApplicants(dta.applicants),
@@ -357,6 +379,87 @@ contract DRCManager is KdaCommon {
             revert("User not authorized");
         }
     }
+
+    function rejectVerificationDTA(bytes32 applicationId, string memory reason) public {
+        DtaVerificationStatus memory status = dtaStorage.getVerificationStatus(
+            applicationId
+        );
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        emit LogOfficer("Officer in action", officer);
+        // fetch application. Reverts if application is not created
+        DrcTransferApplication memory dta = dtaStorage.getApplication(
+            applicationId
+        );
+        if(dta.status == ApplicationStatus.VERIFIED){
+            revert("Application already verified");
+        }
+        if(dta.status == ApplicationStatus.REJECTED){
+            revert("Application already rejected");
+        }
+        require(
+            dta.status == ApplicationStatus.SUBMITTED,
+            "Application is not submitted"
+        );
+        if (userManager.isOfficerDtaVerifier(msg.sender)) {
+            status.verified = VerificationValues.REJECTED;
+            status.verifierId = officer.userId;
+            // status.verifierRole = officer.role;
+            // update Application
+            dta.status = ApplicationStatus.REJECTED;
+            dtaStorage.updateApplication(dta);
+            emit DtaVerificationRejected(
+                officer,
+                applicationId,
+                reason,
+                getApplicantIdsFromApplicants(dta.applicants),
+                dta.buyers
+            );
+            dtaStorage.storeVerificationStatus(applicationId, status);
+        } else {
+            revert("User not authorized");
+        }
+    }
+
+    function sendBackDTA(bytes32 applicationId, string memory reason) public {
+        DtaVerificationStatus memory status = dtaStorage.getVerificationStatus(
+            applicationId
+        );
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        emit LogOfficer("Officer in action", officer);
+        // fetch application. Reverts if application is not created
+        DrcTransferApplication memory dta = dtaStorage.getApplication(
+            applicationId
+        );
+        if(dta.status == ApplicationStatus.VERIFIED){
+            revert("Application already verified");
+        }
+        if(dta.status == ApplicationStatus.REJECTED){
+            revert("Application already rejected");
+        }
+        require(
+            dta.status == ApplicationStatus.SUBMITTED,
+            "Application is not submitted"
+        );
+        if (userManager.isOfficerDtaVerifier(msg.sender)) {
+            status.verified = VerificationValues.SENT_BACK_FOR_CORRECTION;
+            status.verifierId = officer.userId;
+            // status.verifierRole = officer.role;
+            // update Application
+            dta.status = ApplicationStatus.SENT_BACK_FOR_CORRECTION;
+            dtaStorage.updateApplication(dta);
+            emit DtaSentBack(
+                officer,
+                applicationId,
+                reason,
+                getApplicantIdsFromApplicants(dta.applicants),
+                dta.buyers
+            );
+            dtaStorage.storeVerificationStatus(applicationId, status);
+        } else {
+            revert("User not authorized");
+        }
+    }
+
 
     // this function is called by the admin to approve the transfer
     function approveDta(bytes32 applicationId, bytes32 newDrcId) public {
@@ -371,8 +474,7 @@ contract DRCManager is KdaCommon {
         require(
             application.status == ApplicationStatus.VERIFIED ||
             application.status == ApplicationStatus.REJECTED,
-            "Application should be verified or rejected"
-        );
+            "Application should be verified or rejected");
         } else if(userManager.isOfficerDtaApprover(msg.sender)){
             require(application.status == ApplicationStatus.VERIFIED);
         } else {
@@ -380,7 +482,7 @@ contract DRCManager is KdaCommon {
         }
         application.status = ApplicationStatus.APPROVED;
         dtaStorage.updateApplication(application);
-        emit DtaApplicationApproved(
+        emit DtaApproved(
             officer,
             applicationId,
             getApplicantIdsFromApplicants(application.applicants),
@@ -461,7 +563,8 @@ contract DRCManager is KdaCommon {
             // update Application
         application.status = ApplicationStatus.REJECTED;
         dtaStorage.updateApplication(application);
-        emit DtaApplicationRejected(
+        emit DtaRejected(
+            officer,
             applicationId,
             reason,
             getApplicantIdsFromApplicants(application.applicants),
@@ -540,12 +643,13 @@ contract DRCManager is KdaCommon {
     function getDtaVerificationStatus(bytes32 applicationId)
         public
         view
-        returns (bool)
+        returns (DtaVerificationStatus memory)
     {
         DtaVerificationStatus memory status = dtaStorage.getVerificationStatus(
             applicationId
         );
-        return status.verified;
+        return status;
+//        return (status.verified == VerificationValues.VERIFIED);
     }
 
     // I need to create two different get application method and then merge it
@@ -598,15 +702,17 @@ contract DRCManager is KdaCommon {
     function createUtilizationApplication(
         bytes32 drcId,
         bytes32 applicationId,
-        uint256 far,
-        uint256 timestamp
+        uint256 farUtilized,
+        uint256 farPermitted,
+        uint256 timestamp,
+        DrcUtilizationDetails memory drcUtilizationDetails
     ) public {
         // check drc exists or not
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
         DRC memory drc = drcStorage.getDrc(drcId);
-        // far should be less than available far.
+        // farUtilized should be less than available far available.
         require(
-            far <= drc.farAvailable,
+            farUtilized <= drc.farAvailable,
             "Utilized area is greater than the available area"
         );
         // add all the owners id from the drc to the mapping
@@ -623,10 +729,12 @@ contract DRCManager is KdaCommon {
         duaStorage.createApplication(
             applicationId,
             drc.id,
-            far,
+            farUtilized,
+            farPermitted,
             duaSignatories,
+            ApplicationStatus.PENDING,
             timestamp,
-            ApplicationStatus.PENDING
+            drcUtilizationDetails
         );
         signDrcUtilizationApplication(applicationId);
         drcStorage.addDuaToDrc(drc.id, applicationId);
@@ -675,7 +783,7 @@ contract DRCManager is KdaCommon {
             // reduce drc once Application is approved, and update the drc
             DRC memory drc = drcStorage.getDrc(application.drcId);
             // need to create unique Id
-            createDucFromDrc(drc, application.farUtilized, application.applicationId);
+            createDucFromDrc(drc, application );
         }
         duaStorage.updateApplication(application);
     }
@@ -805,19 +913,19 @@ contract DRCManager is KdaCommon {
         return tempArray;
     }
 
-    function createDucFromDrc(DRC memory drc, uint farUtilized, bytes32 id) internal{
+    function createDucFromDrc (DRC memory drc, DUA memory dua) internal {
+//uint farPermitted, uint tdrConsumed,DrcUtilizationDetails memory drcUtilizationDetails, bytes32 id) internal{
         DUC memory newDuc;
-        newDuc.id = id;
+        newDuc.id = dua.applicationId;
         newDuc.noticeId = drc.noticeId;
-        newDuc.farUtilized = farUtilized;
+        newDuc.farPermitted = dua.farPermitted;
         newDuc.owners = drc.owners;
         newDuc.circleRateSurrendered= drc.circleRateSurrendered;
-        newDuc.circleRateUtilization = drc.circleRateUtilization;
-
-
+        newDuc.drcUtilizationDetails = dua.drcUtilizationDetails;
+        newDuc.tdrConsumed = dua.farUtilized;
         ducStorage.createDuc(newDuc);
         // need to reduce the available area of the old drc
-        drc.farAvailable = drc.farAvailable - farUtilized;
+        drc.farAvailable = drc.farAvailable - dua.farUtilized;
         if(drc.farAvailable==0){
             drc.status=DrcStatus.UTILIZED;
         }
