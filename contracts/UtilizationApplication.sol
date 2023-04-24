@@ -54,7 +54,7 @@ contract DuaStorage is KdaCommon {
                 _status,
                 _timeStamp,
                 _drcUtilizationDetails,
-                LandInfo _landInfo
+               _landInfo
             );
         storeApplicationInMap(dua);
         storeApplicationForUser(dua);
