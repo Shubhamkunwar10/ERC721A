@@ -366,7 +366,7 @@ contract TDRManager is KdaCommon {
                 _applicationId,
                 getApplicantIdsFromTdrApplication(application)
             );
-            emit DrcSubmitted(_applicationId);
+            // emit DrcSubmitted(_applicationId);
         }
         // Update the TdrApplication in the tdrStorage
         tdrStorage.updateApplication(application);

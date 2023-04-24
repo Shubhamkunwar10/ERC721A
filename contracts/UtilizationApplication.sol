@@ -35,8 +35,8 @@ contract DuaStorage is KdaCommon {
         uint _farTransferred,
         uint _farPermitted,
         Signatory[] memory _signatories,
-        uint _timeStamp,
         ApplicationStatus _status,
+        uint _timeStamp,
         DrcUtilizationDetails memory _drcUtilizationDetails
     ) public onlyManager {
         require(

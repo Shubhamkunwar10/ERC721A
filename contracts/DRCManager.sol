@@ -732,8 +732,8 @@ contract DRCManager is KdaCommon {
             farUtilized,
             farPermitted,
             duaSignatories,
-            timestamp,
             ApplicationStatus.PENDING,
+            timestamp,
             drcUtilizationDetails
         );
         signDrcUtilizationApplication(applicationId);
