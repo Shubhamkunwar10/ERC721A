@@ -122,10 +122,9 @@ contract TdrStorage is KdaCommon{
         // copy each fields one by one
         tdrNotice.noticeId = _tdrNotice.noticeId;
         tdrNotice.timeStamp = _tdrNotice.timeStamp;
-        tdrNotice.landInfo = _tdrNotice.landInfo;
-        tdrNotice.masterPlanInfo = _tdrNotice.masterPlanInfo;
-        tdrNotice.areaSurrendered = _tdrNotice.areaSurrendered;
-        tdrNotice.circleRateSurrendered = _tdrNotice.circleRateSurrendered;
+        tdrNotice.locationInfo = _tdrNotice.locationInfo;
+        tdrNotice.propertyInfo = _tdrNotice.propertyInfo;
+        tdrNotice.tdrInfo = _tdrNotice.tdrInfo;
         tdrNotice.status = _tdrNotice.status;
         tdrNotice.constructionDetails = _tdrNotice.constructionDetails;
         tdrNotice.propertyId = _tdrNotice.propertyId;

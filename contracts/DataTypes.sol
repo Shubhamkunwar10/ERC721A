@@ -151,26 +151,31 @@ pragma solidity ^0.8.16;
     struct TdrNotice{
         bytes32 noticeId;
         uint timeStamp;
-        LandInfo landInfo;
-        MasterPlanInfo masterPlanInfo;
-        uint areaSurrendered;
-        uint circleRateSurrendered;
+        LocationInfo locationInfo;
+        PropertyInfo propertyInfo;
+        TdrInfo tdrInfo;
         NoticeStatus status;
         ConstructionDetails constructionDetails; // Warning for floating
         PropertyOwner[] owners;
         bytes32 propertyId;
     }
-    struct LandInfo {
+    struct LocationInfo {
         bytes32 khasraOrPlotNo;
         bytes32 villageOrWard;
         bytes32 Tehsil;
         bytes32 district;
-        LandUse landUse;
     }
-    struct MasterPlanInfo {
+    struct PropertyInfo {
         bytes32 masterPlan;
         uint roadWidth;
         AreaType areaType;
+        LandUse landUse;
+    }
+    struct TdrInfo {
+        uint areaAffected;
+        uint circleRate;
+        uint farProposed;
+        TdrType tdrType;
     }
 // note since solidity does not have floating point number, it is in multiple of hundres
     struct ConstructionDetails {
@@ -293,3 +298,15 @@ pragma solidity ^0.8.16;
         string email;
         string ownerAddress;
     }
+
+enum TdrType {
+    NONE,
+    HERITAGE,
+    RESERVATION,
+    SLUM,
+    NEW_ROAD,
+    EXISTING_ROAD,
+    AMENITY,
+    AGRICULTURE,
+    OTHER
+}
