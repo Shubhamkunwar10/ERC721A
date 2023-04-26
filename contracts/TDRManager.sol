@@ -711,8 +711,8 @@ contract TDRManager is KdaCommon {
                 farGranted,
                 newDrcId,
                 timeStamp,
-                notice.areaSurrendered,
-                notice.circleRateSurrendered
+                notice.tdrInfo.areaAffected,
+                notice.tdrInfo.circleRate
             );
             //             drcManager.issueDRC(tdrApplication, far);
             // emit events
