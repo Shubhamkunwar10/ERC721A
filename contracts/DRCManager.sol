@@ -250,6 +250,8 @@ contract DRCManager is KdaCommon {
         // check drc exists or not
         // require(drcStorage.isDrcCreated(drcId),"DRC not created");
         DRC memory drc = drcStorage.getDrc(drcId);
+        require(drcStorage.isOwnerInDrc(drc,bytes32(uint256(keccak256(abi.encodePacked(msg.sender))))),"You are not the owner of drc");
+
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
 
         // far should be less than available far.
@@ -705,11 +707,14 @@ contract DRCManager is KdaCommon {
         uint256 farUtilized,
         uint256 farPermitted,
         uint256 timestamp,
-        DrcUtilizationDetails memory drcUtilizationDetails
+        DrcUtilizationDetails memory drcUtilizationDetails,
+        LandInfo memory _landInfo
     ) public {
         // check drc exists or not
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
         DRC memory drc = drcStorage.getDrc(drcId);
+        require(drcStorage.isOwnerInDrc(drc,bytes32(uint256(keccak256(abi.encodePacked(msg.sender))))),"You are not the owner of drc");
+
         // farUtilized should be less than available far available.
         require(
             farUtilized <= drc.farAvailable,
@@ -726,6 +731,7 @@ contract DRCManager is KdaCommon {
             s.hasUserSigned = false;
             duaSignatories[i] = s;
         }
+        
         duaStorage.createApplication(
             applicationId,
             drc.id,
@@ -734,7 +740,8 @@ contract DRCManager is KdaCommon {
             duaSignatories,
             ApplicationStatus.PENDING,
             timestamp,
-            drcUtilizationDetails
+            drcUtilizationDetails,
+            _landInfo
         );
         signDrcUtilizationApplication(applicationId);
         drcStorage.addDuaToDrc(drc.id, applicationId);
