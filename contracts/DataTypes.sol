@@ -122,7 +122,7 @@ pragma solidity ^0.8.16;
         ApplicationStatus status;
         uint timeStamp;
         DrcUtilizationDetails drcUtilizationDetails;
-        LandInfo landInfo;
+        LocationInfo locationInfo;
     }
 
 // DRC Utilization Certificate
@@ -132,12 +132,11 @@ pragma solidity ^0.8.16;
         bytes32 noticeId;
         uint farPermitted;
         uint circleRateSurrendered; //  from notice
-//        uint circleRateUtilization; // from drcUtilizationDetails. Remove it
         bytes32[] owners;
         uint timeStamp;
         uint tdrConsumed;
         DrcUtilizationDetails drcUtilizationDetails;
-
+        LocationInfo locationInfo;
     }
 
     struct TdrApplication {
@@ -146,7 +145,7 @@ pragma solidity ^0.8.16;
         bytes32 place;
         bytes32 noticeId;
         uint farRequested;
-        uint circleRateUtilized;
+        uint circleRate;
         Signatory[] applicants; // this should be applicants user id and then account should be taken from some mapping
         ApplicationStatus status;
     }

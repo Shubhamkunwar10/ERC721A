@@ -73,8 +73,8 @@ contract DucStorage {
         bytes32[] memory owners,
         uint timeStamp,
         uint _tdrConsumed,
-        DrcUtilizationDetails memory _drcUtilizationDetails
-    ) public {
+        DrcUtilizationDetails memory _drcUtilizationDetails,
+        LocationInfo memory _locationInfo) public {
         certMap[id] = DUC({
         id: id,
         applicationId: applicationId,
@@ -84,7 +84,8 @@ contract DucStorage {
         owners: owners,
         timeStamp: timeStamp,
         tdrConsumed: _tdrConsumed,
-        drcUtilizationDetails:_drcUtilizationDetails
+        drcUtilizationDetails:_drcUtilizationDetails,
+        locationInfo: _locationInfo
         });
     }
     event DucCreated(bytes32 ducId, DUC duc,bytes32[] ownerIds);
@@ -118,7 +119,8 @@ contract DucStorage {
         bytes32[] memory owners,
         uint timeStamp,
         uint _tdrConsumed,
-        DrcUtilizationDetails memory _drcUtilizationDetails
+        DrcUtilizationDetails memory _drcUtilizationDetails,
+        LocationInfo memory _locationInfo
     ) public {
         require(certMap[id].id == id, "Cert does not exist");
         certMap[id] = DUC({
@@ -130,7 +132,8 @@ contract DucStorage {
         owners: owners,
         timeStamp: timeStamp,
         tdrConsumed: _tdrConsumed,
-        drcUtilizationDetails:_drcUtilizationDetails
+        drcUtilizationDetails:_drcUtilizationDetails,
+        locationInfo: _locationInfo
         });
     }
 
@@ -170,6 +173,7 @@ contract DucStorage {
         duc.timeStamp = _duc.timeStamp;
         duc.tdrConsumed=_duc.tdrConsumed;
         duc.drcUtilizationDetails = _duc.drcUtilizationDetails;
+        duc.locationInfo = _duc.locationInfo;
         delete duc.owners;
         for(uint i =0; i<_duc.owners.length; i++){
             duc.owners.push(_duc.owners[i]);

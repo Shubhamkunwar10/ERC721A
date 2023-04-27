@@ -38,7 +38,7 @@ contract DuaStorage is KdaCommon {
         ApplicationStatus _status,
         uint _timeStamp,
         DrcUtilizationDetails memory _drcUtilizationDetails,
-        LandInfo memory _landInfo
+        LocationInfo memory _locationInfo
     ) public onlyManager {
         require(
             applicationMap[_applicationId].applicationId == "",
@@ -54,7 +54,7 @@ contract DuaStorage is KdaCommon {
                 _status,
                 _timeStamp,
                 _drcUtilizationDetails,
-               _landInfo
+                _locationInfo
             );
         storeApplicationInMap(dua);
         storeApplicationForUser(dua);
@@ -100,7 +100,7 @@ contract DuaStorage is KdaCommon {
         uint _timeStamp,
         ApplicationStatus _status,
         DrcUtilizationDetails memory _drcUtilizationDetails,
-          LandInfo memory _landInfo
+          LocationInfo memory _locationInfo
     ) public onlyManager {
         require(
             applicationMap[_applicationId].applicationId != "",
@@ -116,7 +116,7 @@ contract DuaStorage is KdaCommon {
                 _status,
                 _timeStamp,
                 _drcUtilizationDetails,
-                _landInfo
+                _locationInfo
             )
         );
         emit DuaUpdated(_applicationId);
@@ -145,6 +145,7 @@ contract DuaStorage is KdaCommon {
         dua.farPermitted = _dua.farPermitted;
         dua.status = _dua.status;
         dua.timeStamp = _dua.timeStamp;
+        dua.locationInfo = _dua.locationInfo;
         delete dua.signatories;
         for (uint i = 0; i < _dua.signatories.length; i++) {
             dua.signatories.push(_dua.signatories[i]);

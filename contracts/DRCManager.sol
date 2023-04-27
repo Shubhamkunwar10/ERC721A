@@ -250,7 +250,6 @@ contract DRCManager is KdaCommon {
         // check drc exists or not
         // require(drcStorage.isDrcCreated(drcId),"DRC not created");
         DRC memory drc = drcStorage.getDrc(drcId);
-        require(drcStorage.isOwnerInDrc(drc,bytes32(uint256(keccak256(abi.encodePacked(msg.sender))))),"You are not the owner of drc");
 
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
 
@@ -259,8 +258,7 @@ contract DRCManager is KdaCommon {
             far <= drc.farAvailable,
             "Transfer area is greater than the available area"
         );
-
-        require(drcStorage.isOwnerInDrc(drc, bytes32(uint(keccak256(abi.encodePacked(msg.sender))))), "You are not the owner of this DRC");
+        require(drcStorage.isOwnerInDrc(drc,userManager.getOfficerIdByAddress(msg.sender)),"Applicant is not the owner of the DRC");
 
         // Signatory[] memory applicants = new Signatory[](drc.owners.length);
 
@@ -298,10 +296,12 @@ contract DRCManager is KdaCommon {
         DrcTransferApplication memory application = dtaStorage.getApplication(
             applicationId
         );
+        bool isUserSignatory = false;
         // make sure the user has not signed the transfer
         for (uint256 i = 0; i < application.applicants.length; i++) {
             Signatory memory signatory = application.applicants[i];
             if (signatory.userId == userManager.getUserId(msg.sender)) {
+                isUserSignatory =true;
                 require(
                     !signatory.hasUserSigned,
                     "User have already signed the application"
@@ -313,6 +313,9 @@ contract DRCManager is KdaCommon {
                     application.buyers
                 );
             }
+        }
+        if (isUserSignatory ==false){
+            revert("Applicant is not the part of application");
         }
         // user signs the application
         // find out whether all the users have signed
@@ -708,12 +711,11 @@ contract DRCManager is KdaCommon {
         uint256 farPermitted,
         uint256 timestamp,
         DrcUtilizationDetails memory drcUtilizationDetails,
-        LandInfo memory _landInfo
+        LocationInfo memory _locationInfo
     ) public {
         // check drc exists or not
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
         DRC memory drc = drcStorage.getDrc(drcId);
-        require(drcStorage.isOwnerInDrc(drc,bytes32(uint256(keccak256(abi.encodePacked(msg.sender))))),"You are not the owner of drc");
 
         // farUtilized should be less than available far available.
         require(
@@ -722,8 +724,7 @@ contract DRCManager is KdaCommon {
         );
         // add all the owners id from the drc to the mapping
 
-        require(drcStorage.isOwnerInDrc(drc, bytes32(uint(keccak256(abi.encodePacked(msg.sender))))), "You are not the owner of this DRC");
-        
+        Signatory[] memory duaSignatories = new Signatory[](drc.owners.length);
         // no user has signed yet
         for (uint256 i = 0; i < drc.owners.length; i++) {
             Signatory memory s;
@@ -741,7 +742,7 @@ contract DRCManager is KdaCommon {
             ApplicationStatus.PENDING,
             timestamp,
             drcUtilizationDetails,
-            _landInfo
+            _locationInfo
         );
         signDrcUtilizationApplication(applicationId);
         drcStorage.addDuaToDrc(drc.id, applicationId);
@@ -757,9 +758,11 @@ contract DRCManager is KdaCommon {
         // require application Signatories.length != 0
         require(application.signatories.length != 0, "No signatories found");
         // make sure the user has not signed the transfer
+        bool isUserSignatory = false;
         for (uint256 i = 0; i < application.signatories.length; i++) {
             Signatory memory signatory = application.signatories[i];
             if (signatory.userId == userManager.getUserId(msg.sender)) {
+                isUserSignatory=true;
                 require(
                     !signatory.hasUserSigned,
                     "User have already signed the application"
@@ -771,6 +774,9 @@ contract DRCManager is KdaCommon {
                     getApplicantIdsFromApplicants(application.signatories)
                 );
             }
+        }
+        if (isUserSignatory==false){
+            revert("Applicant is not the part of application");
         }
         // user signs the application
         // find out whether all the users have signed
@@ -930,6 +936,7 @@ contract DRCManager is KdaCommon {
         newDuc.circleRateSurrendered= drc.circleRateSurrendered;
         newDuc.drcUtilizationDetails = dua.drcUtilizationDetails;
         newDuc.tdrConsumed = dua.farUtilized;
+        newDuc.locationInfo = dua.locationInfo;
         ducStorage.createDuc(newDuc);
         // need to reduce the available area of the old drc
         drc.farAvailable = drc.farAvailable - dua.farUtilized;

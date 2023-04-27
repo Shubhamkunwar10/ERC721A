@@ -192,6 +192,9 @@ contract UserManager is KdaCommon {
         return false;
     }
 
+    function getOfficerIdByAddress(address _address) view public returns(bytes32) {
+        return userStorage.getOfficerIdByAddress(_address);
+    }
 
     function ifOfficerHasRole(KdaOfficer memory officer, Role roleToCheck) public pure returns(bool){
         

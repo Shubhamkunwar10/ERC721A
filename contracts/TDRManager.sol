@@ -895,7 +895,7 @@ contract TDRManager is KdaCommon {
         drc.farAvailable = farGranted;
         drc.areaSurrendered = areaSurrendered; // change it to get the value from notice
         drc.circleRateSurrendered = circleRateSurrendered; // get it from application
-        drc.circleRateUtilization = tdrApplication.circleRateUtilized; // get from application
+        drc.circleRateUtilization = tdrApplication.circleRate; // get from application
         drc.applicationId = tdrApplication.applicationId;
         drc.owners = new bytes32[](tdrApplication.applicants.length);
         drc.timeStamp = timeStamp;
