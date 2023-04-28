@@ -57,133 +57,18 @@ pragma solidity ^0.8.16;
         PLOTTED_RESIDENTIAL,
         INDUSTRIAL
     }
-    // DRC would be stored in this struct. knowing this DRC one should know the owner of the DRC,
-    //  area and the status of the DRC
-    // Everything else, is static data, not to be interpreted by blockchain.
-    struct DRC {
-        bytes32 id;
-        bytes32 applicationId; // application that lead to creation of drc
-        bytes32 noticeId;
-        DrcStatus status;
-        uint farCredited;
-        uint farAvailable;
-        uint areaSurrendered;
-        uint circleRateSurrendered;
-        uint circleRateUtilization;
-        bytes32[] owners;
-        uint timeStamp;
-        bool hasPrevious;
-        bytes32 previousDRC;
-    }
-
-    struct DrcOwner{
-        bytes32 userId;
-        uint area;
-    }
-
-    struct Attribute{
-    string name;
-    string value;
-    string mimeType;
-    }
-
-    struct DrcTransferApplication {
-        bytes32 applicationId;
-        bytes32 drcId;
-        uint farTransferred;
-        Signatory[] applicants;
-//        DrcOwner[] newDrcOwner;
-        bytes32[] buyers;
-        ApplicationStatus status;
-        uint timeStamp;
-    }
 
 
-    struct Signatory {
-        bytes32 userId;
-        bool hasUserSigned;
-    }
-
-    struct DrcUtilizationDetails {
-        LandUse landUse;
-        AreaType areaType;
-        uint roadWidth;
-        uint purchasableFar;
-        uint basicFar;
-        uint circleRateUtilization;
-    }
-
-    struct DUA {
-        bytes32 applicationId;
-        bytes32 drcId;
-        uint farUtilized;
-        uint farPermitted;
-        Signatory[] signatories;
-        ApplicationStatus status;
-        uint timeStamp;
-        DrcUtilizationDetails drcUtilizationDetails;
-        LocationInfo locationInfo;
-    }
-
-// DRC Utilization Certificate
-    struct DUC {
-        bytes32 id;
-        bytes32 applicationId; // application id of application in BPAS
-        bytes32 noticeId;
-        uint farPermitted;
-        uint circleRateSurrendered; //  from notice
-        bytes32[] owners;
-        uint timeStamp;
-        uint tdrConsumed;
-        DrcUtilizationDetails drcUtilizationDetails;
-        LocationInfo locationInfo;
-    }
-
-    struct TdrApplication {
-        bytes32 applicationId;
-        uint timeStamp;
-        bytes32 place;
-        bytes32 noticeId;
-        uint farRequested;
-        uint circleRate;
-        Signatory[] applicants; // this should be applicants user id and then account should be taken from some mapping
-        ApplicationStatus status;
-    }
-    struct TdrNotice{
-        bytes32 noticeId;
-        uint timeStamp;
-        LocationInfo locationInfo;
-        PropertyInfo propertyInfo;
-        TdrInfo tdrInfo;
-        NoticeStatus status;
-        ConstructionDetails constructionDetails; // Warning for floating
-        PropertyOwner[] owners;
-        bytes32 propertyId;
-    }
-    struct LocationInfo {
-        bytes32 khasraOrPlotNo;
-        bytes32 villageOrWard;
-        bytes32 Tehsil;
-        bytes32 district;
-    }
-    struct PropertyInfo {
-        bytes32 masterPlan;
-        uint roadWidth;
-        AreaType areaType;
-        LandUse landUse;
-    }
-    struct TdrInfo {
-        uint areaAffected;
-        uint circleRate;
-        uint farProposed;
-        TdrType tdrType;
-    }
-// note since solidity does not have floating point number, it is in multiple of hundres
-    struct ConstructionDetails {
-        uint256 landArea;
-        uint256 buildUpArea;
-        uint256 carpetArea;
-        uint256 numFloors;
+    enum TdrType {
+        NONE,
+        HERITAGE,
+        RESERVATION,
+        SLUM,
+        NEW_ROAD,
+        EXISTING_ROAD,
+        AMENITY,
+        AGRICULTURE,
+        OTHER
     }
 
     enum Designation {
@@ -243,6 +128,138 @@ pragma solidity ^0.8.16;
         ZONE_4
     }
 
+    // DRC would be stored in this struct. knowing this DRC one should know the owner of the DRC,
+    //  area and the status of the DRC
+    // Everything else, is static data, not to be interpreted by blockchain.
+    struct DRC {
+        bytes32 id;
+        bytes32 applicationId; // application that lead to creation of drc
+        bytes32 noticeId;
+        DrcStatus status;
+        uint farCredited;
+        uint farAvailable;
+        uint areaSurrendered;
+        uint circleRateSurrendered;
+        uint circleRateUtilization;
+        bytes32[] owners;
+        uint timeStamp;
+        bool hasPrevious;
+        bytes32 previousDRC;
+    }
+
+    struct DrcOwner{
+        bytes32 userId;
+        uint area;
+    }
+
+    struct Attribute{
+    string name;
+    string value;
+    string mimeType;
+    }
+
+    struct DrcTransferApplication {
+        bytes32 applicationId;
+        bytes32 drcId;
+        uint farTransferred;
+        Signatory[] applicants;
+//        DrcOwner[] newDrcOwner;
+        bytes32[] buyers;
+        ApplicationStatus status;
+        uint timeStamp;
+        bytes32 applicantId;
+    }
+
+
+    struct Signatory {
+        bytes32 userId;
+        bool hasUserSigned;
+    }
+
+    struct DrcUtilizationDetails {
+        LandUse landUse;
+        AreaType areaType;
+        uint roadWidth;
+        uint purchasableFar;
+        uint basicFar;
+        uint circleRateUtilization;
+    }
+
+    struct DUA {
+        bytes32 applicationId;
+        bytes32 drcId;
+        uint farUtilized;
+        uint farPermitted;
+        Signatory[] signatories;
+        ApplicationStatus status;
+        uint timeStamp;
+        DrcUtilizationDetails drcUtilizationDetails;
+        LocationInfo locationInfo;
+        bytes32 applicantId;
+    }
+
+// DRC Utilization Certificate
+    struct DUC {
+        bytes32 id;
+        bytes32 applicationId; // application id of application in BPAS
+        bytes32 noticeId;
+        uint farPermitted;
+        uint circleRateSurrendered; //  from notice
+        bytes32[] owners;
+        uint timeStamp;
+        uint tdrConsumed;
+        DrcUtilizationDetails drcUtilizationDetails;
+        LocationInfo locationInfo;
+    }
+
+    struct TdrApplication {
+        bytes32 applicationId;
+        uint timeStamp;
+        bytes32 place;
+        bytes32 noticeId;
+        uint farRequested;
+        uint circleRate;
+        Signatory[] applicants; // this should be applicants user id and then account should be taken from some mapping
+        ApplicationStatus status;
+        bytes32 applicantId;
+    }
+    struct TdrNotice{
+        bytes32 noticeId;
+        uint timeStamp;
+        LocationInfo locationInfo;
+        PropertyInfo propertyInfo;
+        TdrInfo tdrInfo;
+        NoticeStatus status;
+        ConstructionDetails constructionDetails; // Warning for floating
+        PropertyOwner[] owners;
+        bytes32 propertyId;
+    }
+    struct LocationInfo {
+        bytes32 khasraOrPlotNo;
+        bytes32 villageOrWard;
+        bytes32 Tehsil;
+        bytes32 district;
+    }
+    struct PropertyInfo {
+        bytes32 masterPlan;
+        uint roadWidth;
+        AreaType areaType;
+        LandUse landUse;
+    }
+    struct TdrInfo {
+        uint areaAffected;
+        uint circleRate;
+        uint farProposed;
+        TdrType tdrType;
+    }
+// note since solidity does not have floating point number, it is in multiple of hundres
+    struct ConstructionDetails {
+        uint256 landArea;
+        uint256 buildUpArea;
+        uint256 carpetArea;
+        uint256 numFloors;
+    }
+
     struct KdaOfficer {
         bytes32 userId;
         Role[] roles;
@@ -299,15 +316,3 @@ pragma solidity ^0.8.16;
         string email;
         string ownerAddress;
     }
-
-enum TdrType {
-    NONE,
-    HERITAGE,
-    RESERVATION,
-    SLUM,
-    NEW_ROAD,
-    EXISTING_ROAD,
-    AMENITY,
-    AGRICULTURE,
-    OTHER
-}

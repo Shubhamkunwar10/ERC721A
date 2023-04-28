@@ -267,6 +267,7 @@ contract TdrStorage is KdaCommon{
         application.circleRate = _application.circleRate;
         //        application.farGranted = _application.farGranted;
         application.status = _application.status;
+        application.applicantId = _application.applicantId;
         delete application.applicants;
 
         // Copy the applicants array from the input _application to the storage application

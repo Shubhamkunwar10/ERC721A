@@ -41,7 +41,8 @@ constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
         Signatory[] memory _signatories,
         bytes32[] memory _buyers,
         uint _timeStamp,
-        ApplicationStatus _status
+        ApplicationStatus _status,
+        bytes32 _applicantId
     ) public onlyManager {
         require(
             applicationMap[_applicationId].applicationId == "",
@@ -55,32 +56,11 @@ constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
                 _signatories,
                 _buyers,
                 _status,
-                _timeStamp
+                _timeStamp,
+                _applicantId
             );
         storeApplicationInMap(dta);
         storeApplicationForUser(dta);
-        // storeApplicationInMap(
-        //     DrcTransferApplication(
-        //         _applicationId,
-        //         _drcId,
-        //         _farTransferred,
-        //         _signatories,
-        //         _buyers,
-        //         _status,
-        //         _timeStamp
-        //     )
-        // );
-        // storeApplicationForUser(
-        //     DrcTransferApplication(
-        //         _applicationId,
-        //         _drcId,
-        //         _farTransferred,
-        //         _signatories,
-        //         _buyers,
-        //         _status,
-        //         _timeStamp
-        //     )
-        // );
         emit DtaCreated(_applicationId,dta, getApplicantIdsFromApplication(dta));
     }
 
@@ -117,6 +97,7 @@ constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
         dta.farTransferred = _dta.farTransferred;
         dta.status = _dta.status;
         dta.timeStamp = _dta.timeStamp;
+        dta.applicantId = _dta.applicantId;
         delete dta.applicants;
         for (uint i = 0; i < _dta.applicants.length; i++) {
             dta.applicants.push(_dta.applicants[i]);

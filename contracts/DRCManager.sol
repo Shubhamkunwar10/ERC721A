@@ -245,7 +245,8 @@ contract DRCManager is KdaCommon {
         bytes32 applicationId,
         uint256 far,
         uint256 timestamp,
-        bytes32[] memory buyers
+        bytes32[] memory buyers,
+        bytes32 applicantId
     ) public {
         // check drc exists or not
         // require(drcStorage.isDrcCreated(drcId),"DRC not created");
@@ -284,7 +285,8 @@ contract DRCManager is KdaCommon {
             applicants,
             buyers,
             timestamp,
-            ApplicationStatus.PENDING
+            ApplicationStatus.PENDING,
+            applicantId
         );
         // signs the drc transfer application and checks whether all owners have signed it or not
         signDrcTransferApplication(applicationId);
@@ -711,7 +713,8 @@ contract DRCManager is KdaCommon {
         uint256 farPermitted,
         uint256 timestamp,
         DrcUtilizationDetails memory drcUtilizationDetails,
-        LocationInfo memory _locationInfo
+        LocationInfo memory locationInfo,
+        bytes32 applicantId
     ) public {
         // check drc exists or not
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
@@ -742,7 +745,8 @@ contract DRCManager is KdaCommon {
             ApplicationStatus.PENDING,
             timestamp,
             drcUtilizationDetails,
-            _locationInfo
+            locationInfo,
+            applicantId
         );
         signDrcUtilizationApplication(applicationId);
         drcStorage.addDuaToDrc(drc.id, applicationId);
