@@ -904,7 +904,6 @@ contract TDRManager is KdaCommon {
             drc.owners[i] = tdrApplication.applicants[i].userId;
         }
         drcStorage.createDrc(drc);
-        emit Logger("issuing DRC without storing");
         emit DrcIssued(drc, getApplicantIdsFromTdrApplication(tdrApplication));
     }
 
