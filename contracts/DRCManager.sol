@@ -102,6 +102,14 @@ contract DRCManager is KdaCommon {
     event DrcUtilized(bytes32 applicationId, uint256 farUtilized);
     event genDRCFromApplication(DRC application);
     event DrcCancelled(bytes32 drcId, bytes32[] applicants);
+    
+    event drc_cancellation(bytes32 drcId);
+    event cancelDrcByAuthority(bytes32 drcId);
+    event revertDrcCancellation(bytes32 drcId);
+
+    mapping(bytes32 => uint) public drcCancellation;
+    
+
    // Constructor function to set the initial values of the contract
     constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {} 
 
