@@ -116,6 +116,12 @@ contract DRCManager is KdaCommon {
         emit drcCancellation(drcId);
     }    
 
+      function cancel_drc_by_authority(bytes32 drcId) public {
+        DRC memory drc = drcStorage.getDrc(drcId);
+        drc.status = DrcStatus.DRC_CANCELLED_BY_AUTHORITY;
+        emit cancelDrcByAuthority(drcId);
+    }
+
    // Constructor function to set the initial values of the contract
     constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {} 
 
