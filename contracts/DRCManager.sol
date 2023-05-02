@@ -111,15 +111,36 @@ contract DRCManager is KdaCommon {
 
     function drc_cancellation(bytes32 drcId, uint time) public {
         DRC memory drc = drcStorage.getDrc(drcId);
+        if (!drcStorage.isDrcCreated(drcId)){
+                revert("DRC not creted");
+            }
         drc_Cancellation[drcId] = time;
         drc.status = DrcStatus.DRC_CANCELLATION_PROCESS_STARTED;
         emit drcCancellation(drcId);
+       
     }    
 
       function cancel_drc_by_authority(bytes32 drcId) public {
+        if(userManager.isOfficerDrcManager(msg.sender)){
+            DRC memory drc = drcStorage.getDrc(drcId);
+            if (!drcStorage.isDrcCreated(drcId)){
+                revert("DRC not creted");
+            }
+            drc.status = DrcStatus.DRC_CANCELLED_BY_AUTHORITY;
+            emit cancelDrcByAuthority(drcId); 
+        } 
+        else {
+            revert("User not authorized");
+        }
+    }
+
+    function revert_drc_cancellation(bytes32 drcId) public {
         DRC memory drc = drcStorage.getDrc(drcId);
-        drc.status = DrcStatus.DRC_CANCELLED_BY_AUTHORITY;
-        emit cancelDrcByAuthority(drcId);
+        if (!drcStorage.isDrcCreated(drcId)){
+                revert("DRC not creted");
+            }
+        drc.status = DrcStatus.DRC_CANCELLED_BY_UTILIZATION;
+        emit revertDrcCancellation(drcId);
     }
 
    // Constructor function to set the initial values of the contract
