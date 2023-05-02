@@ -759,6 +759,7 @@ contract DRCManager is KdaCommon {
 
     function signDrcUtilizationApplication(bytes32 applicationId) public {
         DUA memory application = duaStorage.getApplication(applicationId);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         // require application Signatories.length != 0
         require(application.signatories.length != 0, "No signatories found");
         // make sure the user has not signed the transfer
@@ -795,8 +796,10 @@ contract DRCManager is KdaCommon {
         // if all the signatories has not signed
         if (allSignatoriesSign) {
             //all the signatories has signed
+            if(officer.designation == Designation.VC){
             application.status = ApplicationStatus.APPROVED;
             emit DuaApproved(applicationId, getApplicantIdsFromApplicants(application.signatories));
+            }
             // reduce drc once Application is approved, and update the drc
             DRC memory drc = drcStorage.getDrc(application.drcId);
             // need to create unique Id
