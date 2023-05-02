@@ -103,12 +103,18 @@ contract DRCManager is KdaCommon {
     event genDRCFromApplication(DRC application);
     event DrcCancelled(bytes32 drcId, bytes32[] applicants);
     
-    event drc_cancellation(bytes32 drcId);
+    event drcCancellation(bytes32 drcId);
     event cancelDrcByAuthority(bytes32 drcId);
     event revertDrcCancellation(bytes32 drcId);
 
-    mapping(bytes32 => uint) public drcCancellation;
-    
+    mapping(bytes32 => uint) public drc_Cancellation;
+
+    function drc_cancellation(bytes32 drcId, uint time) public {
+        DRC memory drc = drcStorage.getDrc(drcId);
+        drc_Cancellation[drcId] = time;
+        drc.status = DrcStatus.DRC_CANCELLATION_PROCESS_STARTED;
+        emit drcCancellation(drcId);
+    }    
 
    // Constructor function to set the initial values of the contract
     constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {} 
