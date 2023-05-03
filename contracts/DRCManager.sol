@@ -121,6 +121,7 @@ contract DRCManager is KdaCommon {
         drcStorage.create_drc_cancel_status(drcId, time);
         drcStorage.storeDrcCancellationReason(drcId, reason);
         drc.status = DrcStatus.DRC_CANCELLATION_PROCESS_STARTED;
+        drcStorage.updateDrc(drcId, drc);
         emit CancelDrcStarted(drcId, drc.status, reason);
     }
 
@@ -136,6 +137,7 @@ contract DRCManager is KdaCommon {
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
         drcStorage.storeDrcCancellationReason(drcId, reason);
         drc.status = DrcStatus.DRC_CANCELLED_BY_AUTHORITY;
+        drcStorage.updateDrc(drcId, drc);
         emit CancelDrcByAuthority(drcId, drc.status);
     }
 
@@ -148,6 +150,7 @@ contract DRCManager is KdaCommon {
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
         drcStorage.delete_drc_cancel_status(drcId);
         drc.status = DrcStatus.AVAILABLE;
+        drcStorage.updateDrc(drcId, drc);
         emit CancelDrcRevert(drcId, drc.status);
     }
 
@@ -859,13 +862,11 @@ contract DRCManager is KdaCommon {
         // if all the signatories has not signed
         if (allSignatoriesSign) {
             //all the signatories has signed
-            if (userManager.isOfficerDrcManager(msg.sender)) {
-                application.status = ApplicationStatus.APPROVED;
-                emit DuaApproved(
-                    applicationId,
-                    getApplicantIdsFromApplicants(application.signatories)
-                );
-            }
+            application.status = ApplicationStatus.APPROVED;
+            emit DuaApproved(
+                applicationId,
+                getApplicantIdsFromApplicants(application.signatories)
+            );
             // reduce drc once Application is approved, and update the drc
             DRC memory drc = drcStorage.getDrc(application.drcId);
             // need to create unique Id

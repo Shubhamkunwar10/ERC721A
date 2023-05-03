@@ -34,16 +34,16 @@ contract DrcStorage is KdaCommon {
 
     mapping(bytes32 => uint) public drc_cancel_status;
 
-    function create_drc_cancel_status(bytes32 drcId, uint time) public {
+    function create_drc_cancel_status(bytes32 drcId, uint time) external onlyManager {
         require(time >= block.timestamp, "Time is greater than current time");
         drc_cancel_status[drcId] = time;
     }   
 
-    function delete_drc_cancel_status(bytes32 drcId) public {
+    function delete_drc_cancel_status(bytes32 drcId) public onlyManager{
         delete drc_cancel_status[drcId];
     }
 
-    function update_drc_cancel_status(bytes32 drcId, uint time) public {
+    function update_drc_cancel_status(bytes32 drcId, uint time) public onlyManager{
         drc_cancel_status[drcId] = time;
     }
 
