@@ -31,6 +31,27 @@ contract DrcStorage is KdaCommon {
 
     address public tdrManager;
 
+
+    mapping(bytes32 => uint) public drc_cancel_status;
+
+    function create_drc_cancel_status(bytes32 drcId, uint time) public {
+        require(time >= block.timestamp, "Time is greater than current time");
+        drc_cancel_status[drcId] = time;
+    }   
+
+    function delete_drc_cancel_status(bytes32 drcId) public {
+        delete drc_cancel_status[drcId];
+    }
+
+    function update_drc_cancel_status(bytes32 drcId, uint time) public {
+        drc_cancel_status[drcId] = time;
+    }
+
+    function get_drc_cancel_status(bytes32 drcId) public view returns(uint) {
+        return(drc_cancel_status[drcId]);
+    } 
+
+
     // Constructor function to set the initial values of the contract
     constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
 
