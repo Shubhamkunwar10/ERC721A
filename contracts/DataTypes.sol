@@ -6,7 +6,8 @@ pragma solidity ^0.8.16;
     LOCKED_FOR_TRANSFER,
     LOCKED_FOR_UTILIZATION,
     TRANSFERRED,
-    UTILIZED
+    UTILIZED,
+    CANCELLED
 }
 
     enum ApplicationStatus {
@@ -14,12 +15,23 @@ pragma solidity ^0.8.16;
     SUBMITTED,
     APPROVED,
     REJECTED,
-    DRCISSUED,
+    DRC_ISSUED,
     VERIFIED,
     VERIFICATION_REJECTED,
     SENT_BACK_FOR_CORRECTION
 }
-
+    enum VerificationValues{
+        PENDING,
+        REJECTED,
+        VERIFIED,
+        SENT_BACK_FOR_CORRECTION
+    }
+    enum ApprovalValues{
+        PENDING,
+        APPROVED,
+        REJECTED,
+        SENT_BACK_FOR_CORRECTION
+    }
     enum NoticeStatus{
         PENDING,
         ISSUED,
@@ -27,6 +39,7 @@ pragma solidity ^0.8.16;
     }
 
     enum AreaType {
+                    NONE,
                     DEVELOPED,
                     UNDEVELOPED,
                     NEWLY_DEVELOPED,
@@ -34,8 +47,9 @@ pragma solidity ^0.8.16;
                 }
 
     enum LandUse {
+        NONE,
         GROUP_HOUSING,
-        OFFICES_INSITITUTIONS_AND_COMMUNITY_FACILITIES,
+        OFFICES_INSTITUTIONS_AND_COMMUNITY_FACILITIES,
         MIXED_USE,
         COMMERCIAL,
         AGRICULTURAL,
@@ -43,6 +57,77 @@ pragma solidity ^0.8.16;
         PLOTTED_RESIDENTIAL,
         INDUSTRIAL
     }
+
+
+    enum TdrType {
+        NONE,
+        HERITAGE,
+        RESERVATION,
+        SLUM,
+        NEW_ROAD,
+        EXISTING_ROAD,
+        AMENITY,
+        AGRICULTURE,
+        OTHER
+    }
+
+    enum Designation {
+        NONE,
+        ADMIN,
+        VERIFIER,
+        SUB_VERIFIER,
+        VC,
+        APPROVER,
+        CHIEF_TOWN_AND_COUNTRY_PLANNER,
+        CHIEF_ENGINEER,
+        DM,
+        OTHER
+    }
+
+    enum Department {
+        NONE,
+        LAND,
+        PLANNING,
+        ENGINEERING,
+        PROPERTY,
+        SALES,
+        LEGAL,
+        OTHER
+    }
+
+    enum Role{
+
+        NONE,
+        USER_MANAGER,                       //add, update, delete KDA officer
+        KDA_REGISTRAR,                      //KDA  Registeration
+
+        TDR_NOTICE_MANAGER,            //create or update TDR Notice
+        TDR_APPLICATION_VERIFIER,
+        TDR_APPLICATION_SUB_VERIFIER,
+        TDR_APPLICATION_APPROVER_CHIEF_TOWN_AND_COUNTRY_PLANNER,
+        TDR_APPLICATION_APPROVER_CHIEF_ENGINEER,
+        TDR_APPLICATION_APPROVER_DM,
+        TDR_APPLICATION_ZONE_SETTER,
+        DRC_ISSUER,                         //issue drc
+        DTA_VERIFIER,
+        DTA_APPROVER,
+
+        DRC_MANAGER, // manages drc after issuance
+        NOMINEE_MANAGER
+
+
+    }
+
+
+
+    enum Zone {
+        NONE,
+        ZONE_1,
+        ZONE_2,
+        ZONE_3,
+        ZONE_4
+    }
+
     // DRC would be stored in this struct. knowing this DRC one should know the owner of the DRC,
     //  area and the status of the DRC
     // Everything else, is static data, not to be interpreted by blockchain.
@@ -61,17 +146,7 @@ pragma solidity ^0.8.16;
         bool hasPrevious;
         bytes32 previousDRC;
     }
-// DRC Utilization Certificate
-    struct DUC {
-        bytes32 id;
-        bytes32 applicationId; // application id of application in BPAS
-        bytes32 noticeId;
-        uint farUtilized;
-        uint circleRateSurrendered;
-        uint circleRateUtilization;
-        bytes32[] owners;
-        uint timeStamp;
-    }
+
     struct DrcOwner{
         bytes32 userId;
         uint area;
@@ -92,22 +167,49 @@ pragma solidity ^0.8.16;
         bytes32[] buyers;
         ApplicationStatus status;
         uint timeStamp;
+        bytes32 applicantId;
     }
+
 
     struct Signatory {
         bytes32 userId;
         bool hasUserSigned;
     }
 
+    struct DrcUtilizationDetails {
+        LandUse landUse;
+        AreaType areaType;
+        uint roadWidth;
+        uint purchasableFar;
+        uint basicFar;
+        uint circleRateUtilization;
+    }
 
     struct DUA {
         bytes32 applicationId;
         bytes32 drcId;
         uint farUtilized;
+        uint farPermitted;
         Signatory[] signatories;
         ApplicationStatus status;
         uint timeStamp;
+        DrcUtilizationDetails drcUtilizationDetails;
+        LocationInfo locationInfo;
+        bytes32 applicantId;
+    }
 
+// DRC Utilization Certificate
+    struct DUC {
+        bytes32 id;
+        bytes32 applicationId; // application id of application in BPAS
+        bytes32 noticeId;
+        uint farPermitted;
+        uint circleRateSurrendered; //  from notice
+        bytes32[] owners;
+        uint timeStamp;
+        uint tdrConsumed;
+        DrcUtilizationDetails drcUtilizationDetails;
+        LocationInfo locationInfo;
     }
 
     struct TdrApplication {
@@ -116,79 +218,66 @@ pragma solidity ^0.8.16;
         bytes32 place;
         bytes32 noticeId;
         uint farRequested;
-        uint circleRateUtilized;
+        uint circleRate;
         Signatory[] applicants; // this should be applicants user id and then account should be taken from some mapping
         ApplicationStatus status;
+        bytes32 applicantId;
     }
     struct TdrNotice{
         bytes32 noticeId;
         uint timeStamp;
-        LandInfo landInfo;
-        MasterPlanInfo masterPlanInfo;
-        uint areaSurrendered;
-        uint circleRateSurrendered;
-
+        LocationInfo locationInfo;
+        PropertyInfo propertyInfo;
+        TdrInfo tdrInfo;
         NoticeStatus status;
-
+        ConstructionDetails constructionDetails; // Warning for floating
+        PropertyOwner[] owners;
+        bytes32 propertyId;
     }
-    struct LandInfo {
+    struct LocationInfo {
         bytes32 khasraOrPlotNo;
         bytes32 villageOrWard;
         Zone zone;
         bytes32 district;
     }
-    struct MasterPlanInfo {
-        LandUse landUse;
+    struct PropertyInfo {
         bytes32 masterPlan;
         uint roadWidth;
         AreaType areaType;
+        LandUse landUse;
     }
-
-    enum Role {
-        NONE,
-        ADMIN,
-        VERIFIER,
-        SUB_VERIFIER,
-        VC,
-        APPROVER,
-        CHIEF_TOWN_AND_COUNTRY_PLANNER,
-        CHIEF_ENGINEER,
-        DM
+    struct TdrInfo {
+        uint areaAffected;
+        uint circleRate;
+        uint farProposed;
+        TdrType tdrType;
     }
-
-    enum Department {
-        NONE,
-        LAND,
-        PLANNING,
-        ENGINEERING,
-        PROPERTY,
-        SALES,
-        LEGAL
-    }
-    enum Zone {
-        NONE,
-        ZONE_1,
-        ZONE_2,
-        ZONE_3,
-        ZONE_4
+// note since solidity does not have floating point number, it is in multiple of hundres
+    struct ConstructionDetails {
+        uint256 landArea;
+        uint256 buildUpArea;
+        uint256 carpetArea;
+        uint256 numFloors;
     }
 
     struct KdaOfficer {
         bytes32 userId;
-        Role role;
+        Role[] roles;
         Department department;
         Zone zone;
+        Designation designation;
     }
-    
+
+
+
     struct SubVerificationStatus {
-        Department dep;
         bytes32 officerId;
-        bool isVerified;
+        VerificationValues verified;
         string comment;
     }
 
     struct VerificationStatus {
-        bool verified;
+        VerificationValues verified;
         bytes32 verifierId;
         string verifierComment;
         SubVerificationStatus landVerification;
@@ -199,7 +288,7 @@ pragma solidity ^0.8.16;
         SubVerificationStatus legalVerification;
     }
     struct DtaVerificationStatus {
-        bool verified;
+        VerificationValues verified;
         bytes32 verifierId;
         string verifierComment;
     }
@@ -211,8 +300,19 @@ pragma solidity ^0.8.16;
         ApplicationStatus status;
     }
     struct ApprovalStatus {
-        bool approved;
-        bool hasTownPlannerApproved;
-        bool hasChiefEngineerApproved;
-        bool hasDMApproved;
+        ApprovalValues approved;
+        ApprovalValues hasTownPlannerApproved;
+        ApprovalValues hasChiefEngineerApproved;
+        ApprovalValues hasDMApproved;
+        string townPlannerComment;
+        string chiefEngineerComment;
+        string DMComment;
+    }
+    struct PropertyOwner {
+        string name;
+        string soWo;
+        uint age;
+        string phone;
+        string email;
+        string ownerAddress;
     }

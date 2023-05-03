@@ -118,8 +118,22 @@ contract TdrStorage is KdaCommon{
     }
 
     function saveNoticeInMap(TdrNotice memory _tdrNotice) public {
-        noticeMap[_tdrNotice.noticeId] = _tdrNotice;
+        TdrNotice storage tdrNotice = noticeMap[_tdrNotice.noticeId];
+        // copy each fields one by one
+        tdrNotice.noticeId = _tdrNotice.noticeId;
+        tdrNotice.timeStamp = _tdrNotice.timeStamp;
+        tdrNotice.locationInfo = _tdrNotice.locationInfo;
+        tdrNotice.propertyInfo = _tdrNotice.propertyInfo;
+        tdrNotice.tdrInfo = _tdrNotice.tdrInfo;
+        tdrNotice.status = _tdrNotice.status;
+        tdrNotice.constructionDetails = _tdrNotice.constructionDetails;
+        tdrNotice.propertyId = _tdrNotice.propertyId;
+
+        for (uint i = 0; i < _tdrNotice.owners.length; i++) {
+            tdrNotice.owners.push(_tdrNotice.owners[i]);
+        noticeMap[_tdrNotice.noticeId] = tdrNotice;
         emit LogBytes("notice saved in map", _tdrNotice.noticeId);
+         }
     }
 
     function updateNotice(TdrNotice memory tdrNotice) public onlyManager {
@@ -200,7 +214,7 @@ contract TdrStorage is KdaCommon{
         // Update the application in the mapping
         applicationMap[_applicationId] = application;
         // check for the notice
-        if (_status == ApplicationStatus.DRCISSUED) {
+        if (_status == ApplicationStatus.DRC_ISSUED) {
             TdrNotice storage notice = noticeMap[application.noticeId];
             notice.status = NoticeStatus.ISSUED;
             noticeMap[application.noticeId] = notice;
@@ -250,9 +264,10 @@ contract TdrStorage is KdaCommon{
         application.place = _application.place;
         application.noticeId = _application.noticeId;
         application.farRequested = _application.farRequested;
-        application.circleRateUtilized = _application.circleRateUtilized;
+        application.circleRate = _application.circleRate;
         //        application.farGranted = _application.farGranted;
         application.status = _application.status;
+        application.applicantId = _application.applicantId;
         delete application.applicants;
 
         // Copy the applicants array from the input _application to the storage application
