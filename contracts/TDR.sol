@@ -23,8 +23,6 @@ contract TdrStorage is KdaCommon{
     mapping(bytes32 => bytes32[]) public userApplicationMap; // userId => applicationId[]
     //User application mapping
 
-    // Application zone mapping
-    mapping(bytes32 => Zone) public applicationZoneMap;
     // TDR struct definition
     mapping(bytes32 => ApprovalStatus) public approvalStatusMap; //app Id => verification
 
@@ -45,16 +43,10 @@ contract TdrStorage is KdaCommon{
 
     // Event emitted after a TDR is deleted
     event TDRDeleted(bytes32 noticeId);
-    event zoneSet(bytes32 applicationId, Zone _zone, bytes32[] applicants);
 
 
    // Constructor function to set the initial values of the contract
     constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
-
-
-
-
-
 
     // Function to create a new TDR
     function createApplication(
@@ -466,14 +458,5 @@ contract TdrStorage is KdaCommon{
         return applicantList;
     }
     // delete applicatiion from user
-
-    // CRUD operation for zone
-    function getZone(bytes32 _applicationId) public view returns(Zone){
-        return applicationZoneMap[_applicationId];
-    }
-
-    function deleteZone(bytes32 _applicationId) public onlyAdmin {
-        delete applicationZoneMap[_applicationId];
-    }
 
 }
