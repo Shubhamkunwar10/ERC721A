@@ -453,17 +453,6 @@ contract TdrStorage is KdaCommon{
     // delete applicatiion from user
 
     // CRUD operation for zone
-    function setZone(bytes32 _applicationId, Zone _zone) public onlyManager {
-        require(
-            isApplicationCreated(_applicationId),
-            "Application does not exist"
-        );
-        require(_applicationId !="", "Application ID cannot be empty");
-        applicationZoneMap[_applicationId] = _zone;
-        TdrApplication memory application = applicationMap[_applicationId];
-        emit zoneSet(_applicationId, _zone, getApplicantIdsFromTdrApplication(application));
-    }
-
     function getZone(bytes32 _applicationId) public view returns(Zone){
         return applicationZoneMap[_applicationId];
     }

@@ -134,7 +134,7 @@ pragma solidity ^0.8.16;
     struct LandInfo {
         bytes32 khasraOrPlotNo;
         bytes32 villageOrWard;
-        bytes32 Tehsil;
+        Zone zone;
         bytes32 district;
     }
     struct MasterPlanInfo {

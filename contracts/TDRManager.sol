@@ -118,25 +118,6 @@ contract TDRManager is KdaCommon {
         tdrStorage.updateNotice(tdrNotice);
     }
 
-    function setZone(bytes32 _applicationId, Zone _zone) public {
-        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
-
-        if (userManager.isOfficerTDRVerifier(msg.sender)) {
-            if (!tdrStorage.isApplicationCreated(_applicationId)){
-                revert("No such application found");
-            }
-            TdrApplication memory application = tdrStorage.getApplication(
-                _applicationId
-            );
-            if (application.status== ApplicationStatus.PENDING){
-                revert("Application not yet submitted");
-            }
-            tdrStorage.setZone(_applicationId, _zone);
-        } else {
-            revert("User not authorized");
-        }
-    }
-
     function getZone(bytes32 _applicationId) public view returns (Zone) {
         TdrApplication memory application = tdrStorage.getApplication(
             _applicationId
@@ -172,7 +153,6 @@ contract TDRManager is KdaCommon {
         //        // add application in application map
         tdrStorage.createApplication(_tdrApplication);
         emit Logger("application created in storage");
-        tdrStorage.setZone(_tdrApplication.applicationId, Zone.NONE);
 
         // add application in the notice
         tdrStorage.addApplicationToNotice(
