@@ -19,7 +19,7 @@ contract UserManager is KdaCommon {
     UserStorage public userStorage;
     address public userStorageAddress;
 
-    function loadUserStorage(address _userStorageAddress) public {
+    function loadUserStorage(address _userStorageAddress) public onlyManager{
         userStorageAddress = _userStorageAddress;
         userStorage = UserStorage(userStorageAddress);
     }
