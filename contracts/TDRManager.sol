@@ -918,4 +918,12 @@ contract TDRManager is KdaCommon {
             "Officer and Application must be in the same non-NONE zone");
 
     }
+    function getZone(bytes32 _applicationId) public view returns (Zone) {
+        TdrApplication memory application = tdrStorage.getApplication(_applicationId);
+        if (application.applicationId == "") {
+            revert("No such application found");
+        }
+        TdrNotice memory notice = tdrStorage.getNotice(application.noticeId);
+        return (notice.locationInfo.zone);
+    }
 }
