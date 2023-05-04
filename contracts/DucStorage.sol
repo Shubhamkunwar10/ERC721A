@@ -68,39 +68,42 @@ contract DucStorage {
         bytes32 id,
         bytes32 applicationId,
         bytes32 noticeId,
-        uint farUtilized,
+        uint farPermitted,
         uint circleRateSurrendered,
-        uint circleRateUtilization,
         bytes32[] memory owners,
-        uint timeStamp
-    ) public {
+        uint timeStamp,
+        uint _tdrConsumed,
+        DrcUtilizationDetails memory _drcUtilizationDetails,
+        LocationInfo memory _locationInfo) public {
         certMap[id] = DUC({
         id: id,
         applicationId: applicationId,
         noticeId: noticeId,
-        farUtilized: farUtilized,
+        farPermitted: farPermitted,
         circleRateSurrendered: circleRateSurrendered,
-        circleRateUtilization: circleRateUtilization,
         owners: owners,
-        timeStamp: timeStamp
+        timeStamp: timeStamp,
+        tdrConsumed: _tdrConsumed,
+        drcUtilizationDetails:_drcUtilizationDetails,
+        locationInfo: _locationInfo
         });
     }
-    event DucCreated(bytes32 ducId, bytes32[] ownerIds);
-    event DucUpdated(bytes32 ducId, bytes32[] ownerIds);
+    event DucCreated(bytes32 ducId, DUC duc,bytes32[] ownerIds);
+    event DucUpdated(bytes32 ducId, DUC duc, bytes32[] ownerIds);
 
     function createDuc(DUC memory _duc) public onlyManager{
         //check whether the DRC already exists
         require(!isDucCreated(_duc.id),"certificate already exists");
         addDucToOwners(_duc);
         storeDucInMap(_duc);
-        emit DucCreated(_duc.id, _duc.owners);
+        emit DucCreated(_duc.id, _duc, _duc.owners);
     }
     function updateDuc(DUC memory _duc) public onlyManager{
         //check whether the DRC already exists
         require(isDucCreated(_duc.id),"certificate does not exists");
         addDucToOwners(_duc);
         storeDucInMap(_duc);
-        emit DucUpdated(_duc.id, _duc.owners);
+        emit DucUpdated(_duc.id, _duc, _duc.owners);
     }
 
     function getDuc(bytes32 id) public view returns (DUC memory) {
@@ -111,22 +114,26 @@ contract DucStorage {
         bytes32 id,
         bytes32 applicationId,
         bytes32 noticeId,
-        uint farUtilized,
+        uint farPermitted,
         uint circleRateSurrendered,
-        uint circleRateUtilization,
         bytes32[] memory owners,
-        uint timeStamp
+        uint timeStamp,
+        uint _tdrConsumed,
+        DrcUtilizationDetails memory _drcUtilizationDetails,
+        LocationInfo memory _locationInfo
     ) public {
         require(certMap[id].id == id, "Cert does not exist");
         certMap[id] = DUC({
         id: id,
         applicationId: applicationId,
         noticeId: noticeId,
-        farUtilized: farUtilized,
+        farPermitted: farPermitted,
         circleRateSurrendered: circleRateSurrendered,
-        circleRateUtilization: circleRateUtilization,
         owners: owners,
-        timeStamp: timeStamp
+        timeStamp: timeStamp,
+        tdrConsumed: _tdrConsumed,
+        drcUtilizationDetails:_drcUtilizationDetails,
+        locationInfo: _locationInfo
         });
     }
 
@@ -161,10 +168,12 @@ contract DucStorage {
         duc.id = _duc.id;
         duc.applicationId = _duc.applicationId;
         duc.noticeId = _duc.noticeId;
-        duc.farUtilized = _duc.farUtilized;
+        duc.farPermitted = _duc.farPermitted;
         duc.circleRateSurrendered = _duc.circleRateSurrendered;
-        duc.circleRateUtilization = _duc.circleRateUtilization;
         duc.timeStamp = _duc.timeStamp;
+        duc.tdrConsumed=_duc.tdrConsumed;
+        duc.drcUtilizationDetails = _duc.drcUtilizationDetails;
+        duc.locationInfo = _duc.locationInfo;
         delete duc.owners;
         for(uint i =0; i<_duc.owners.length; i++){
             duc.owners.push(_duc.owners[i]);

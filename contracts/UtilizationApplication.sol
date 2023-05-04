@@ -33,9 +33,13 @@ contract DuaStorage is KdaCommon {
         bytes32 _applicationId,
         bytes32 _drcId,
         uint _farTransferred,
+        uint _farPermitted,
         Signatory[] memory _signatories,
+        ApplicationStatus _status,
         uint _timeStamp,
-        ApplicationStatus _status
+        DrcUtilizationDetails memory _drcUtilizationDetails,
+        LocationInfo memory _locationInfo,
+        bytes32 _applicantId
     ) public onlyManager {
         require(
             applicationMap[_applicationId].applicationId == "",
@@ -46,33 +50,16 @@ contract DuaStorage is KdaCommon {
                 _applicationId,
                 _drcId,
                 _farTransferred,
+                _farPermitted,
                 _signatories,
                 _status,
-                _timeStamp
+                _timeStamp,
+                _drcUtilizationDetails,
+                _locationInfo,
+                _applicantId
             );
         storeApplicationInMap(dua);
         storeApplicationForUser(dua);
-
-        // storeApplicationInMap(
-        //     DUA(
-        //         _applicationId,
-        //         _drcId,
-        //         _farTransferred,
-        //         _signatories,
-        //         _status,
-        //         _timeStamp
-        //     )
-        // );
-        // storeApplicationForUser(
-        //     DUA(
-        //         _applicationId,
-        //         _drcId,
-        //         _farTransferred,
-        //         _signatories,
-        //         _status,
-        //         _timeStamp
-        //     )
-        // );
         emit DuaCreated(_applicationId,dua,getApplicantIdsFromApplication(dua));
     }
 
@@ -89,9 +76,13 @@ contract DuaStorage is KdaCommon {
         bytes32 _applicationId,
         bytes32 _drcId,
         uint _farTransferred,
+        uint _farPermitted,
         Signatory[] memory _signatories,
         uint _timeStamp,
-        ApplicationStatus _status
+        ApplicationStatus _status,
+        DrcUtilizationDetails memory _drcUtilizationDetails,
+          LocationInfo memory _locationInfo,
+        bytes32 _applicantId
     ) public onlyManager {
         require(
             applicationMap[_applicationId].applicationId != "",
@@ -102,9 +93,13 @@ contract DuaStorage is KdaCommon {
                 _applicationId,
                 _drcId,
                 _farTransferred,
+                _farPermitted,
                 _signatories,
                 _status,
-                _timeStamp
+                _timeStamp,
+                _drcUtilizationDetails,
+                _locationInfo,
+                _applicantId
             )
         );
         emit DuaUpdated(_applicationId);
@@ -130,12 +125,16 @@ contract DuaStorage is KdaCommon {
         dua.applicationId = _dua.applicationId;
         dua.drcId = _dua.drcId;
         dua.farUtilized = _dua.farUtilized;
+        dua.farPermitted = _dua.farPermitted;
         dua.status = _dua.status;
         dua.timeStamp = _dua.timeStamp;
+        dua.locationInfo = _dua.locationInfo;
+        dua.applicantId = _dua.applicantId;
         delete dua.signatories;
         for (uint i = 0; i < _dua.signatories.length; i++) {
             dua.signatories.push(_dua.signatories[i]);
         }
+        dua.drcUtilizationDetails = _dua.drcUtilizationDetails;
 
         applicationMap[dua.applicationId] = dua;
     }

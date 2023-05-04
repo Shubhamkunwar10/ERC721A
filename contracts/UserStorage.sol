@@ -196,8 +196,8 @@ contract UserStorage is KdaCommon {
     function getOfficer(bytes32 id) view public returns(KdaOfficer memory){
         return officerMap[id];
     }
-    function getRole(bytes32 id) view public returns(Role){
-        return officerMap[id].role;
+    function getRoles(bytes32 id) view public returns(Role[] memory){
+        return officerMap[id].roles;
     }
     function getOfficerAddress(bytes32 id) view public returns(address ){
         return officerAddressMap[id];
@@ -206,9 +206,9 @@ contract UserStorage is KdaCommon {
         bytes32 id = reverseOfficerMap[_address];
         return officerMap[id];
     }
-    function getRoleByAddress(address _address) view public returns(Role ){
+    function getRolesByAddress(address _address) view public returns(Role[] memory){
         bytes32 id = reverseOfficerMap[_address];
-        return officerMap[id].role;
+        return officerMap[id].roles;
     }
     function getOfficerIdByAddress(address _address) view public returns(bytes32){
         return reverseOfficerMap[_address];
