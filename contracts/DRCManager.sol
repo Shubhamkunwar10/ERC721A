@@ -101,33 +101,39 @@ contract DRCManager is KdaCommon {
     event DuaCreated(bytes32 applicationId, uint256 far, bytes32[] applicants);
     event DrcUtilized(bytes32 applicationId, uint256 farUtilized);
     event genDRCFromApplication(DRC application);
+
     event DrcCancelled(bytes32 drcId, bytes32[] applicants);
 
-    event CancelDrcStarted(bytes32 drcId, DrcStatus status, string reason);
+    event CancelDrcStarted(bytes32 drcId, DrcStatus status);
     event CancelDrcByAuthority(bytes32 drcId, DrcStatus status);
     event CancelDrcRevert(bytes32 drcId, DrcStatus status);
 
-    function start_drc_cancellation(
+
+// To start DRC cancellation, this method only call by manager and execute when the current time reach cancellation time
+    function startDrcCancellation(
         bytes32 drcId,
-        uint time,
-        string memory reason
+        uint cancellationTime,
+        string memory reasonForCancellation,
+        string memory cancellationReason
     ) public {
         require(
             userManager.isOfficerDrcManager(msg.sender),
             "User not authorized"
         );
         DRC memory drc = getDrc(drcId);
-        require(drcStorage.isDrcCreated(drcId), "DRC not created");
-        drcStorage.create_drc_cancel_status(drcId, time);
-        drcStorage.storeDrcCancellationReason(drcId, reason);
+        if(cancellationTime <= block.timestamp){
         drc.status = DrcStatus.DRC_CANCELLATION_PROCESS_STARTED;
+        }
         drcStorage.updateDrc(drcId, drc);
-        emit CancelDrcStarted(drcId, drc.status, reason);
+        drcStorage.storeDrcNoticeCancel(drcId, cancellationTime, reasonForCancellation, cancellationReason);
+        emit CancelDrcStarted(drcId, drc.status);
     }
 
-    function cancel_drc_by_authority(
+// To cancel DRC by authority, and update the notice cancellation struct
+    function drcCancelByAuthority(
         bytes32 drcId,
-        string memory reason
+        string memory reasonForCancellation,
+        string memory cancellationReason
     ) public {
         require(
             userManager.isOfficerDrcManager(msg.sender),
@@ -135,23 +141,28 @@ contract DRCManager is KdaCommon {
         );
         DRC memory drc = drcStorage.getDrc(drcId);
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
-        drcStorage.storeDrcCancellationReason(drcId, reason);
+        drcStorage.updateDrcNoticeCancel(drcId, block.timestamp, reasonForCancellation, cancellationReason);
         drc.status = DrcStatus.DRC_CANCELLED_BY_AUTHORITY;
         drcStorage.updateDrc(drcId, drc);
         emit CancelDrcByAuthority(drcId, drc.status);
     }
 
-    function revert_drc_cancellation(bytes32 drcId) public {
+// Method to revert back in available status if application in cancellation stage
+    function drcCancelRevert(bytes32 drcId) public {
         require(
             userManager.isOfficerDrcManager(msg.sender),
             "User not authorized"
         );
         DRC memory drc = getDrc(drcId);
         require(drcStorage.isDrcCreated(drcId), "DRC not created");
-        drcStorage.delete_drc_cancel_status(drcId);
+        drcStorage.deleteDrcNoticeCancel(drcId);
         drc.status = DrcStatus.AVAILABLE;
         drcStorage.updateDrc(drcId, drc);
         emit CancelDrcRevert(drcId, drc.status);
+    }
+
+    function getDrcCancellationReason(bytes32 drcId) public view returns (noticeCancellation memory) {
+        return drcStorage.getDrcNoticeCancel(drcId);
     }
 
     // Constructor function to set the initial values of the contract
@@ -275,32 +286,6 @@ contract DRCManager is KdaCommon {
         for (uint i = 0; i < ownerList.length; i++) {
             drcStorage.deleteOwner(_drcId, ownerList[i]);
         }
-    }
-
-    // cancel DRC to be done by admin only
-    function cancelDrc(bytes32 drcId, string memory reason) public {
-        // check whether the role is admin or application
-        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
-        emit LogOfficer("Officer in action", officer);
-        if (userManager.isOfficerDrcManager(msg.sender)) {
-            DRC memory drc = drcStorage.getDrc(drcId);
-            if (!drcStorage.isDrcCreated(drcId)) {
-                revert("DRC not creted");
-            }
-            // increase the available drc count
-            drc.status = DrcStatus.CANCELLED;
-            drcStorage.updateDrc(drcId, drc);
-            emit DrcCancelled(drcId, drc.owners);
-            drcStorage.storeDrcCancellationReason(drcId, reason);
-        } else {
-            revert("user not authorized");
-        }
-    }
-
-    function getDrcCancellationReason(
-        bytes32 drcId
-    ) public returns (string memory) {
-        return drcStorage.getDrcCancellationReason(drcId);
     }
 
     // This function begins the drd transfer application

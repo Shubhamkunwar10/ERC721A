@@ -18,7 +18,6 @@ contract DrcStorage is KdaCommon {
     //mapping(bytes32 => bytes32[] ) public userApplicationMap; // onwerid => applicationId[]
     mapping(bytes32 => bytes32[] ) public drcDtaMap; // drcId => applicationId []
     mapping(bytes32 => bytes32[] ) public drcDuaMap; // drcId => applicationId []
-    mapping(bytes32=> string) public cancelDrcMap; // drcId => cancellation reason
 
     // Events
     event DrcCreated(bytes32 drcId, DRC drc, bytes32[] owners);
@@ -32,23 +31,36 @@ contract DrcStorage is KdaCommon {
     address public tdrManager;
 
 
-    mapping(bytes32 => uint) public drc_cancel_status;
+    mapping(bytes32 => noticeCancellation) public cancelDrcMap;  // drcId => cancellation reason
 
-    function create_drc_cancel_status(bytes32 drcId, uint time) external onlyManager {
-        require(time >= block.timestamp, "Time is greater than current time");
-        drc_cancel_status[drcId] = time;
+    function storeDrcNoticeCancel(bytes32 drcId, uint cancellationTime, string memory reasonForCancellation, string memory cancellationReason) external onlyManager {
+        require(isDrcCreated(drcId),"DRC does not exists");
+        require(cancellationTime >= block.timestamp, "Time is greater than current time");
+        noticeCancellation memory notice;
+        notice.cancellationStarted = block.timestamp;
+        notice.cancellationTime = cancellationTime;
+        notice.reasonForCancellation = reasonForCancellation;
+        notice.cancellationReason = cancellationReason;
+        cancelDrcMap[drcId] = notice;
     }   
 
-    function delete_drc_cancel_status(bytes32 drcId) public onlyManager{
-        delete drc_cancel_status[drcId];
+    function deleteDrcNoticeCancel(bytes32 drcId) public onlyManager{
+        delete cancelDrcMap[drcId];
     }
 
-    function update_drc_cancel_status(bytes32 drcId, uint time) public onlyManager{
-        drc_cancel_status[drcId] = time;
+    function updateDrcNoticeCancel(bytes32 drcId, uint cancellationTime, string memory reasonForCancellation, string memory cancellationReason) public onlyManager{
+        require(isDrcCreated(drcId),"DRC does not exists");
+        require(cancellationTime >= block.timestamp, "Time is greater than current time");
+        noticeCancellation memory notice;
+        notice.cancellationStarted = block.timestamp;
+        notice.cancellationTime = cancellationTime;
+        notice.reasonForCancellation = reasonForCancellation;
+        notice.cancellationReason = cancellationReason;
+        cancelDrcMap[drcId] = notice;
     }
 
-    function get_drc_cancel_status(bytes32 drcId) public view returns(uint) {
-        return(drc_cancel_status[drcId]);
+    function getDrcNoticeCancel(bytes32 drcId) public view returns(noticeCancellation memory) {
+        return(cancelDrcMap[drcId]);
     } 
 
 
@@ -397,13 +409,6 @@ CRUD operations on the drc DTA Map
             }
         }
         return false;
-    }
-
-    function storeDrcCancellationReason(bytes32 drcId,string memory reason) public onlyManager {
-        cancelDrcMap[drcId]= reason;
-    }
-    function getDrcCancellationReason(bytes32 drcId) public returns(string memory) {
-        return cancelDrcMap[drcId];
     }
 
 //    //Generate DRCId
