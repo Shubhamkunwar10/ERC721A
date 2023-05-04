@@ -59,8 +59,6 @@ contract TDRManager is KdaCommon {
 
 
 
-
-
     // Import all the contracts
     // function to add tdrStorage contract
     function loadTdrStorage(address _tdrStorageAddress) public {
@@ -119,35 +117,6 @@ contract TDRManager is KdaCommon {
         tdrStorage.updateNotice(tdrNotice);
     }
 
-    function setZone(bytes32 _applicationId, Zone _zone) public {
-        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
-
-        if (userManager.isOfficerTdrApplicationVerifier(msg.sender)) {
-            if (!tdrStorage.isApplicationCreated(_applicationId)){
-                revert("No such application found");
-            }
-            TdrApplication memory application = tdrStorage.getApplication(
-                _applicationId
-            );
-            if (application.status== ApplicationStatus.PENDING){
-                revert("Application not yet submitted");
-            }
-            tdrStorage.setZone(_applicationId, _zone);
-        } else {
-            revert("User not authorized");
-        }
-    }
-
-    function getZone(bytes32 _applicationId) public view returns (Zone) {
-        TdrApplication memory application = tdrStorage.getApplication(
-            _applicationId
-        );
-        if (application.applicationId == "") {
-            revert("No such application found");
-        }
-        return tdrStorage.getZone(_applicationId);
-    }
-
     /**
     @dev Function to create an application
     @param _tdrApplication TdrApplication memory object representing the application to be created
@@ -168,12 +137,10 @@ contract TDRManager is KdaCommon {
             revert("No such notice has been created");
         }
 
-        // Set zone by default as NONE
-
+        // Set zone from the notice
         //        // add application in application map
         tdrStorage.createApplication(_tdrApplication);
         emit Logger("application created in storage");
-        tdrStorage.setZone(_tdrApplication.applicationId, Zone.NONE);
 
         // add application in the notice
         tdrStorage.addApplicationToNotice(
@@ -492,8 +459,7 @@ contract TDRManager is KdaCommon {
             );
             tdrStorage.storeVerificationStatus(applicationId, status);
         } else if (userManager.isOfficerTdrApplicationSubVerifier(msg.sender)) {
-            require(officer.zone == tdrStorage.getZone(applicationId),
-                "Officer zone needs to be same as application zone");
+            validateOfficerZone(tdrApplication, officer);
             require(tdrApplication.status== ApplicationStatus.SUBMITTED,
                     "Only submitted application can be verified");
             if (officer.department == Department.LAND) {
@@ -574,8 +540,7 @@ contract TDRManager is KdaCommon {
             );
             tdrStorage.storeVerificationStatus(applicationId, status);
         } else if (userManager.isOfficerTdrApplicationSubVerifier(msg.sender)) {
-            require(officer.zone == tdrStorage.getZone(applicationId),
-                "Officer zone needs to be same as application zone");
+            validateOfficerZone(tdrApplication, officer);
             require(tdrApplication.status== ApplicationStatus.SUBMITTED,
                 "Only submitted application can be verified");
             if (officer.department == Department.LAND) {
@@ -793,8 +758,7 @@ contract TDRManager is KdaCommon {
             );
             tdrStorage.storeVerificationStatus(applicationId, status);
         } else if (userManager.isOfficerTdrApplicationSubVerifier(msg.sender)) {
-            require(officer.zone == tdrStorage.getZone(applicationId),
-                "Officer zone needs to be same as application zone");
+            validateOfficerZone(tdrApplication, officer);
             require(tdrApplication.status== ApplicationStatus.SUBMITTED,
                     "Only submitted application can be verified");
             if (officer.department == Department.LAND) {
@@ -936,5 +900,19 @@ contract TDRManager is KdaCommon {
             applicantList[i] = _tdrApplication.applicants[i].userId;
         }
         return applicantList;
+    }
+
+    // Function to match Officer Zone and Application Zone
+    function validateOfficerZone(TdrApplication memory tdrApplication, KdaOfficer memory officer) public view {
+        // Check if the officer is in the same zone as the application Return false if zone of any one of them is NONE
+        // get zone of notice  
+        TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
+        require(
+            officer.zone == notice.locationInfo.zone &&
+            officer.zone != Zone.NONE &&
+            notice.locationInfo.zone != Zone.NONE,
+            "Officer and Application must be in the same non-NONE zone"
+        );
+
     }
 }
