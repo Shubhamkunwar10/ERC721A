@@ -127,6 +127,18 @@ contract DRCManager is KdaCommon {
         emit CancelDrcStarted(drcId, drc.status);
     }
 
+// Method to update DRC cancellation time and reasons
+    function updateDrcCancel(bytes32 drcId,
+        uint cancellationTime,
+        string memory reasonForCancellation,
+        string memory cancellationReason ) public {
+            require(
+                userManager.isOfficerDrcManager(msg.sender),
+                "User not authorized"
+            );
+            drcStorage.updateDrcNoticeCancel(drcId, cancellationTime, reasonForCancellation, cancellationReason);
+        }
+
 // To cancel DRC by authority, and update the notice cancellation struct
     function drcCancelByAuthority(
         bytes32 drcId,

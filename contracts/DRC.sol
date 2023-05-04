@@ -48,7 +48,7 @@ contract DrcStorage is KdaCommon {
         delete cancelDrcMap[drcId];
     }
 
-    function updateDrcNoticeCancel(bytes32 drcId, uint cancellationTime, string memory reasonForCancellation, string memory cancellationReason) public onlyManager{
+    function updateDrcNoticeCancel(bytes32 drcId, uint cancellationTime, string memory reasonForCancellation, string memory cancellationReason) external onlyManager{
         require(isDrcCreated(drcId),"DRC does not exists");
         require(cancellationTime >= block.timestamp, "Time is greater than current time");
         noticeCancellation memory notice;
