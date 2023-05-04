@@ -235,7 +235,7 @@ pragma solidity ^0.8.16;
         bytes32 propertyId;
     }
     struct LocationInfo {
-        bytes32 khasra;
+        bytes32 khasraOrPlotNo;
         bytes32 scheme;
         Zone zone;
         bytes32 district;

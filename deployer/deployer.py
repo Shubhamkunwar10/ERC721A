@@ -92,7 +92,7 @@ FILES_TO_COMPILE = [
 CONTRACTS = ["DrcTransferApplicationStorage", "DrcStorage", "DRCManager", "TdrStorage", "TDRManager", "UserManager",
              "DuaStorage", "NomineeStorage", "NomineeManager", "DucStorage", "UserStorage"]
 # SKIPPED_CONTRACTS = ["UserManager","TdrStorage","DrcStorage","NomineeStorage"]
-SKIPPED_CONTRACTS = ["UserStorage", "TdrStorage", "NomineeStorage"]
+# SKIPPED_CONTRACTS = ["UserStorage", "TdrStorage", "NomineeStorage"]
 # SKIPPED_CONTRACTS = [
 #                     "DrcTransferApplicationStorage",
 #                      "DrcStorage",
@@ -105,7 +105,7 @@ SKIPPED_CONTRACTS = ["UserStorage", "TdrStorage", "NomineeStorage"]
 #                      "NomineeManager",
 #                      "UserStorage",
 #                      ]
-# SKIPPED_CONTRACTS = []
+SKIPPED_CONTRACTS = []
 logger.info('following files would be compiled')
 logger.info(FILES_TO_COMPILE)
 

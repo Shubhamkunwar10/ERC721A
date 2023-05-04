@@ -905,14 +905,17 @@ contract TDRManager is KdaCommon {
     // Function to match Officer Zone and Application Zone
     function validateOfficerZone(TdrApplication memory tdrApplication, KdaOfficer memory officer) public view {
         // Check if the officer is in the same zone as the application Return false if zone of any one of them is NONE
-        // get zone of notice  
+        // get zone of notice
         TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-        require(
-            officer.zone == notice.locationInfo.zone &&
-            officer.zone != Zone.NONE &&
-            notice.locationInfo.zone != Zone.NONE,
-            "Officer and Application must be in the same non-NONE zone"
-        );
+        bool isOfficerZoneValid;
+        if (officer.zone==Zone.NONE){
+            isOfficerZoneValid = true;
+        } else {
+            isOfficerZoneValid == (officer.zone == notice.locationInfo.zone &&
+                                    notice.locationInfo.zone != Zone.NONE);
+        }
+        require(isOfficerZoneValid,
+            "Officer and Application must be in the same non-NONE zone");
 
     }
 }

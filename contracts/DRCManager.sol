@@ -259,7 +259,7 @@ contract DRCManager is KdaCommon {
             far <= drc.farAvailable,
             "Transfer area is greater than the available area"
         );
-        require(drcStorage.isOwnerInDrc(drc,userManager.getOfficerIdByAddress(msg.sender)),"Applicant is not the owner of the DRC");
+        // require(drcStorage.isOwnerInDrc(drc,userManager.getOfficerIdByAddress(msg.sender)),"Applicant is not the owner of the DRC");
 
         // Signatory[] memory applicants = new Signatory[](drc.owners.length);
 
