@@ -102,8 +102,6 @@ contract DRCManager is KdaCommon {
     event DrcUtilized(bytes32 applicationId, uint256 farUtilized);
     event genDRCFromApplication(DRC application);
 
-    event DrcCancelled(bytes32 drcId, bytes32[] applicants);
-
     event CancelDrcStarted(bytes32 drcId, DrcStatus status);
     event CancelDrcByAuthority(bytes32 drcId, DrcStatus status);
     event CancelDrcRevert(bytes32 drcId, DrcStatus status);
@@ -121,7 +119,7 @@ contract DRCManager is KdaCommon {
             "User not authorized"
         );
         DRC memory drc = getDrc(drcId);
-        if(cancellationTime <= block.timestamp){
+        if(cancellationTime >= block.timestamp){
         drc.status = DrcStatus.DRC_CANCELLATION_PROCESS_STARTED;
         }
         drcStorage.updateDrc(drcId, drc);
@@ -161,6 +159,7 @@ contract DRCManager is KdaCommon {
         emit CancelDrcRevert(drcId, drc.status);
     }
 
+// Method to get DRC cancellation application
     function getDrcCancellationReason(bytes32 drcId) public view returns (noticeCancellation memory) {
         return drcStorage.getDrcNoticeCancel(drcId);
     }
