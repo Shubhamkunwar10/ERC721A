@@ -208,4 +208,17 @@ contract UserManager is KdaCommon {
     return false;
     }
 
+    function ifOfficerIsOfZone(KdaOfficer memory officer, Zone zoneToCheck) public pure returns(bool){
+        if (zoneToCheck == Zone.NONE) {
+            return false;
+        }
+        Zone[] memory officerZones = officer.zones;
+        for (uint8 i = 0; i < officerZones.length; i++) {
+            if (officerZones[i] == zoneToCheck) {
+                return true; 
+            }
+        }
+        return false;
+    }
+
 }

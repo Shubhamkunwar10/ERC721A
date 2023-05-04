@@ -908,9 +908,7 @@ contract TDRManager is KdaCommon {
         // get zone of notice  
         TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
         require(
-            officer.zone == notice.locationInfo.zone &&
-            officer.zone != Zone.NONE &&
-            notice.locationInfo.zone != Zone.NONE,
+            userManager.ifOfficerIsOfZone(officer, notice.locationInfo.zone),
             "Officer and Application must be in the same non-NONE zone"
         );
 

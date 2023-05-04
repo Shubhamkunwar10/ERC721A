@@ -264,7 +264,7 @@ pragma solidity ^0.8.16;
         bytes32 userId;
         Role[] roles;
         Department department;
-        Zone zone;
+        Zone[] zones;
         Designation designation;
     }
 
