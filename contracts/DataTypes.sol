@@ -278,14 +278,13 @@ pragma solidity ^0.8.16;
 
     struct VerificationStatus {
         VerificationValues verified;
-        bytes32 verifierId;
-        string verifierComment;
         SubVerificationStatus landVerification;
         SubVerificationStatus planningVerification;
         SubVerificationStatus engineeringVerification;
         SubVerificationStatus propertyVerification;
         SubVerificationStatus salesVerification;
         SubVerificationStatus legalVerification;
+        SubVerificationStatus townplanneVerification;
     }
     struct DtaVerificationStatus {
         VerificationValues verified;

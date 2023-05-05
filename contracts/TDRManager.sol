@@ -61,35 +61,18 @@ contract TDRManager is KdaCommon {
 
     // Import all the contracts
     // function to add tdrStorage contract
-    function loadTdrStorage(address _tdrStorageAddress) public {
+    function loadTdrStorage(address _tdrStorageAddress) public onlyManager{
         tdrStorageAddress = _tdrStorageAddress;
         tdrStorage = TdrStorage(tdrStorageAddress);
     }
 
-    function loadDrcStorage(address _drcStorageAddress) public {
-        drcStorageAddress = _drcStorageAddress;
-        drcStorage = DrcStorage(drcStorageAddress);
-    }
-
-    // function to update tdrStorage
-    function updateTdrStorage(address _tdrStorageAddress) public {
-        tdrStorageAddress = _tdrStorageAddress;
-        tdrStorage = TdrStorage(_tdrStorageAddress);
-    }
-
-    function updateDrcStorage(address _drcStorageAddress) public {
+    function loadDrcStorage(address _drcStorageAddress) public onlyManager{
         drcStorageAddress = _drcStorageAddress;
         drcStorage = DrcStorage(drcStorageAddress);
     }
 
     // function to add tdrStorage contract
-    function loadUserManager(address _userManagerAddress) public {
-        userManagerAddress = _userManagerAddress;
-        userManager = UserManager(_userManagerAddress);
-    }
-
-    // function to update tdrStorage
-    function updateUserManager(address _userManagerAddress) public {
+    function loadUserManager(address _userManagerAddress) public onlyManager{
         userManagerAddress = _userManagerAddress;
         userManager = UserManager(_userManagerAddress);
     }
@@ -444,11 +427,11 @@ contract TDRManager is KdaCommon {
                 tdrApplication.status==ApplicationStatus.VERIFIED,
                 "Only submitted or verified application can be rejected"
                 );
+                    // all sub verifier must have verified
+            require(checkIfAllSubverifiersSigned(status)==true,"Not Verified by all Sub-verifiers");
 
             status.verified = VerificationValues.REJECTED;
-            status.verifierId = officer.userId;
 //            status.verifierRole = officer.role;
-            status.verifierComment = reason;
             // update Application
             tdrApplication.status = ApplicationStatus.VERIFICATION_REJECTED;
             tdrStorage.updateApplication(tdrApplication);
@@ -526,10 +509,8 @@ contract TDRManager is KdaCommon {
 
         if (userManager.isOfficerTdrApplicationVerifier(msg.sender)) {
 
+            require(checkIfAllSubverifiersSigned(status)==true,"Not Verified by all sub-verifiers");
             status.verified = VerificationValues.SENT_BACK_FOR_CORRECTION;
-            status.verifierId = officer.userId;
-            //            status.verifierRole = officer.role;
-            status.verifierComment = reason;
             // update Application
             tdrApplication.status = ApplicationStatus.SENT_BACK_FOR_CORRECTION;
             tdrStorage.updateApplication(tdrApplication);
@@ -741,12 +722,13 @@ contract TDRManager is KdaCommon {
 
         if (userManager.isOfficerTdrApplicationVerifier(msg.sender)) {
 
-            require((tdrApplication.status== ApplicationStatus.SUBMITTED||
-                tdrApplication.status== ApplicationStatus.VERIFICATION_REJECTED),
-                "Only submitted or rejected application can be verified");
+            require((tdrApplication.status== ApplicationStatus.SUBMITTED),
+                "Only submitted application can be verified");
+
+            // all sub verifier must have verified
+            require(checkIfAllSubverifiersSigned(status)==true,"Not Verified by all sub-verifiers");
+        
             status.verified = VerificationValues.VERIFIED;
-            status.verifierId = officer.userId;
-//            status.verifierRole = officer.role;
 
             // update Application
             tdrApplication.status = ApplicationStatus.VERIFIED;
@@ -901,6 +883,7 @@ contract TDRManager is KdaCommon {
         }
         return applicantList;
     }
+
 
     // Function to match Officer Zone and Application Zone
     function validateOfficerZone(TdrApplication memory tdrApplication, KdaOfficer memory officer) public view {
