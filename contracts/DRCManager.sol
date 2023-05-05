@@ -75,13 +75,23 @@ contract DRCManager is KdaCommon {
         bytes32 signer,
         bytes32[] applicants
     );
-    event DuaApproved(bytes32 applicationId, bytes32[] applicants);
+    event DuaSubmitted (
+        bytes32 applicationId, 
+        bytes32[] applicants);
+    event DuaApproved (
+        bytes32 applicationId, 
+        bytes32[] applicants);
+    event DuaRejected(
+        KdaOfficer officer,
+        bytes32 applicationId,
+        string reason,
+        bytes32[] applicants
+    );
     event DtaCreated(
         bytes32 drcId,
         bytes32 applicationId,
         uint256 far,
-        bytes32[] applicants,
-        bytes32[] buyers
+        bytes32[] applicants
     );
     event DtaSigned(
         bytes32 applicationId,
@@ -775,11 +785,6 @@ contract DRCManager is KdaCommon {
         );
         signDrcUtilizationApplication(applicationId);
         drcStorage.addDuaToDrc(drc.id, applicationId);
-        // emit DuaCreated(
-        //     applicationId,
-        //     far,
-        //     getApplicantIdsFromApplicants(duaSignatories)
-        // );
     }
 
     function signDrcUtilizationApplication(bytes32 applicationId) public {
@@ -820,16 +825,63 @@ contract DRCManager is KdaCommon {
         // if all the signatories has not signed
         if (allSignatoriesSign) {
             //all the signatories has signed
-            application.status = ApplicationStatus.APPROVED;
-            emit DuaApproved(
+            application.status = ApplicationStatus.SUBMITTED;
+            emit DuaSubmitted(
                 applicationId,
                 getApplicantIdsFromApplicants(application.signatories)
             );
             // reduce drc once Application is approved, and update the drc
-            DRC memory drc = drcStorage.getDrc(application.drcId);
-            // need to create unique Id
-            createDucFromDrc(drc, application);
+            // DRC memory drc = drcStorage.getDrc(application.drcId);
+            // // need to create unique Id
+            // createDucFromDrc(drc, application);
         }
+        duaStorage.updateApplication(application);
+    }
+
+    function approveDua(bytes32 applicationId) public {
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        emit LogOfficer("Officer in action", officer);
+        //fetch the application
+        DUA memory application =  duaStorage.getApplication(applicationId);
+        //application should not be already approved
+        if (userManager.isOfficerDuaApprover(msg.sender)) {
+            require(
+                application.status == ApplicationStatus.SUBMITTED,
+                "Application should be submitted or rejected"
+            );
+        } else {
+            revert("User not authorized");
+        }
+        application.status = ApplicationStatus.APPROVED;
+        DRC memory drc = drcStorage.getDrc(application.drcId);
+        createDucFromDrc(drc, application);
+        emit DuaApproved(
+            applicationId,
+            getApplicantIdsFromApplicants(application.signatories)
+        );
+        duaStorage.updateApplication(application);
+    }
+
+    function rejectDua(bytes32 applicationId, string memory reason) public {
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        emit LogOfficer("Officer in action", officer);
+        //fetch the application
+        DUA memory application =  duaStorage.getApplication(applicationId);
+        //application should not be already approved
+        if (userManager.isOfficerDuaApprover(msg.sender)) {
+            require(
+                application.status == ApplicationStatus.SUBMITTED,
+                "Application should be submitted "
+            );
+        } else {
+            revert("User not authorized");
+        }
+        application.status = ApplicationStatus.REJECTED;
+        emit DuaRejected(
+            officer,
+            applicationId,
+            reason,
+            getApplicantIdsFromApplicants(application.signatories));
         duaStorage.updateApplication(application);
     }
 
