@@ -131,22 +131,6 @@ contract DRCManager is KdaCommon {
         drcStorage.storeDrcCancellationInfo(drcId,drcCancellationInfo);
         emit DrcCancellationStarted(drcId, drc.owners);
     }
-//        uint cancellationTime,
-//        string memory reasonForCancellation,
-//        string memory cancellationReason
-//    ) public {
-//        require(
-//            userManager.isOfficerDrcManager(msg.sender),
-//            "User not authorized"
-//        );
-//        DRC memory drc = getDrc(drcId);
-//        if(cancellationTime >= block.timestamp){
-//        drc.status = DrcStatus.DRC_CANCELLATION_PROCESS_STARTED;
-//        }
-//        drcStorage.updateDrc(drcId, drc);
-//        drcStorage.storeDrcNoticeCancel(drcId, cancellationTime, reasonForCancellation, cancellationReason);
-//        emit CancelDrcStarted(drcId, drc.status);
-//    }
 
 // Method to update DRC cancellation time and reasons
     function cancelDrc(bytes32 drcId) public {
@@ -158,6 +142,9 @@ contract DRCManager is KdaCommon {
         drc.status = DrcStatus.DRC_CANCELLED_BY_AUTHORITY;
         drcStorage.updateDrc(drcId, drc);
         DrcCancellationInfo memory drcCancellationInfo = drcStorage.getDrcCancellationInfo(drcId);
+        if (block.timestamp -drcCancellationInfo.cancellationStartTime < 2592000) {
+            revert("There should be 30 days notice for cancellation");
+        }
         drcCancellationInfo.cancellationTime = block.timestamp;
         drcStorage.storeDrcCancellationInfo(drcId,drcCancellationInfo);
         emit DrcCancelled(drcId, drc.owners);
@@ -176,59 +163,8 @@ contract DRCManager is KdaCommon {
         emit DrcCancellationReverted(drcId, drc.owners);
     }
     function getDrcCancellationInfo(bytes32 drcId) public returns (DrcCancellationInfo memory){
-//        require(
-//            userManager.isOfficerDrcManager(msg.sender),
-//            "User not authorized"
-//        );
         return  drcStorage.getDrcCancellationInfo(drcId);
     }
-
-//        uint cancellationTime,
-//        string memory reasonForCancellation,
-//        string memory cancellationReason ) public {
-//            require(
-//                userManager.isOfficerDrcManager(msg.sender),
-//                "User not authorized"
-//            );
-//            drcStorage.updateDrcNoticeCancel(drcId, cancellationTime, reasonForCancellation, cancellationReason);
-//        }
-
-// To cancel DRC by authority, and update the notice cancellation struct
-//    function drcCancelByAuthority(
-//        bytes32 drcId,
-//        string memory reasonForCancellation,
-//        string memory cancellationReason
-//    ) public {
-//        require(
-//            userManager.isOfficerDrcManager(msg.sender),
-//            "User not authorized"
-//        );
-//        DRC memory drc = drcStorage.getDrc(drcId);
-//        require(drcStorage.isDrcCreated(drcId), "DRC not created");
-//        drcStorage.updateDrcNoticeCancel(drcId, block.timestamp, reasonForCancellation, cancellationReason);
-//        drc.status = DrcStatus.DRC_CANCELLED_BY_AUTHORITY;
-//        drcStorage.updateDrc(drcId, drc);
-//        emit CancelDrcByAuthority(drcId, drc.status);
-//    }
-//
-//// Method to revert back in available status if application in cancellation stage
-//    function drcCancelRevert(bytes32 drcId) public {
-//        require(
-//            userManager.isOfficerDrcManager(msg.sender),
-//            "User not authorized"
-//        );
-//        DRC memory drc = getDrc(drcId);
-//        require(drcStorage.isDrcCreated(drcId), "DRC not created");
-//        drcStorage.deleteDrcNoticeCancel(drcId);
-//        drc.status = DrcStatus.AVAILABLE;
-//        drcStorage.updateDrc(drcId, drc);
-//        emit CancelDrcRevert(drcId, drc.status);
-//    }
-//
-//// Method to get DRC cancellation application
-//    function getDrcCancellationReason(bytes32 drcId) public view returns (noticeCancellation memory) {
-//        return drcStorage.getDrcNoticeCancel(drcId);
-//    }
 
     // Constructor function to set the initial values of the contract
     constructor(address _admin, address _manager) KdaCommon(_admin, _manager) {}
@@ -795,15 +731,6 @@ contract DRCManager is KdaCommon {
             farUtilized <= drc.farAvailable,
             "Utilized area is greater than the available area"
         );
-
-        require(
-            drcStorage.isOwnerInDrc(
-                drc,
-                bytes32(uint(keccak256(abi.encodePacked(msg.sender))))
-            ),
-            "You are not the owner of this DRC"
-        );
-
         // add all the owners id from the drc to the mapping
 
         Signatory[] memory duaSignatories = new Signatory[](drc.owners.length);
