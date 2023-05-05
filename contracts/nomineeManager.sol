@@ -35,13 +35,13 @@ contract NomineeManager is KdaCommon{
    // Constructor function to set the initial values of the contract
     constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
 
-    function loadUserManager(address _userManagerAddress) public onlyManager{
+    function loadUserManager(address _userManagerAddress) public onlyOwner{
         userManagerAddress = _userManagerAddress;
         userManager = UserManager(userManagerAddress);
     }
 
 
-    function loadNomineeStorage(address _nomineeStorageAddress) public onlyManager{
+    function loadNomineeStorage(address _nomineeStorageAddress) public onlyOwner{
         nomineeStorageAddress = _nomineeStorageAddress;
         nomineeStorage = NomineeStorage(nomineeStorageAddress);
     }

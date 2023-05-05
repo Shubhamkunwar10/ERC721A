@@ -284,7 +284,7 @@ pragma solidity ^0.8.16;
         SubVerificationStatus propertyVerification;
         SubVerificationStatus salesVerification;
         SubVerificationStatus legalVerification;
-        SubVerificationStatus townplanneVerification;
+        SubVerificationStatus townPlannerVerification;
     }
     struct DtaVerificationStatus {
         VerificationValues verified;

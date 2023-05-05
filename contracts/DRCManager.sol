@@ -113,32 +113,32 @@ contract DRCManager is KdaCommon {
         _;
     }
 
-    function loadDrcStorage(address _drcStorageAddress) public onlyManager{
+    function loadDrcStorage(address _drcStorageAddress) public onlyOwner{
         drcStorageAddress = _drcStorageAddress;
         drcStorage = DrcStorage(drcStorageAddress);
     }
 
-    function loadUserManager(address _userManagerAddress) public onlyManager{
+    function loadUserManager(address _userManagerAddress) public onlyOwner{
         userManagerAddress = _userManagerAddress;
         userManager = UserManager(userManagerAddress);
     }
 
-    function loadDtaStorage(address _dtaStorageAddress) public onlyManager{
+    function loadDtaStorage(address _dtaStorageAddress) public onlyOwner{
         dtaStorageAddress = _dtaStorageAddress;
         dtaStorage = DrcTransferApplicationStorage(dtaStorageAddress);
     }
 
-    function loadDucStorage(address _ducStorageAddress) public onlyManager{
+    function loadDucStorage(address _ducStorageAddress) public onlyOwner{
         ducStorageAddress = _ducStorageAddress;
         ducStorage = DucStorage(ducStorageAddress);
     }
 
-    function loadDuaStorage(address _duaStorageAddress) public onlyManager{
+    function loadDuaStorage(address _duaStorageAddress) public onlyOwner{
         duaStorageAddress = _duaStorageAddress;
         duaStorage = DuaStorage(duaStorageAddress);
     }
 
-    function loadNomineeManager(address _nomineeManagerAddress) public onlyManager{
+    function loadNomineeManager(address _nomineeManagerAddress) public onlyOwner{
         nomineeManagerAddress = _nomineeManagerAddress;
         nomineeManager = NomineeManager(nomineeManagerAddress);
     }
