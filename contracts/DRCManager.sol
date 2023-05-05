@@ -9,6 +9,7 @@ import "./DataTypes.sol";
 import "./nomineeManager.sol";
 import "./KdaCommon.sol";
 import "./DucStorage.sol";
+
 /**
 @title TDR Manager for TDR storage
 @author Ras Dwivedi
@@ -32,10 +33,9 @@ contract DRCManager is KdaCommon {
     address public ducStorageAddress;
 
     // admin address
-    
+
     address tdrManager;
 
-    
     event LogOfficer(string message, KdaOfficer officer);
     event DtaVerified(
         KdaOfficer officer,
@@ -101,9 +101,83 @@ contract DRCManager is KdaCommon {
     event DuaCreated(bytes32 applicationId, uint256 far, bytes32[] applicants);
     event DrcUtilized(bytes32 applicationId, uint256 farUtilized);
     event genDRCFromApplication(DRC application);
-    event DrcCancelled(bytes32 drcId, bytes32[] applicants);
-   // Constructor function to set the initial values of the contract
-    constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {} 
+
+    event CancelDrcStarted(bytes32 drcId, DrcStatus status);
+    event CancelDrcByAuthority(bytes32 drcId, DrcStatus status);
+    event CancelDrcRevert(bytes32 drcId, DrcStatus status);
+
+
+// To start DRC cancellation, this method only call by manager and execute when the current time reach cancellation time
+    function startDrcCancellation(
+        bytes32 drcId,
+        uint cancellationTime,
+        string memory reasonForCancellation,
+        string memory cancellationReason
+    ) public {
+        require(
+            userManager.isOfficerDrcManager(msg.sender),
+            "User not authorized"
+        );
+        DRC memory drc = getDrc(drcId);
+        if(cancellationTime >= block.timestamp){
+        drc.status = DrcStatus.DRC_CANCELLATION_PROCESS_STARTED;
+        }
+        drcStorage.updateDrc(drcId, drc);
+        drcStorage.storeDrcNoticeCancel(drcId, cancellationTime, reasonForCancellation, cancellationReason);
+        emit CancelDrcStarted(drcId, drc.status);
+    }
+
+// Method to update DRC cancellation time and reasons
+    function updateDrcCancel(bytes32 drcId,
+        uint cancellationTime,
+        string memory reasonForCancellation,
+        string memory cancellationReason ) public {
+            require(
+                userManager.isOfficerDrcManager(msg.sender),
+                "User not authorized"
+            );
+            drcStorage.updateDrcNoticeCancel(drcId, cancellationTime, reasonForCancellation, cancellationReason);
+        }
+
+// To cancel DRC by authority, and update the notice cancellation struct
+    function drcCancelByAuthority(
+        bytes32 drcId,
+        string memory reasonForCancellation,
+        string memory cancellationReason
+    ) public {
+        require(
+            userManager.isOfficerDrcManager(msg.sender),
+            "User not authorized"
+        );
+        DRC memory drc = drcStorage.getDrc(drcId);
+        require(drcStorage.isDrcCreated(drcId), "DRC not created");
+        drcStorage.updateDrcNoticeCancel(drcId, block.timestamp, reasonForCancellation, cancellationReason);
+        drc.status = DrcStatus.DRC_CANCELLED_BY_AUTHORITY;
+        drcStorage.updateDrc(drcId, drc);
+        emit CancelDrcByAuthority(drcId, drc.status);
+    }
+
+// Method to revert back in available status if application in cancellation stage
+    function drcCancelRevert(bytes32 drcId) public {
+        require(
+            userManager.isOfficerDrcManager(msg.sender),
+            "User not authorized"
+        );
+        DRC memory drc = getDrc(drcId);
+        require(drcStorage.isDrcCreated(drcId), "DRC not created");
+        drcStorage.deleteDrcNoticeCancel(drcId);
+        drc.status = DrcStatus.AVAILABLE;
+        drcStorage.updateDrc(drcId, drc);
+        emit CancelDrcRevert(drcId, drc.status);
+    }
+
+// Method to get DRC cancellation application
+    function getDrcCancellationReason(bytes32 drcId) public view returns (noticeCancellation memory) {
+        return drcStorage.getDrcNoticeCancel(drcId);
+    }
+
+    // Constructor function to set the initial values of the contract
+    constructor(address _admin, address _manager) KdaCommon(_admin, _manager) {}
 
     modifier onlyTdrManager() {
         require(
@@ -132,6 +206,7 @@ contract DRCManager is KdaCommon {
         ducStorageAddress = _ducStorageAddress;
         ducStorage = DucStorage(ducStorageAddress);
     }
+
 
     function loadDuaStorage(address _duaStorageAddress) public onlyOwner{
         duaStorageAddress = _duaStorageAddress;
@@ -171,40 +246,28 @@ contract DRCManager is KdaCommon {
     function addOwnerToDrc(bytes32 _drcId, bytes32[] memory ownerList) public {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
 
-        require(userManager.isOfficerDrcManager(msg.sender), "Only VC can change the owner of DRC");
-        for (uint i =0; i < ownerList.length; i++){
+        require(
+            userManager.isOfficerDrcManager(msg.sender),
+            "Only VC can change the owner of DRC"
+        );
+        for (uint i = 0; i < ownerList.length; i++) {
             drcStorage.addDrcOwner(_drcId, ownerList[i]);
         }
     }
-    function deleteOwnerFromDrc(bytes32 _drcId, bytes32[] memory ownerList) public {
+
+    function deleteOwnerFromDrc(
+        bytes32 _drcId,
+        bytes32[] memory ownerList
+    ) public {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
 
-        require(userManager.isOfficerDrcManager(msg.sender), "Only VC can change the owner of DRC");
-        for (uint i =0; i < ownerList.length; i++){
+        require(
+            userManager.isOfficerDrcManager(msg.sender),
+            "Only VC can change the owner of DRC"
+        );
+        for (uint i = 0; i < ownerList.length; i++) {
             drcStorage.deleteOwner(_drcId, ownerList[i]);
         }
-    }
-    // cancel DRC to be done by admin only
-    function cancelDrc(bytes32 drcId, string memory reason) public {
-        // check whether the role is admin or application
-        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
-        emit LogOfficer("Officer in action",officer);
-        if(userManager.isOfficerDrcManager(msg.sender)){
-            DRC memory drc = drcStorage.getDrc(drcId);
-            if (!drcStorage.isDrcCreated(drcId)){
-                revert("DRC not creted");
-            }
-            // increase the available drc count
-            drc.status = DrcStatus.CANCELLED;
-            drcStorage.updateDrc(drcId,drc);
-            emit DrcCancelled(drcId, drc.owners);
-            drcStorage.storeDrcCancellationReason(drcId, reason);
-        }else {
-            revert("user not authorized");
-        }
-    }
-    function getDrcCancellationReason(bytes32 drcId) public returns(string memory){
-        return drcStorage.getDrcCancellationReason(drcId);
     }
 
     // This function begins the drd transfer application
@@ -228,9 +291,6 @@ contract DRCManager is KdaCommon {
             far <= drc.farAvailable,
             "Transfer area is greater than the available area"
         );
-        // require(drcStorage.isOwnerInDrc(drc,userManager.getOfficerIdByAddress(msg.sender)),"Applicant is not the owner of the DRC");
-
-        // Signatory[] memory applicants = new Signatory[](drc.owners.length);
 
         if (drc.owners.length <= 0) {
             revert("DRC has 0 owners");
@@ -272,7 +332,7 @@ contract DRCManager is KdaCommon {
         for (uint256 i = 0; i < application.applicants.length; i++) {
             Signatory memory signatory = application.applicants[i];
             if (signatory.userId == userManager.getUserId(msg.sender)) {
-                isUserSignatory =true;
+                isUserSignatory = true;
                 require(
                     !signatory.hasUserSigned,
                     "User have already signed the application"
@@ -285,7 +345,7 @@ contract DRCManager is KdaCommon {
                 );
             }
         }
-        if (isUserSignatory ==false){
+        if (isUserSignatory == false) {
             revert("Applicant is not the part of application");
         }
         // user signs the application
@@ -314,9 +374,9 @@ contract DRCManager is KdaCommon {
     }
 
     // this function is called by the admin to verify the transfer
-        // VerificationStatus memory status = dtaStorage.getVerificationStatus(
-        //     applicationId
-        // );
+    // VerificationStatus memory status = dtaStorage.getVerificationStatus(
+    //     applicationId
+    // );
     function verifyDTA(bytes32 applicationId) public {
         DtaVerificationStatus memory status = dtaStorage.getVerificationStatus(
             applicationId
@@ -327,10 +387,10 @@ contract DRCManager is KdaCommon {
         DrcTransferApplication memory dta = dtaStorage.getApplication(
             applicationId
         );
-        if(dta.status == ApplicationStatus.VERIFIED){
+        if (dta.status == ApplicationStatus.VERIFIED) {
             revert("Application already verified");
         }
-        if(dta.status == ApplicationStatus.REJECTED){
+        if (dta.status == ApplicationStatus.REJECTED) {
             revert("Application already rejected");
         }
         require(
@@ -356,7 +416,10 @@ contract DRCManager is KdaCommon {
         }
     }
 
-    function rejectVerificationDTA(bytes32 applicationId, string memory reason) public {
+    function rejectVerificationDTA(
+        bytes32 applicationId,
+        string memory reason
+    ) public {
         DtaVerificationStatus memory status = dtaStorage.getVerificationStatus(
             applicationId
         );
@@ -366,10 +429,10 @@ contract DRCManager is KdaCommon {
         DrcTransferApplication memory dta = dtaStorage.getApplication(
             applicationId
         );
-        if(dta.status == ApplicationStatus.VERIFIED){
+        if (dta.status == ApplicationStatus.VERIFIED) {
             revert("Application already verified");
         }
-        if(dta.status == ApplicationStatus.REJECTED){
+        if (dta.status == ApplicationStatus.REJECTED) {
             revert("Application already rejected");
         }
         require(
@@ -406,10 +469,10 @@ contract DRCManager is KdaCommon {
         DrcTransferApplication memory dta = dtaStorage.getApplication(
             applicationId
         );
-        if(dta.status == ApplicationStatus.VERIFIED){
+        if (dta.status == ApplicationStatus.VERIFIED) {
             revert("Application already verified");
         }
-        if(dta.status == ApplicationStatus.REJECTED){
+        if (dta.status == ApplicationStatus.REJECTED) {
             revert("Application already rejected");
         }
         require(
@@ -436,7 +499,6 @@ contract DRCManager is KdaCommon {
         }
     }
 
-
     // this function is called by the admin to approve the transfer
     function approveDta(bytes32 applicationId, bytes32 newDrcId) public {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
@@ -446,12 +508,13 @@ contract DRCManager is KdaCommon {
             applicationId
         );
         //application should not be already approved
-        if(userManager.isOfficerDtaApprover(msg.sender)){
-        require(
-            application.status == ApplicationStatus.VERIFIED ||
-            application.status == ApplicationStatus.REJECTED,
-            "Application should be verified or rejected");
-        } else if(userManager.isOfficerDtaApprover(msg.sender)){
+        if (userManager.isOfficerDtaApprover(msg.sender)) {
+            require(
+                application.status == ApplicationStatus.VERIFIED ||
+                    application.status == ApplicationStatus.REJECTED,
+                "Application should be verified or rejected"
+            );
+        } else if (userManager.isOfficerDtaApprover(msg.sender)) {
             require(application.status == ApplicationStatus.VERIFIED);
         } else {
             revert("User not authorized");
@@ -517,9 +580,10 @@ contract DRCManager is KdaCommon {
     }
 
     // this function is called by the admin to reject the transfer
-    function rejectDrcTransfer(bytes32 applicationId, string memory reason)
-        public
-    {
+    function rejectDrcTransfer(
+        bytes32 applicationId,
+        string memory reason
+    ) public {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // Check if notice is issued
@@ -527,7 +591,7 @@ contract DRCManager is KdaCommon {
             applicationId
         );
         //application should not be already approved
-        if(userManager.isOfficerDtaApprover(msg.sender)){
+        if (userManager.isOfficerDtaApprover(msg.sender)) {
             require(
                 application.status == ApplicationStatus.VERIFIED,
                 "Only verified applications can be rejected"
@@ -536,7 +600,7 @@ contract DRCManager is KdaCommon {
             revert("User not authorized");
         }
         // No need to check notice, as application can be rejected even when DRC is issued.
-            // update Application
+        // update Application
         application.status = ApplicationStatus.REJECTED;
         dtaStorage.updateApplication(application);
         emit DtaRejected(
@@ -548,11 +612,10 @@ contract DRCManager is KdaCommon {
         );
     }
 
-    function hasUserSignedDta(bytes32 _applicationId, address _address)
-        public
-        view
-        returns (bool)
-    {
+    function hasUserSignedDta(
+        bytes32 _applicationId,
+        address _address
+    ) public view returns (bool) {
         DrcTransferApplication memory application = dtaStorage.getApplication(
             _applicationId
         );
@@ -574,11 +637,10 @@ contract DRCManager is KdaCommon {
         return false;
     }
 
-    function hasUserSignedDua(bytes32 applicationId, address _address)
-        public
-        view
-        returns (bool)
-    {
+    function hasUserSignedDua(
+        bytes32 applicationId,
+        address _address
+    ) public view returns (bool) {
         DUA memory application = duaStorage.getApplication(applicationId);
         require(
             application.applicationId != "",
@@ -598,11 +660,9 @@ contract DRCManager is KdaCommon {
         return false;
     }
 
-    function getDta(bytes32 _applicationId)
-        public
-        view
-        returns (DrcTransferApplication memory)
-    {
+    function getDta(
+        bytes32 _applicationId
+    ) public view returns (DrcTransferApplication memory) {
         // Retrieve the dta from the mapping
         DrcTransferApplication memory application = dtaStorage.getApplication(
             _applicationId
@@ -616,48 +676,38 @@ contract DRCManager is KdaCommon {
         return application;
     }
 
-    function getDtaVerificationStatus(bytes32 applicationId)
-        public
-        view
-        returns (DtaVerificationStatus memory)
-    {
+    function getDtaVerificationStatus(
+        bytes32 applicationId
+    ) public view returns (DtaVerificationStatus memory) {
         DtaVerificationStatus memory status = dtaStorage.getVerificationStatus(
             applicationId
         );
         return status;
-//        return (status.verified == VerificationValues.VERIFIED);
+        //        return (status.verified == VerificationValues.VERIFIED);
     }
 
     // I need to create two different get application method and then merge it
-    function getDtaForUser(bytes32 userId)
-        public
-        view
-        returns (bytes32[] memory)
-    {
+    function getDtaForUser(
+        bytes32 userId
+    ) public view returns (bytes32[] memory) {
         return dtaStorage.getApplicationForUser(userId);
     }
 
-    function getDuaForUser(bytes32 userId)
-        public
-        view
-        returns (bytes32[] memory)
-    {
+    function getDuaForUser(
+        bytes32 userId
+    ) public view returns (bytes32[] memory) {
         return duaStorage.getApplicationForUser(userId);
     }
 
-    function getDtaIdsForDrc(bytes32 drcId)
-        public
-        view
-        returns (bytes32[] memory)
-    {
+    function getDtaIdsForDrc(
+        bytes32 drcId
+    ) public view returns (bytes32[] memory) {
         return drcStorage.getDtaIdsForDrc(drcId);
     }
 
-    function getDuaIdsForDrc(bytes32 drcId)
-        public
-        view
-        returns (bytes32[] memory)
-    {
+    function getDuaIdsForDrc(
+        bytes32 drcId
+    ) public view returns (bytes32[] memory) {
         return drcStorage.getDuaIdsForDrc(drcId);
     }
 
@@ -665,14 +715,11 @@ contract DRCManager is KdaCommon {
         return drcStorage.getDrc(drcId);
     }
 
-    function getDrcIdsForUser(bytes32 userId)
-        public
-        view
-        returns (bytes32[] memory)
-    {
+    function getDrcIdsForUser(
+        bytes32 userId
+    ) public view returns (bytes32[] memory) {
         return drcStorage.getDrcIdsForUser(userId);
     }
-
 
     // what other details, like building application are needed fro utilization application
     function createUtilizationApplication(
@@ -694,6 +741,15 @@ contract DRCManager is KdaCommon {
             farUtilized <= drc.farAvailable,
             "Utilized area is greater than the available area"
         );
+
+        require(
+            drcStorage.isOwnerInDrc(
+                drc,
+                bytes32(uint(keccak256(abi.encodePacked(msg.sender))))
+            ),
+            "You are not the owner of this DRC"
+        );
+
         // add all the owners id from the drc to the mapping
 
         Signatory[] memory duaSignatories = new Signatory[](drc.owners.length);
@@ -704,7 +760,7 @@ contract DRCManager is KdaCommon {
             s.hasUserSigned = false;
             duaSignatories[i] = s;
         }
-        
+
         duaStorage.createApplication(
             applicationId,
             drc.id,
@@ -735,7 +791,7 @@ contract DRCManager is KdaCommon {
         for (uint256 i = 0; i < application.signatories.length; i++) {
             Signatory memory signatory = application.signatories[i];
             if (signatory.userId == userManager.getUserId(msg.sender)) {
-                isUserSignatory=true;
+                isUserSignatory = true;
                 require(
                     !signatory.hasUserSigned,
                     "User have already signed the application"
@@ -748,7 +804,7 @@ contract DRCManager is KdaCommon {
                 );
             }
         }
-        if (isUserSignatory==false){
+        if (isUserSignatory == false) {
             revert("Applicant is not the part of application");
         }
         // user signs the application
@@ -765,20 +821,21 @@ contract DRCManager is KdaCommon {
         if (allSignatoriesSign) {
             //all the signatories has signed
             application.status = ApplicationStatus.APPROVED;
-            emit DuaApproved(applicationId, getApplicantIdsFromApplicants(application.signatories));
+            emit DuaApproved(
+                applicationId,
+                getApplicantIdsFromApplicants(application.signatories)
+            );
             // reduce drc once Application is approved, and update the drc
             DRC memory drc = drcStorage.getDrc(application.drcId);
             // need to create unique Id
-            createDucFromDrc(drc, application );
+            createDucFromDrc(drc, application);
         }
         duaStorage.updateApplication(application);
     }
 
-    function getApplicantIdsFromApplicants(Signatory[] memory applicants)
-        internal
-        view
-        returns (bytes32[] memory)
-    {
+    function getApplicantIdsFromApplicants(
+        Signatory[] memory applicants
+    ) internal pure returns (bytes32[] memory) {
         bytes32[] memory applicantList = new bytes32[](applicants.length);
         for (uint256 i = 0; i < applicants.length; i++) {
             applicantList[i] = applicants[i].userId;
@@ -794,7 +851,10 @@ contract DRCManager is KdaCommon {
         // check whether the role is admin or application
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
-        require(userManager.isOfficerDrcManager(msg.sender), "Only VC can transfer DRC to nominee");
+        require(
+            userManager.isOfficerDrcManager(msg.sender),
+            "Only VC can transfer DRC to nominee"
+        );
         // fetch all replaceUserByNominees
         bytes32[] memory nominees = nomineeManager.getNominees(userId);
         // fetch all drc id
@@ -842,11 +902,10 @@ contract DRCManager is KdaCommon {
         return ownersWithNominees;
     }
 
-    function mergeArrays(bytes32[] memory arr1, bytes32[] memory arr2)
-        public
-        pure
-        returns (bytes32[] memory)
-    {
+    function mergeArrays(
+        bytes32[] memory arr1,
+        bytes32[] memory arr2
+    ) public pure returns (bytes32[] memory) {
         uint256 arr1Len = arr1.length;
         uint256 arr2Len = arr2.length;
         bytes32[] memory result = new bytes32[](arr1Len + arr2Len);
@@ -860,10 +919,10 @@ contract DRCManager is KdaCommon {
         return result;
     }
 
-    function deleteUserFromList(bytes32[] memory owners, bytes32 user)
-        public
-        returns (bytes32[] memory)
-    {
+    function deleteUserFromList(
+        bytes32[] memory owners,
+        bytes32 user
+    ) public returns (bytes32[] memory) {
         uint256 index = findIndex(owners, user);
         if (index == owners.length) {
             revert("user not found in owner list");
@@ -874,11 +933,10 @@ contract DRCManager is KdaCommon {
         return deleteLastElement(owners);
     }
 
-    function findIndex(bytes32[] memory arr, bytes32 element)
-        internal
-        pure
-        returns (uint256)
-    {
+    function findIndex(
+        bytes32[] memory arr,
+        bytes32 element
+    ) internal pure returns (uint256) {
         for (uint256 i = 0; i < arr.length; i++) {
             if (arr[i] == element) {
                 return i;
@@ -887,11 +945,9 @@ contract DRCManager is KdaCommon {
         return arr.length;
     }
 
-    function deleteLastElement(bytes32[] memory arr)
-        public
-        pure
-        returns (bytes32[] memory)
-    {
+    function deleteLastElement(
+        bytes32[] memory arr
+    ) public pure returns (bytes32[] memory) {
         bytes32[] memory tempArray = new bytes32[](arr.length - 1);
         for (uint256 i = 0; i < tempArray.length; i++) {
             tempArray[i] = arr[i];
@@ -899,51 +955,60 @@ contract DRCManager is KdaCommon {
         return tempArray;
     }
 
-    function createDucFromDrc (DRC memory drc, DUA memory dua) internal {
-//uint farPermitted, uint tdrConsumed,DrcUtilizationDetails memory drcUtilizationDetails, bytes32 id) internal{
+    function createDucFromDrc(DRC memory drc, DUA memory dua) internal {
+        //uint farPermitted, uint tdrConsumed,DrcUtilizationDetails memory drcUtilizationDetails, bytes32 id) internal{
         DUC memory newDuc;
         newDuc.id = dua.applicationId;
         newDuc.noticeId = drc.noticeId;
         newDuc.farPermitted = dua.farPermitted;
         newDuc.owners = drc.owners;
-        newDuc.circleRateSurrendered= drc.circleRateSurrendered;
+        newDuc.circleRateSurrendered = drc.circleRateSurrendered;
         newDuc.drcUtilizationDetails = dua.drcUtilizationDetails;
         newDuc.tdrConsumed = dua.farUtilized;
         newDuc.locationInfo = dua.locationInfo;
         ducStorage.createDuc(newDuc);
         // need to reduce the available area of the old drc
         drc.farAvailable = drc.farAvailable - dua.farUtilized;
-        if(drc.farAvailable==0){
-            drc.status=DrcStatus.UTILIZED;
+        if (drc.farAvailable == 0) {
+            drc.status = DrcStatus.UTILIZED;
         }
-        drcStorage.updateDrc(drc.id,drc);
-
+        drcStorage.updateDrc(drc.id, drc);
     }
-    function getDuc(bytes32 id) public returns(DUC memory){
+
+    function getDuc(bytes32 id) public returns (DUC memory) {
         return ducStorage.getDuc(id);
     }
-    function getDucIdsForUser(bytes32 userId) public returns (bytes32[] memory){
+
+    function getDucIdsForUser(
+        bytes32 userId
+    ) public returns (bytes32[] memory) {
         return ducStorage.getDucIdsForUser(userId);
     }
-    function linkDucToApplication(bytes32 ducId, bytes32 applicationId) public onlyManager{
+
+    function linkDucToApplication(
+        bytes32 ducId,
+        bytes32 applicationId
+    ) public onlyManager {
         DUC memory duc = ducStorage.getDuc(ducId);
-        if (duc.id =="") {
+        if (duc.id == "") {
             revert("no such DRC utilization certificate exists");
         }
-        if(duc.applicationId !=""){
-            emit LogBytes("application already used", duc.applicationId );
+        if (duc.applicationId != "") {
+            emit LogBytes("application already used", duc.applicationId);
             revert("application already used in another application");
         }
-        duc.applicationId=applicationId;
+        duc.applicationId = applicationId;
         ducStorage.updateDuc(duc);
-        ducStorage.addDucToApplication(ducId,applicationId);
+        ducStorage.addDucToApplication(ducId, applicationId);
     }
 
     //Aim of this funciton is to get the last 10 DRC from the drc id
     /*
     Aim of this function is to get the last 10 DRC.
     */
-    function getDrcHistory(bytes32 currentDrcId) public view returns (DRC[] memory) {
+    function getDrcHistory(
+        bytes32 currentDrcId
+    ) public view returns (DRC[] memory) {
         DRC[] memory history = new DRC[](10); // set maximum history length to 10
         uint i = 0;
         while (currentDrcId != bytes32(0) && i < 10) {
@@ -954,5 +1019,4 @@ contract DRCManager is KdaCommon {
         }
         return history;
     }
-
 }

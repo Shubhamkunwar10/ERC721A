@@ -7,7 +7,9 @@ pragma solidity ^0.8.16;
     LOCKED_FOR_UTILIZATION,
     TRANSFERRED,
     UTILIZED,
-    CANCELLED
+    DRC_CANCELLED_BY_UTILIZATION,
+    DRC_CANCELLED_BY_AUTHORITY,
+    DRC_CANCELLATION_PROCESS_STARTED
 }
 
     enum ApplicationStatus {
@@ -233,6 +235,12 @@ pragma solidity ^0.8.16;
         ConstructionDetails constructionDetails; // Warning for floating
         PropertyOwner[] owners;
         bytes32 propertyId;
+    }
+    struct noticeCancellation {
+        uint cancellationStarted;
+        uint cancellationTime;
+        string reasonForCancellation;
+        string cancellationReason;
     }
     struct LocationInfo {
         bytes32 khasraOrPlotNo;
