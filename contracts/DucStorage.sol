@@ -3,66 +3,23 @@ pragma solidity ^0.8.16;
 import "./DataTypes.sol";
 //import "./lib/Counters.sol";
 //import "./lib/SafeMath.sol";
-
+import "./KdaCommon.sol";
 
 //    using SafeMath for uint256;
 //    using Counters for Counters.Counter;
 
 // Define the struct that we will be using for our CRUD operations
 
-contract DucStorage {
+contract DucStorage is KdaCommon{
     mapping(bytes32 => DUC) private certMap;
     mapping(bytes32 => bytes32[]) public ownerMap; //ownerId => DucId
     mapping(bytes32 => bytes32[]) public applicationMap; //applicationId => DucId[]
     // An application can have multiple DUC
 
-    event Logger(string log);
-    event LogAddress(string addressInfo, address _address);
-    event LogBytes(string messgaeInfo, bytes32 _bytes);
-    event LogBool(string messageInfo, bool message);
-    event LogApplication(string message, TdrApplication application);
-
-    address owner;
-    address admin;
-    address manager;
     address tdrManager;
 
     // Constructor function to set the initial values of the contract
-    constructor(address _admin, address _manager) {
-        // Set the contract owner to the caller
-        owner = msg.sender;
-
-        // Set the contract admin
-        admin = _admin;
-        manager = _manager;
-    }
-    // Modifier to check if the caller is the TDR manager
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Caller is not the TDR manager");
-        _;
-    }
-
-    // Modifier to check if the caller is the contract admin
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Caller is not the contract admin");
-        _;
-    }
-    modifier onlyManager() {
-        require(msg.sender == manager, "Caller is not the contract manager");
-        _;
-    }
-
-    function setAdmin(address _newAdmin) onlyOwner public{
-        admin = _newAdmin;
-    }
-    function setOwner(address _newOwner) onlyOwner public {
-        owner = _newOwner;
-    }
-    function setManager(address _newManager) onlyOwner public {
-        manager = _newManager;
-    }
-
-
+    constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
 
     function createDuc(
         bytes32 id,

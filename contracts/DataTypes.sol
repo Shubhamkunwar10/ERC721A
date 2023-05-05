@@ -24,8 +24,8 @@ pragma solidity ^0.8.16;
 }
     enum VerificationValues{
         PENDING,
-        REJECTED,
         VERIFIED,
+        REJECTED,
         SENT_BACK_FOR_CORRECTION
     }
     enum ApprovalValues{
@@ -80,6 +80,7 @@ pragma solidity ^0.8.16;
         SUB_VERIFIER,
         VC,
         APPROVER,
+        TOWN_PLANNER,
         CHIEF_TOWN_AND_COUNTRY_PLANNER,
         CHIEF_ENGINEER,
         DM,
@@ -113,11 +114,10 @@ pragma solidity ^0.8.16;
         DRC_ISSUER,                         //issue drc
         DTA_VERIFIER,
         DTA_APPROVER,
-
+        DUA_APPROVER,
         DRC_MANAGER, // manages drc after issuance
+        DRC_CANCELLER,
         NOMINEE_MANAGER
-
-
     }
 
 
@@ -244,8 +244,8 @@ pragma solidity ^0.8.16;
     }
     struct LocationInfo {
         bytes32 khasraOrPlotNo;
-        bytes32 villageOrWard;
-        bytes32 Tehsil;
+        bytes32 scheme;
+        Zone zone;
         bytes32 district;
     }
     struct PropertyInfo {
@@ -286,14 +286,13 @@ pragma solidity ^0.8.16;
 
     struct VerificationStatus {
         VerificationValues verified;
-        bytes32 verifierId;
-        string verifierComment;
         SubVerificationStatus landVerification;
         SubVerificationStatus planningVerification;
         SubVerificationStatus engineeringVerification;
         SubVerificationStatus propertyVerification;
         SubVerificationStatus salesVerification;
         SubVerificationStatus legalVerification;
+        SubVerificationStatus townPlannerVerification;
     }
     struct DtaVerificationStatus {
         VerificationValues verified;

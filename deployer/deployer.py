@@ -92,7 +92,7 @@ FILES_TO_COMPILE = [
 CONTRACTS = ["DrcTransferApplicationStorage", "DrcStorage", "DRCManager", "TdrStorage", "TDRManager", "UserManager",
              "DuaStorage", "NomineeStorage", "NomineeManager", "DucStorage", "UserStorage"]
 # SKIPPED_CONTRACTS = ["UserManager","TdrStorage","DrcStorage","NomineeStorage"]
-SKIPPED_CONTRACTS = ["UserStorage", "TdrStorage", "NomineeStorage"]
+# SKIPPED_CONTRACTS = ["UserStorage", "TdrStorage", "NomineeStorage"]
 # SKIPPED_CONTRACTS = [
 #                     "DrcTransferApplicationStorage",
 #                      "DrcStorage",
@@ -105,7 +105,7 @@ SKIPPED_CONTRACTS = ["UserStorage", "TdrStorage", "NomineeStorage"]
 #                      "NomineeManager",
 #                      "UserStorage",
 #                      ]
-# SKIPPED_CONTRACTS = []
+SKIPPED_CONTRACTS = []
 logger.info('following files would be compiled')
 logger.info(FILES_TO_COMPILE)
 
@@ -342,7 +342,7 @@ def instantiate(contract_address, compiled_contracts):
     # execute_contract_method(update_tdr_storage_method, OWNER_ACCOUNT)
 
     # updating user manager in tdr manager
-    set_contract_address(tdr_manager_contract, 'updateTdrStorage', tdr_storage_address,
+    set_contract_address(tdr_manager_contract, 'loadTdrStorage', tdr_storage_address,
                          "updating tdr storage in tdr manager contract")
 
     # # updating user manager in tdr manager
@@ -351,7 +351,7 @@ def instantiate(contract_address, compiled_contracts):
     # execute_contract_method(update_user_manager_method, OWNER_ACCOUNT)
 
     # updating user manager in tdr manager
-    set_contract_address(tdr_manager_contract, 'updateUserManager', user_manager_address,
+    set_contract_address(tdr_manager_contract, 'loadUserManager', user_manager_address,
                          "updating user manager addres in tdr manager contract")
     # # setting manager for tdrStorage
     # update_tdr_storage_manager_method = tdr_storage_contract.functions.setManager(tdr_manager_address)
@@ -378,11 +378,11 @@ def instantiate(contract_address, compiled_contracts):
     # execute_contract_method(update_drc_storage_method, OWNER_ACCOUNT)
 
     # updating drc storage in tdr manager
-    set_contract_address(tdr_manager_contract, 'updateDrcStorage', drc_storage_address,
+    set_contract_address(tdr_manager_contract, 'loadDrcStorage', drc_storage_address,
                          "update drc storage in drc manager")
 
     # updating drc storage in drc manager
-    set_contract_address(drc_manager_contract, 'updateDrcStorage', drc_storage_address,
+    set_contract_address(drc_manager_contract, 'loadDrcStorage', drc_storage_address,
                          "update drc storage in drc manager")
 
     # updating user manager in drc manager
@@ -395,16 +395,16 @@ def instantiate(contract_address, compiled_contracts):
     set_contract_address(dua_storage_contract, 'setManager', drc_manager_address,
                          "update user manager in dua manager")
     # updating dta storage in drc manager
-    set_contract_address(drc_manager_contract, 'updateDtaStorage', dta_storage_address,
+    set_contract_address(drc_manager_contract, 'loadDtaStorage', dta_storage_address,
                          "update dta storage in drc manager")
     # updating dua storage in drc manager
-    set_contract_address(drc_manager_contract, 'updateDuaStorage', dua_storage_address,
+    set_contract_address(drc_manager_contract, 'loadDuaStorage', dua_storage_address,
                          "update dua storage in drc manager")
 
     set_contract_address(duc_storage_contract, 'setManager', drc_manager_address,
                          "update drc manager in duc storage")
     # updating duc storage in drc manager
-    set_contract_address(drc_manager_contract, 'updateDucStorage', duc_storage_address,
+    set_contract_address(drc_manager_contract, 'loadDucStorage', duc_storage_address,
                          "update duc storage in drc manager")
 
     set_contract_address(drc_storage_contract, 'setTdrManager', tdr_manager_address,
