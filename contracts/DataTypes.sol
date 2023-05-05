@@ -22,8 +22,8 @@ pragma solidity ^0.8.16;
 }
     enum VerificationValues{
         PENDING,
-        REJECTED,
         VERIFIED,
+        REJECTED,
         SENT_BACK_FOR_CORRECTION
     }
     enum ApprovalValues{

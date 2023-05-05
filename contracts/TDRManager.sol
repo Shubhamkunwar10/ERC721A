@@ -911,8 +911,13 @@ contract TDRManager is KdaCommon {
         if (officer.zone==Zone.NONE){
             isOfficerZoneValid = true;
         } else {
-            isOfficerZoneValid == (officer.zone == notice.locationInfo.zone &&
-                                    notice.locationInfo.zone != Zone.NONE);
+            if (officer.zone == notice.locationInfo.zone &&
+                notice.locationInfo.zone != Zone.NONE) {
+                isOfficerZoneValid = true;
+            }
+            else {
+                isOfficerZoneValid = false;
+            }
         }
         require(isOfficerZoneValid,
             "Officer and Application must be in the same non-NONE zone");
