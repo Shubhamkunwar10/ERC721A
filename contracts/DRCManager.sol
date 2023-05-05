@@ -113,63 +113,32 @@ contract DRCManager is KdaCommon {
         _;
     }
 
-    function loadDrcStorage(address _drcStorageAddress) public {
+    function loadDrcStorage(address _drcStorageAddress) public onlyOwner{
         drcStorageAddress = _drcStorageAddress;
         drcStorage = DrcStorage(drcStorageAddress);
     }
 
-    function updateDrcStorage(address _drcStorageAddress) public {
-        drcStorageAddress = _drcStorageAddress;
-        drcStorage = DrcStorage(drcStorageAddress);
-    }
-
-    function loadUserManager(address _userManagerAddress) public {
+    function loadUserManager(address _userManagerAddress) public onlyOwner{
         userManagerAddress = _userManagerAddress;
         userManager = UserManager(userManagerAddress);
     }
 
-    function updateUserManager(address _userManagerAddress) public {
-        userManagerAddress = _userManagerAddress;
-        userManager = UserManager(userManagerAddress);
-    }
-
-    function loadDtaStorage(address _dtaStorageAddress) public {
+    function loadDtaStorage(address _dtaStorageAddress) public onlyOwner{
         dtaStorageAddress = _dtaStorageAddress;
         dtaStorage = DrcTransferApplicationStorage(dtaStorageAddress);
     }
 
-    function updateDtaStorage(address _dtaStorageAddress) public {
-        dtaStorageAddress = _dtaStorageAddress;
-        dtaStorage = DrcTransferApplicationStorage(dtaStorageAddress);
-    }
-    function loadDucStorage(address _ducStorageAddress) public {
+    function loadDucStorage(address _ducStorageAddress) public onlyOwner{
         ducStorageAddress = _ducStorageAddress;
         ducStorage = DucStorage(ducStorageAddress);
     }
 
-    function updateDucStorage(address _ducStorageAddress) public {
-        ducStorageAddress = _ducStorageAddress;
-        ducStorage = DucStorage(ducStorageAddress);
-    }
-
-
-
-    function loadDuaStorage(address _duaStorageAddress) public {
+    function loadDuaStorage(address _duaStorageAddress) public onlyOwner{
         duaStorageAddress = _duaStorageAddress;
         duaStorage = DuaStorage(duaStorageAddress);
     }
 
-    function updateDuaStorage(address _duaStorageAddress) public {
-        duaStorageAddress = _duaStorageAddress;
-        duaStorage = DuaStorage(duaStorageAddress);
-    }
-
-    function loadNomineeManager(address _nomineeManagerAddress) public {
-        nomineeManagerAddress = _nomineeManagerAddress;
-        nomineeManager = NomineeManager(nomineeManagerAddress);
-    }
-
-    function updateNomineeManager(address _nomineeManagerAddress) public {
+    function loadNomineeManager(address _nomineeManagerAddress) public onlyOwner{
         nomineeManagerAddress = _nomineeManagerAddress;
         nomineeManager = NomineeManager(nomineeManagerAddress);
     }
