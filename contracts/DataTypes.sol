@@ -22,8 +22,8 @@ pragma solidity ^0.8.16;
 }
     enum VerificationValues{
         PENDING,
-        REJECTED,
         VERIFIED,
+        REJECTED,
         SENT_BACK_FOR_CORRECTION
     }
     enum ApprovalValues{
@@ -236,8 +236,8 @@ pragma solidity ^0.8.16;
     }
     struct LocationInfo {
         bytes32 khasraOrPlotNo;
-        bytes32 villageOrWard;
-        bytes32 Tehsil;
+        bytes32 scheme;
+        Zone zone;
         bytes32 district;
     }
     struct PropertyInfo {
