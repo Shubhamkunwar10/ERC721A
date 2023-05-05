@@ -78,6 +78,7 @@ pragma solidity ^0.8.16;
         SUB_VERIFIER,
         VC,
         APPROVER,
+        TOWN_PLANNER,
         CHIEF_TOWN_AND_COUNTRY_PLANNER,
         CHIEF_ENGINEER,
         DM,
@@ -111,11 +112,9 @@ pragma solidity ^0.8.16;
         DRC_ISSUER,                         //issue drc
         DTA_VERIFIER,
         DTA_APPROVER,
-
+        DUA_APPROVER,
         DRC_MANAGER, // manages drc after issuance
         NOMINEE_MANAGER
-
-
     }
 
 
