@@ -114,6 +114,7 @@ pragma solidity ^0.8.16;
         DTA_APPROVER,
         DUA_APPROVER,
         DRC_MANAGER, // manages drc after issuance
+        DRC_CANCELLER,
         NOMINEE_MANAGER
     }
 
