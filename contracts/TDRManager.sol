@@ -774,22 +774,22 @@ contract TDRManager is KdaCommon {
         bool allSigned = true;
 
         // Check the status of each subverifier
-        if (!(verificationStatus.landVerification.verified == VerificationValues.PENDING)) {
+        if (verificationStatus.landVerification.verified == VerificationValues.PENDING) {
             allSigned = false;
         }
-        if (!(verificationStatus.planningVerification.verified == VerificationValues.PENDING)) {
+        if (verificationStatus.planningVerification.verified == VerificationValues.PENDING) {
             allSigned = false;
         }
-        if (!(verificationStatus.engineeringVerification.verified == VerificationValues.PENDING)) {
+        if (verificationStatus.engineeringVerification.verified == VerificationValues.PENDING) {
             allSigned = false;
         }
-        if (!(verificationStatus.propertyVerification.verified == VerificationValues.PENDING)) {
+        if (verificationStatus.propertyVerification.verified == VerificationValues.PENDING) {
             allSigned = false;
         }
-        if (!(verificationStatus.salesVerification.verified == VerificationValues.PENDING)) {
+        if (verificationStatus.salesVerification.verified == VerificationValues.PENDING) {
             allSigned = false;
         }
-        if (!(verificationStatus.legalVerification.verified == VerificationValues.PENDING)) {
+        if (verificationStatus.legalVerification.verified == VerificationValues.PENDING) {
             allSigned = false;
         }
 

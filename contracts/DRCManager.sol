@@ -112,79 +112,123 @@ contract DRCManager is KdaCommon {
     event DrcUtilized(bytes32 applicationId, uint256 farUtilized);
     event genDRCFromApplication(DRC application);
 
-    event CancelDrcStarted(bytes32 drcId, DrcStatus status);
-    event CancelDrcByAuthority(bytes32 drcId, DrcStatus status);
-    event CancelDrcRevert(bytes32 drcId, DrcStatus status);
+    event DrcCancellationStarted(bytes32 drcId, bytes32[] applicants);
+    event DrcCancelled(bytes32 drcId, bytes32[] applicants);
+    event DrcCancellationReverted(bytes32 drcId, bytes32[] applicants);
 
 
 // To start DRC cancellation, this method only call by manager and execute when the current time reach cancellation time
-    function startDrcCancellation(
-        bytes32 drcId,
-        uint cancellationTime,
-        string memory reasonForCancellation,
-        string memory cancellationReason
-    ) public {
+    function startDrcCancellation(bytes32 drcId) public {
         require(
             userManager.isOfficerDrcManager(msg.sender),
             "User not authorized"
         );
+        // store the drc
         DRC memory drc = getDrc(drcId);
-        if(cancellationTime >= block.timestamp){
         drc.status = DrcStatus.DRC_CANCELLATION_PROCESS_STARTED;
-        }
         drcStorage.updateDrc(drcId, drc);
-        drcStorage.storeDrcNoticeCancel(drcId, cancellationTime, reasonForCancellation, cancellationReason);
-        emit CancelDrcStarted(drcId, drc.status);
+        DrcCancellationInfo memory drcCancellationInfo = DrcCancellationInfo(block.timestamp,0,0,DrcStatus.DRC_CANCELLATION_PROCESS_STARTED);
+        drcStorage.storeDrcCancellationInfo(drcId,drcCancellationInfo);
+        emit DrcCancellationStarted(drcId, drc.owners);
     }
+//        uint cancellationTime,
+//        string memory reasonForCancellation,
+//        string memory cancellationReason
+//    ) public {
+//        require(
+//            userManager.isOfficerDrcManager(msg.sender),
+//            "User not authorized"
+//        );
+//        DRC memory drc = getDrc(drcId);
+//        if(cancellationTime >= block.timestamp){
+//        drc.status = DrcStatus.DRC_CANCELLATION_PROCESS_STARTED;
+//        }
+//        drcStorage.updateDrc(drcId, drc);
+//        drcStorage.storeDrcNoticeCancel(drcId, cancellationTime, reasonForCancellation, cancellationReason);
+//        emit CancelDrcStarted(drcId, drc.status);
+//    }
 
 // Method to update DRC cancellation time and reasons
-    function updateDrcCancel(bytes32 drcId,
-        uint cancellationTime,
-        string memory reasonForCancellation,
-        string memory cancellationReason ) public {
-            require(
-                userManager.isOfficerDrcManager(msg.sender),
-                "User not authorized"
-            );
-            drcStorage.updateDrcNoticeCancel(drcId, cancellationTime, reasonForCancellation, cancellationReason);
-        }
-
-// To cancel DRC by authority, and update the notice cancellation struct
-    function drcCancelByAuthority(
-        bytes32 drcId,
-        string memory reasonForCancellation,
-        string memory cancellationReason
-    ) public {
-        require(
-            userManager.isOfficerDrcManager(msg.sender),
-            "User not authorized"
-        );
-        DRC memory drc = drcStorage.getDrc(drcId);
-        require(drcStorage.isDrcCreated(drcId), "DRC not created");
-        drcStorage.updateDrcNoticeCancel(drcId, block.timestamp, reasonForCancellation, cancellationReason);
-        drc.status = DrcStatus.DRC_CANCELLED_BY_AUTHORITY;
-        drcStorage.updateDrc(drcId, drc);
-        emit CancelDrcByAuthority(drcId, drc.status);
-    }
-
-// Method to revert back in available status if application in cancellation stage
-    function drcCancelRevert(bytes32 drcId) public {
+    function cancelDrc(bytes32 drcId) public {
         require(
             userManager.isOfficerDrcManager(msg.sender),
             "User not authorized"
         );
         DRC memory drc = getDrc(drcId);
-        require(drcStorage.isDrcCreated(drcId), "DRC not created");
-        drcStorage.deleteDrcNoticeCancel(drcId);
+        drc.status = DrcStatus.DRC_CANCELLED_BY_AUTHORITY;
+        drcStorage.updateDrc(drcId, drc);
+        DrcCancellationInfo memory drcCancellationInfo = drcStorage.getDrcCancellationInfo(drcId);
+        drcCancellationInfo.cancellationTime = block.timestamp;
+        drcStorage.storeDrcCancellationInfo(drcId,drcCancellationInfo);
+        emit DrcCancelled(drcId, drc.owners);
+        }
+    function revertDrcCancellation(bytes32 drcId) public {
+        require(
+            userManager.isOfficerDrcManager(msg.sender),
+            "User not authorized"
+        );
+        DRC memory drc = getDrc(drcId);
         drc.status = DrcStatus.AVAILABLE;
         drcStorage.updateDrc(drcId, drc);
-        emit CancelDrcRevert(drcId, drc.status);
+        DrcCancellationInfo memory drcCancellationInfo = drcStorage.getDrcCancellationInfo(drcId);
+        drcCancellationInfo.revertTime = block.timestamp;
+        drcStorage.storeDrcCancellationInfo(drcId,drcCancellationInfo);
+        emit DrcCancellationReverted(drcId, drc.owners);
+    }
+    function getDrcCancellationInfo(bytes32 drcId) public returns (DrcCancellationInfo memory){
+//        require(
+//            userManager.isOfficerDrcManager(msg.sender),
+//            "User not authorized"
+//        );
+        return  drcStorage.getDrcCancellationInfo(drcId);
     }
 
-// Method to get DRC cancellation application
-    function getDrcCancellationReason(bytes32 drcId) public view returns (noticeCancellation memory) {
-        return drcStorage.getDrcNoticeCancel(drcId);
-    }
+//        uint cancellationTime,
+//        string memory reasonForCancellation,
+//        string memory cancellationReason ) public {
+//            require(
+//                userManager.isOfficerDrcManager(msg.sender),
+//                "User not authorized"
+//            );
+//            drcStorage.updateDrcNoticeCancel(drcId, cancellationTime, reasonForCancellation, cancellationReason);
+//        }
+
+// To cancel DRC by authority, and update the notice cancellation struct
+//    function drcCancelByAuthority(
+//        bytes32 drcId,
+//        string memory reasonForCancellation,
+//        string memory cancellationReason
+//    ) public {
+//        require(
+//            userManager.isOfficerDrcManager(msg.sender),
+//            "User not authorized"
+//        );
+//        DRC memory drc = drcStorage.getDrc(drcId);
+//        require(drcStorage.isDrcCreated(drcId), "DRC not created");
+//        drcStorage.updateDrcNoticeCancel(drcId, block.timestamp, reasonForCancellation, cancellationReason);
+//        drc.status = DrcStatus.DRC_CANCELLED_BY_AUTHORITY;
+//        drcStorage.updateDrc(drcId, drc);
+//        emit CancelDrcByAuthority(drcId, drc.status);
+//    }
+//
+//// Method to revert back in available status if application in cancellation stage
+//    function drcCancelRevert(bytes32 drcId) public {
+//        require(
+//            userManager.isOfficerDrcManager(msg.sender),
+//            "User not authorized"
+//        );
+//        DRC memory drc = getDrc(drcId);
+//        require(drcStorage.isDrcCreated(drcId), "DRC not created");
+//        drcStorage.deleteDrcNoticeCancel(drcId);
+//        drc.status = DrcStatus.AVAILABLE;
+//        drcStorage.updateDrc(drcId, drc);
+//        emit CancelDrcRevert(drcId, drc.status);
+//    }
+//
+//// Method to get DRC cancellation application
+//    function getDrcCancellationReason(bytes32 drcId) public view returns (noticeCancellation memory) {
+//        return drcStorage.getDrcNoticeCancel(drcId);
+//    }
 
     // Constructor function to set the initial values of the contract
     constructor(address _admin, address _manager) KdaCommon(_admin, _manager) {}

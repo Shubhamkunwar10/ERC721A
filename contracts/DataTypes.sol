@@ -236,12 +236,6 @@ pragma solidity ^0.8.16;
         PropertyOwner[] owners;
         bytes32 propertyId;
     }
-    struct noticeCancellation {
-        uint cancellationStarted;
-        uint cancellationTime;
-        string reasonForCancellation;
-        string cancellationReason;
-    }
     struct LocationInfo {
         bytes32 khasraOrPlotNo;
         bytes32 scheme;
@@ -322,4 +316,11 @@ pragma solidity ^0.8.16;
         string phone;
         string email;
         string ownerAddress;
+    }
+
+    struct DrcCancellationInfo{
+        uint cancellationStartTime;
+        uint cancellationTime;
+        uint revertTime;
+        DrcStatus status;
     }
