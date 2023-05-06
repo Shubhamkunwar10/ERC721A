@@ -184,6 +184,14 @@ contract UserManager is KdaCommon {
         return false;
     }
 
+    function isOfficerDuaApprover(address _address) view public returns(bool){
+        KdaOfficer memory officer = getOfficerByAddress(_address);
+        if( ifOfficerHasRole(officer, Role.DUA_APPROVER)){
+            return true;
+        }
+        return false;
+    }
+
     function isOfficerDrcManager(address _address) view public returns(bool){
         KdaOfficer memory officer = getOfficerByAddress(_address);
         if( ifOfficerHasRole(officer,Role.DRC_MANAGER)){
@@ -191,6 +199,8 @@ contract UserManager is KdaCommon {
         }
         return false;
     }
+
+
 
     function getOfficerIdByAddress(address _address) view public returns(bytes32) {
         return userStorage.getOfficerIdByAddress(_address);

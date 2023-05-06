@@ -7,7 +7,9 @@ pragma solidity ^0.8.16;
     LOCKED_FOR_UTILIZATION,
     TRANSFERRED,
     UTILIZED,
-    CANCELLED
+    DRC_CANCELLED_BY_UTILIZATION,
+    DRC_CANCELLED_BY_AUTHORITY,
+    DRC_CANCELLATION_PROCESS_STARTED
 }
 
     enum ApplicationStatus {
@@ -114,6 +116,7 @@ pragma solidity ^0.8.16;
         DTA_APPROVER,
         DUA_APPROVER,
         DRC_MANAGER, // manages drc after issuance
+        DRC_CANCELLER,
         NOMINEE_MANAGER
     }
 
@@ -313,4 +316,11 @@ pragma solidity ^0.8.16;
         string phone;
         string email;
         string ownerAddress;
+    }
+
+    struct DrcCancellationInfo{
+        uint cancellationStartTime;
+        uint cancellationTime;
+        uint revertTime;
+        DrcStatus status;
     }
