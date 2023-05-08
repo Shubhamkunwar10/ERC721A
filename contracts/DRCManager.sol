@@ -37,13 +37,13 @@ contract DRCManager is KdaCommon {
     address tdrManager;
 
     event LogOfficer(string message, KdaOfficer officer);
+//    event DtaVerified(
+//        KdaOfficer officer,
+//        bytes32 applicationId,
+//        bytes32[] applicants,
+//        bytes32[] buyers
+//    );
     event DtaVerified(
-        KdaOfficer officer,
-        bytes32 applicationId,
-        bytes32[] applicants,
-        bytes32[] buyers
-    );
-    event DtaSentBack(
         KdaOfficer officer,
         bytes32 applicationId,
         string reason,
@@ -115,56 +115,6 @@ contract DRCManager is KdaCommon {
     event DrcCancellationStarted(bytes32 drcId, bytes32[] applicants);
     event DrcCancelled(bytes32 drcId, bytes32[] applicants);
     event DrcCancellationReverted(bytes32 drcId, bytes32[] applicants);
-
-
-// To start DRC cancellation, this method only call by manager and execute when the current time reach cancellation time
-    function startDrcCancellation(bytes32 drcId) public {
-        require(
-            userManager.isOfficerDrcManager(msg.sender),
-            "User not authorized"
-        );
-        // store the drc
-        DRC memory drc = getDrc(drcId);
-        drc.status = DrcStatus.DRC_CANCELLATION_PROCESS_STARTED;
-        drcStorage.updateDrc(drcId, drc);
-        DrcCancellationInfo memory drcCancellationInfo = DrcCancellationInfo(block.timestamp,0,0,DrcStatus.DRC_CANCELLATION_PROCESS_STARTED);
-        drcStorage.storeDrcCancellationInfo(drcId,drcCancellationInfo);
-        emit DrcCancellationStarted(drcId, drc.owners);
-    }
-
-// Method to update DRC cancellation time and reasons
-    function cancelDrc(bytes32 drcId) public {
-        require(
-            userManager.isOfficerDrcManager(msg.sender),
-            "User not authorized"
-        );
-        DRC memory drc = getDrc(drcId);
-        drc.status = DrcStatus.DRC_CANCELLED_BY_AUTHORITY;
-        drcStorage.updateDrc(drcId, drc);
-        DrcCancellationInfo memory drcCancellationInfo = drcStorage.getDrcCancellationInfo(drcId);
-        if (block.timestamp -drcCancellationInfo.cancellationStartTime < 2592000) {
-            revert("There should be 30 days notice for cancellation");
-        }
-        drcCancellationInfo.cancellationTime = block.timestamp;
-        drcStorage.storeDrcCancellationInfo(drcId,drcCancellationInfo);
-        emit DrcCancelled(drcId, drc.owners);
-        }
-    function revertDrcCancellation(bytes32 drcId) public {
-        require(
-            userManager.isOfficerDrcManager(msg.sender),
-            "User not authorized"
-        );
-        DRC memory drc = getDrc(drcId);
-        drc.status = DrcStatus.AVAILABLE;
-        drcStorage.updateDrc(drcId, drc);
-        DrcCancellationInfo memory drcCancellationInfo = drcStorage.getDrcCancellationInfo(drcId);
-        drcCancellationInfo.revertTime = block.timestamp;
-        drcStorage.storeDrcCancellationInfo(drcId,drcCancellationInfo);
-        emit DrcCancellationReverted(drcId, drc.owners);
-    }
-    function getDrcCancellationInfo(bytes32 drcId) public returns (DrcCancellationInfo memory){
-        return  drcStorage.getDrcCancellationInfo(drcId);
-    }
 
     // Constructor function to set the initial values of the contract
     constructor(address _admin, address _manager) KdaCommon(_admin, _manager) {}
@@ -543,8 +493,7 @@ contract DRCManager is KdaCommon {
         emit LogBytes("id of the drc fetched in gen new drc is", drc.id);
         emit LogBytes(
             "id of the application fetched in gen new drc is",
-            application.drcId
-        );
+            application.drcId);
         DRC memory newDrc;
         newDrc.id = newDrcId;
         newDrc.noticeId = drc.noticeId;
@@ -563,7 +512,7 @@ contract DRCManager is KdaCommon {
         // need to reduce the available area of the old drc
         drc.farAvailable = drc.farAvailable - application.farTransferred;
         if (drc.farAvailable == 0) {
-            drc.status = DrcStatus.TRANSFERRED;
+            drc.status = DrcStatus.DRC_CANCELLED_BY_UTILIZATION;
         }
         drcStorage.updateDrc(drc.id, drc);
         emit genDRCFromApplication(newDrc);
@@ -856,6 +805,56 @@ contract DRCManager is KdaCommon {
         duaStorage.updateApplication(application);
     }
 
+
+
+    function startDrcCancellation(bytes32 drcId) public {
+        require(
+            userManager.isOfficerDrcManager(msg.sender),
+            "User not authorized"
+        );
+        // store the drc
+        DRC memory drc = getDrc(drcId);
+        drc.status = DrcStatus.DRC_CANCELLATION_PROCESS_STARTED;
+        drcStorage.updateDrc(drcId, drc);
+        DrcCancellationInfo memory drcCancellationInfo = DrcCancellationInfo(block.timestamp,0,0,DrcStatus.DRC_CANCELLATION_PROCESS_STARTED);
+        drcStorage.storeDrcCancellationInfo(drcId,drcCancellationInfo);
+        emit DrcCancellationStarted(drcId, drc.owners);
+    }
+
+    // Method to update DRC cancellation time and reasons
+    function cancelDrc(bytes32 drcId) public {
+        require(
+            userManager.isOfficerDrcManager(msg.sender),
+            "User not authorized"
+        );
+        DRC memory drc = getDrc(drcId);
+        drc.status = DrcStatus.DRC_CANCELLED_BY_AUTHORITY;
+        drcStorage.updateDrc(drcId, drc);
+        DrcCancellationInfo memory drcCancellationInfo = drcStorage.getDrcCancellationInfo(drcId);
+        if (block.timestamp -drcCancellationInfo.cancellationStartTime < 2592000) {
+            revert("There should be 30 days notice for cancellation");
+        }
+        drcCancellationInfo.cancellationTime = block.timestamp;
+        drcStorage.storeDrcCancellationInfo(drcId,drcCancellationInfo);
+        emit DrcCancelled(drcId, drc.owners);
+    }
+    function revertDrcCancellation(bytes32 drcId) public {
+        require(
+            userManager.isOfficerDrcManager(msg.sender),
+            "User not authorized"
+        );
+        DRC memory drc = getDrc(drcId);
+        drc.status = DrcStatus.AVAILABLE;
+        drcStorage.updateDrc(drcId, drc);
+        DrcCancellationInfo memory drcCancellationInfo = drcStorage.getDrcCancellationInfo(drcId);
+        drcCancellationInfo.revertTime = block.timestamp;
+        drcStorage.storeDrcCancellationInfo(drcId,drcCancellationInfo);
+        emit DrcCancellationReverted(drcId, drc.owners);
+    }
+    function getDrcCancellationInfo(bytes32 drcId) public returns (DrcCancellationInfo memory){
+        return  drcStorage.getDrcCancellationInfo(drcId);
+    }
+
     function getApplicantIdsFromApplicants(
         Signatory[] memory applicants
     ) internal pure returns (bytes32[] memory) {
@@ -993,7 +992,7 @@ contract DRCManager is KdaCommon {
         // need to reduce the available area of the old drc
         drc.farAvailable = drc.farAvailable - dua.farUtilized;
         if (drc.farAvailable == 0) {
-            drc.status = DrcStatus.UTILIZED;
+            drc.status = DrcStatus.DRC_CANCELLED_BY_UTILIZATION;
         }
         drcStorage.updateDrc(drc.id, drc);
     }
