@@ -11,3 +11,47 @@ node_modules/*
 deployer/.smcENV
 node_modules
 .env
+
+#Intellij idea gitignore
+*.idea*
+# IntelliJ project files
+.idea/
+
+# Compiled output
+/out/
+
+# Gradle files
+.gradle/
+build/
+
+# Maven files
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+
+# Logs and other generated files
+*.log
+*.log.*
+*.stackdump
+hs_err_pid*
+*.iml
+*.ipr
+*.iws
+.idea_modules/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/.name
+.idea/compiler.xml
+.idea/misc.xml
+.idea/vcs.xml
+*.iws.*
+*.DS_Store
+
+# Exclude any files that are sensitive or contain private data
+secrets.properties
+credentials.properties
+

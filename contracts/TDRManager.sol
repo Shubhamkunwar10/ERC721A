@@ -61,35 +61,18 @@ contract TDRManager is KdaCommon {
 
     // Import all the contracts
     // function to add tdrStorage contract
-    function loadTdrStorage(address _tdrStorageAddress) public {
+    function loadTdrStorage(address _tdrStorageAddress) public onlyOwner{
         tdrStorageAddress = _tdrStorageAddress;
         tdrStorage = TdrStorage(tdrStorageAddress);
     }
 
-    function loadDrcStorage(address _drcStorageAddress) public {
-        drcStorageAddress = _drcStorageAddress;
-        drcStorage = DrcStorage(drcStorageAddress);
-    }
-
-    // function to update tdrStorage
-    function updateTdrStorage(address _tdrStorageAddress) public {
-        tdrStorageAddress = _tdrStorageAddress;
-        tdrStorage = TdrStorage(_tdrStorageAddress);
-    }
-
-    function updateDrcStorage(address _drcStorageAddress) public {
+    function loadDrcStorage(address _drcStorageAddress) public onlyOwner{
         drcStorageAddress = _drcStorageAddress;
         drcStorage = DrcStorage(drcStorageAddress);
     }
 
     // function to add tdrStorage contract
-    function loadUserManager(address _userManagerAddress) public {
-        userManagerAddress = _userManagerAddress;
-        userManager = UserManager(_userManagerAddress);
-    }
-
-    // function to update tdrStorage
-    function updateUserManager(address _userManagerAddress) public {
+    function loadUserManager(address _userManagerAddress) public onlyOwner{
         userManagerAddress = _userManagerAddress;
         userManager = UserManager(_userManagerAddress);
     }
@@ -438,26 +421,22 @@ contract TDRManager is KdaCommon {
         }
         if(tdrApplication.status==ApplicationStatus.REJECTED){
             revert("Application already rejected");
-        }        
+        }
+
+
         if (userManager.isOfficerTdrApplicationVerifier(msg.sender)) {
             require(tdrApplication.status == ApplicationStatus.SUBMITTED ||
-                tdrApplication.status==ApplicationStatus.VERIFIED,
-                "Only submitted or verified application can be rejected"
-                );
+                    tdrApplication.status == ApplicationStatus.VERIFIED,
+                "Only application in submitted or verified can be rejected");
+                    // all sub verifier must have verified
+            require(checkIfAllSubVerifierActed(status)==true,"Application is pending with sub verifiers");
 
-            status.verified = VerificationValues.REJECTED;
-            status.verifierId = officer.userId;
+            status.townPlannerVerification.officerId = officer.userId;
+            status.townPlannerVerification.verified = VerificationValues.REJECTED;
+            status.townPlannerVerification.comment = reason;
 //            status.verifierRole = officer.role;
-            status.verifierComment = reason;
             // update Application
-            tdrApplication.status = ApplicationStatus.VERIFICATION_REJECTED;
-            tdrStorage.updateApplication(tdrApplication);
-            emit TdrApplicationRejected(
-                applicationId,
-                reason,
-                getApplicantIdsFromTdrApplication(tdrApplication)
-            );
-            tdrStorage.storeVerificationStatus(applicationId, status);
+
         } else if (userManager.isOfficerTdrApplicationSubVerifier(msg.sender)) {
             validateOfficerZone(tdrApplication, officer);
             require(tdrApplication.status== ApplicationStatus.SUBMITTED,
@@ -487,11 +466,18 @@ contract TDRManager is KdaCommon {
                 status.legalVerification.verified = VerificationValues.REJECTED;
                 status.legalVerification.comment = reason;
             }
-
-            tdrStorage.storeVerificationStatus(applicationId, status);
         } else {
             revert("user not authorized");
         }
+        status.verified = VerificationValues.REJECTED;
+        tdrApplication.status = ApplicationStatus.VERIFICATION_REJECTED;
+        tdrStorage.updateApplication(tdrApplication);
+        emit TdrApplicationRejected(
+            applicationId,
+            reason,
+            getApplicantIdsFromTdrApplication(tdrApplication)
+        );
+        tdrStorage.storeVerificationStatus(applicationId, status);
     }
 
     function sendBackTdrApplication(bytes32 applicationId, string memory reason)
@@ -520,25 +506,18 @@ contract TDRManager is KdaCommon {
         if(tdrApplication.status==ApplicationStatus.VERIFIED){
             revert("Application already verified");
         }
-        require(tdrApplication.status == ApplicationStatus.SUBMITTED ,
-            "Only submitted or verified application can be rejected"
-        );
+
 
         if (userManager.isOfficerTdrApplicationVerifier(msg.sender)) {
-
-            status.verified = VerificationValues.SENT_BACK_FOR_CORRECTION;
-            status.verifierId = officer.userId;
-            //            status.verifierRole = officer.role;
-            status.verifierComment = reason;
-            // update Application
-            tdrApplication.status = ApplicationStatus.SENT_BACK_FOR_CORRECTION;
-            tdrStorage.updateApplication(tdrApplication);
-            emit TdrApplicationSentBackForCorrection(
-                applicationId,
-                reason,
-                getApplicantIdsFromTdrApplication(tdrApplication)
+            require(tdrApplication.status == ApplicationStatus.SUBMITTED ||
+                    tdrApplication.status == ApplicationStatus.VERIFIED,
+                "Only submitted or verified application can be sent back for correction"
             );
-            tdrStorage.storeVerificationStatus(applicationId, status);
+            require(checkIfAllSubVerifierActed(status)==true,"Application is pending with sub verifiers");
+            status.townPlannerVerification.officerId = officer.userId;
+            status.townPlannerVerification.verified = VerificationValues.SENT_BACK_FOR_CORRECTION;
+            status.townPlannerVerification.comment = reason;
+
         } else if (userManager.isOfficerTdrApplicationSubVerifier(msg.sender)) {
             validateOfficerZone(tdrApplication, officer);
             require(tdrApplication.status== ApplicationStatus.SUBMITTED,
@@ -568,23 +547,20 @@ contract TDRManager is KdaCommon {
                 status.legalVerification.verified = VerificationValues.SENT_BACK_FOR_CORRECTION;
                 status.legalVerification.comment = reason;
             }
-
-            tdrStorage.storeVerificationStatus(applicationId, status);
         } else {
             revert("user not authorized");
         }
+
+        status.verified = VerificationValues.SENT_BACK_FOR_CORRECTION;
+        tdrApplication.status = ApplicationStatus.SENT_BACK_FOR_CORRECTION;
+        tdrStorage.updateApplication(tdrApplication);
+        emit TdrApplicationSentBackForCorrection(
+            applicationId,
+            reason,
+            getApplicantIdsFromTdrApplication(tdrApplication)
+        );
+        tdrStorage.storeVerificationStatus(applicationId, status);
     }
-
-    //     tdrApplication.status = ApplicationStatus.VERIFICATION_REJECTED;
-    //     tdrStorage.updateApplication(tdrApplication);
-    //     emit TdrApplicationRejected(
-    //         applicationId,
-    //         reason,
-    //         getApplicantIdsFromTdrApplication(tdrApplication)
-    //     );
-
-    //     // store the reason for rejection of application
-    // }
 
     event TdrApplicationApproved(
         KdaOfficer officer,
@@ -739,16 +715,18 @@ contract TDRManager is KdaCommon {
             revert("DRC already issued against this notice");
         }
 
+        require((tdrApplication.status== ApplicationStatus.SUBMITTED),
+            "Only submitted application can be verified");
+
         if (userManager.isOfficerTdrApplicationVerifier(msg.sender)) {
 
-            require((tdrApplication.status== ApplicationStatus.SUBMITTED||
-                tdrApplication.status== ApplicationStatus.VERIFICATION_REJECTED),
-                "Only submitted or rejected application can be verified");
-            status.verified = VerificationValues.VERIFIED;
-            status.verifierId = officer.userId;
-//            status.verifierRole = officer.role;
 
-            // update Application
+            // all sub verifier must have verified
+            require(checkIfAllSubVerifierActed(status)==true,"Application pending with sub-verifiers");
+            status.townPlannerVerification.officerId = officer.userId;
+            status.townPlannerVerification.verified =  VerificationValues.VERIFIED;
+
+            status.verified = VerificationValues.VERIFIED;
             tdrApplication.status = ApplicationStatus.VERIFIED;
             tdrStorage.updateApplication(tdrApplication);
             emit TdrApplicationVerified(
@@ -786,39 +764,39 @@ contract TDRManager is KdaCommon {
             revert("user not authorized");
         }
     }
+    /**
+    @dev This function checks whether all subverifier has taken action on the applicaiton
+    @dev returns True is all subverifier has taken action
+    */
+    function checkIfAllSubVerifierActed  (VerificationStatus memory verificationStatus)
+            internal pure returns (bool) {
 
-    function checkIfAllSubverifiersSigned(
-        VerificationStatus memory verificationStatus
-
-    ) internal pure returns (bool) {
         bool allSigned = true;
 
         // Check the status of each subverifier
-        if (!(verificationStatus.landVerification.verified == VerificationValues.VERIFIED)) {
+        if (verificationStatus.landVerification.verified == VerificationValues.PENDING) {
             allSigned = false;
         }
-        if (!(verificationStatus.planningVerification.verified == VerificationValues.VERIFIED)) {
+        if (verificationStatus.planningVerification.verified == VerificationValues.PENDING) {
             allSigned = false;
         }
-        if (!(verificationStatus.engineeringVerification.verified == VerificationValues.VERIFIED)) {
+        if (verificationStatus.engineeringVerification.verified == VerificationValues.PENDING) {
             allSigned = false;
         }
-        if (!(verificationStatus.propertyVerification.verified == VerificationValues.VERIFIED)) {
+        if (verificationStatus.propertyVerification.verified == VerificationValues.PENDING) {
             allSigned = false;
         }
-        if (!(verificationStatus.salesVerification.verified == VerificationValues.VERIFIED)) {
+        if (verificationStatus.salesVerification.verified == VerificationValues.PENDING) {
             allSigned = false;
         }
-        if (!(verificationStatus.legalVerification.verified == VerificationValues.VERIFIED)) {
+        if (verificationStatus.legalVerification.verified == VerificationValues.PENDING) {
             allSigned = false;
         }
 
         return allSigned;
     }
-    function hasAllApproverSigned(
-        ApprovalStatus memory approvalStatus
-
-    ) internal pure returns (bool) {
+    function hasAllApproverSigned(ApprovalStatus memory approvalStatus)
+                internal pure returns (bool) {
         bool allSigned = true;
 
         // Check the status of each subverifier
@@ -902,15 +880,24 @@ contract TDRManager is KdaCommon {
         return applicantList;
     }
 
+
     // Function to match Officer Zone and Application Zone
     function validateOfficerZone(TdrApplication memory tdrApplication, KdaOfficer memory officer) public view {
         // Check if the officer is in the same zone as the application Return false if zone of any one of them is NONE
-        // get zone of notice  
+        // get zone of notice
         TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
         require(
             userManager.ifOfficerIsOfZone(officer, notice.locationInfo.zone),
             "Officer and Application must be in the same non-NONE zone"
         );
 
+    }
+    function getZone(bytes32 _applicationId) public view returns (Zone) {
+        TdrApplication memory application = tdrStorage.getApplication(_applicationId);
+        if (application.applicationId == "") {
+            revert("No such application found");
+        }
+        TdrNotice memory notice = tdrStorage.getNotice(application.noticeId);
+        return (notice.locationInfo.zone);
     }
 }
