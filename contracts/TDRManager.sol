@@ -378,7 +378,7 @@ contract TDRManager is KdaCommon {
             getApplicantIdsFromTdrApplication(tdrApplication)
         );
 
-        ApprovalStatus memory status = tdrStorage.getApprovalStatus(applicationId);
+        TdrApprovalStatus memory status = tdrStorage.getApprovalStatus(applicationId);
         // mark verified
         if(userManager.ifOfficerHasRole(officer, Role.TDR_APPLICATION_APPROVER_CHIEF_TOWN_AND_COUNTRY_PLANNER)){
             status.hasTownPlannerApproved = ApprovalValues.REJECTED;
@@ -402,7 +402,7 @@ contract TDRManager is KdaCommon {
     function rejectVerificationTdrApplication(bytes32 applicationId, string memory reason)
         public
     {
-        VerificationStatus memory status = tdrStorage.getVerificationStatus(
+        TdrVerificationStatus memory status = tdrStorage.getVerificationStatus(
             applicationId);
 
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
@@ -483,7 +483,7 @@ contract TDRManager is KdaCommon {
     function sendBackTdrApplication(bytes32 applicationId, string memory reason)
     public
     {
-        VerificationStatus memory status = tdrStorage.getVerificationStatus(
+        TdrVerificationStatus memory status = tdrStorage.getVerificationStatus(
             applicationId);
 
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
@@ -569,7 +569,7 @@ contract TDRManager is KdaCommon {
     );
 // only admin can approve the application 
 // admin can approve the rejected application too
-    event TdrApprovalStatus(ApprovalStatus approvalStatus);
+//    event TdrApprovalStatus(TdrApprovalStatus approvalStatus);
     function approveApplication(bytes32 applicationId) public {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
@@ -588,7 +588,7 @@ contract TDRManager is KdaCommon {
         else {
                 revert("User not authorized");
         }
-        ApprovalStatus memory status = tdrStorage.getApprovalStatus(applicationId);
+        TdrApprovalStatus memory status = tdrStorage.getApprovalStatus(applicationId);
         // mark verified
         if(userManager.ifOfficerHasRole(officer, Role.TDR_APPLICATION_APPROVER_CHIEF_TOWN_AND_COUNTRY_PLANNER)){
             status.hasTownPlannerApproved = ApprovalValues.APPROVED;
@@ -606,7 +606,7 @@ contract TDRManager is KdaCommon {
                 getApplicantIdsFromTdrApplication(tdrApplication)
             );
         }
-        emit TdrApprovalStatus(status);
+//        emit TdrApprovalStatus(status);
         tdrStorage.storeApprovalStatus(applicationId,status);
         tdrStorage.updateApplication(tdrApplication);
     }
@@ -665,9 +665,9 @@ contract TDRManager is KdaCommon {
     function getVerificationStatus(bytes32 applicationId)
         public
         view
-        returns (VerificationStatus memory)
+        returns (TdrVerificationStatus memory)
     {
-        VerificationStatus memory status = tdrStorage.getVerificationStatus(
+        TdrVerificationStatus memory status = tdrStorage.getVerificationStatus(
             applicationId
         );
         return status;
@@ -677,9 +677,9 @@ contract TDRManager is KdaCommon {
     function getApprovalStatus(bytes32 applicationId)
         public
         view
-        returns (ApprovalStatus memory)
+        returns (TdrApprovalStatus memory)
     {
-        ApprovalStatus memory status = tdrStorage.getApprovalStatus(
+        TdrApprovalStatus memory status = tdrStorage.getApprovalStatus(
             applicationId
         );
         return status;
@@ -701,7 +701,7 @@ contract TDRManager is KdaCommon {
  * verifier and sub-verifier has to be from same zone
  * */
     function verifyTdrApplication(bytes32 applicationId) public {
-        VerificationStatus memory status = tdrStorage.getVerificationStatus(
+        TdrVerificationStatus memory status = tdrStorage.getVerificationStatus(
             applicationId
         );
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
@@ -768,7 +768,7 @@ contract TDRManager is KdaCommon {
     @dev This function checks whether all subverifier has taken action on the applicaiton
     @dev returns True is all subverifier has taken action
     */
-    function checkIfAllSubVerifierActed  (VerificationStatus memory verificationStatus)
+    function checkIfAllSubVerifierActed  (TdrVerificationStatus memory verificationStatus)
             internal pure returns (bool) {
 
         bool allSigned = true;
@@ -795,7 +795,7 @@ contract TDRManager is KdaCommon {
 
         return allSigned;
     }
-    function hasAllApproverSigned(ApprovalStatus memory approvalStatus)
+    function hasAllApproverSigned(TdrApprovalStatus memory approvalStatus)
                 internal pure returns (bool) {
         bool allSigned = true;
 

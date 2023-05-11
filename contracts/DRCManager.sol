@@ -326,7 +326,7 @@ contract DRCManager is KdaCommon {
     //     applicationId
     // );
     function verifyDTA(bytes32 applicationId) public {
-        DtaVerificationStatus memory status = dtaStorage.getVerificationStatus(
+        VerificationStatus memory status = dtaStorage.getVerificationStatus(
             applicationId
         );
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
@@ -347,7 +347,7 @@ contract DRCManager is KdaCommon {
         );
         if (userManager.isOfficerDtaVerifier(msg.sender)) {
             status.verified = VerificationValues.VERIFIED;
-            status.verifierId = officer.userId;
+            status.officerId = officer.userId;
             // status.verifierRole = officer.role;
             // update Application
             dta.status = ApplicationStatus.VERIFIED;
@@ -368,7 +368,7 @@ contract DRCManager is KdaCommon {
         bytes32 applicationId,
         string memory reason
     ) public {
-        DtaVerificationStatus memory status = dtaStorage.getVerificationStatus(
+        VerificationStatus memory status = dtaStorage.getVerificationStatus(
             applicationId
         );
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
@@ -389,7 +389,8 @@ contract DRCManager is KdaCommon {
         );
         if (userManager.isOfficerDtaVerifier(msg.sender)) {
             status.verified = VerificationValues.REJECTED;
-            status.verifierId = officer.userId;
+            status.officerId = officer.userId;
+            status.comment= reason;
             // status.verifierRole = officer.role;
             // update Application
             dta.status = ApplicationStatus.REJECTED;
@@ -408,7 +409,7 @@ contract DRCManager is KdaCommon {
     }
 
     function sendBackDTA(bytes32 applicationId, string memory reason) public {
-        DtaVerificationStatus memory status = dtaStorage.getVerificationStatus(
+        VerificationStatus memory status = dtaStorage.getVerificationStatus(
             applicationId
         );
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
@@ -429,8 +430,8 @@ contract DRCManager is KdaCommon {
         );
         if (userManager.isOfficerDtaVerifier(msg.sender)) {
             status.verified = VerificationValues.SENT_BACK_FOR_CORRECTION;
-            status.verifierId = officer.userId;
-            // status.verifierRole = officer.role;
+            status.officerId = officer.userId;
+            status.comment= reason;
             // update Application
             dta.status = ApplicationStatus.SENT_BACK_FOR_CORRECTION;
             dtaStorage.updateApplication(dta);
@@ -449,6 +450,9 @@ contract DRCManager is KdaCommon {
 
     // this function is called by the admin to approve the transfer
     function approveDta(bytes32 applicationId, bytes32 newDrcId) public {
+        ApprovalStatus memory status = dtaStorage.getApprovalStatus(
+            applicationId
+        );
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         //fetch the application
@@ -462,11 +466,11 @@ contract DRCManager is KdaCommon {
                     application.status == ApplicationStatus.REJECTED,
                 "Application should be verified or rejected"
             );
-        } else if (userManager.isOfficerDtaApprover(msg.sender)) {
-            require(application.status == ApplicationStatus.VERIFIED);
         } else {
             revert("User not authorized");
         }
+        status.approved = ApprovalValues.APPROVED;
+        status.officerId = officer.userId;
         application.status = ApplicationStatus.APPROVED;
         dtaStorage.updateApplication(application);
         emit DtaApproved(
@@ -475,6 +479,8 @@ contract DRCManager is KdaCommon {
             getApplicantIdsFromApplicants(application.applicants),
             application.buyers
         );
+        dtaStorage.storeApprovalStatus(applicationId, status);
+
         // one drc transfer is approved, new drc should be created
         genNewDrcFromApplication(application, newDrcId);
         emit DrcIssuedByTransfer(
@@ -531,6 +537,9 @@ contract DRCManager is KdaCommon {
         bytes32 applicationId,
         string memory reason
     ) public {
+        ApprovalStatus memory status = dtaStorage.getApprovalStatus(
+            applicationId
+        );
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         // Check if notice is issued
@@ -557,6 +566,10 @@ contract DRCManager is KdaCommon {
             getApplicantIdsFromApplicants(application.applicants),
             application.buyers
         );
+        status.approved = ApprovalValues.REJECTED;
+        status.officerId = officer.userId;
+        status.comment = reason;
+        dtaStorage.storeApprovalStatus(applicationId, status);
     }
 
     function hasUserSignedDta(
@@ -625,12 +638,20 @@ contract DRCManager is KdaCommon {
 
     function getDtaVerificationStatus(
         bytes32 applicationId
-    ) public view returns (DtaVerificationStatus memory) {
-        DtaVerificationStatus memory status = dtaStorage.getVerificationStatus(
+    ) public view returns (VerificationStatus memory) {
+        VerificationStatus memory status = dtaStorage.getVerificationStatus(
             applicationId
         );
         return status;
-        //        return (status.verified == VerificationValues.VERIFIED);
+    }
+
+    function getDtaApprovalStatus(
+        bytes32 applicationId
+    ) public view returns (ApprovalStatus memory) {
+        ApprovalStatus memory status = dtaStorage.getApprovalStatus(
+            applicationId
+        );
+        return status;
     }
 
     // I need to create two different get application method and then merge it
@@ -767,6 +788,9 @@ contract DRCManager is KdaCommon {
     }
 
     function approveDua(bytes32 applicationId) public {
+        ApprovalStatus memory status = duaStorage.getApprovalStatus(
+            applicationId
+        );
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         //fetch the application
@@ -788,9 +812,17 @@ contract DRCManager is KdaCommon {
             getApplicantIdsFromApplicants(application.signatories)
         );
         duaStorage.updateApplication(application);
+        // updating approval status
+        status.approved = ApprovalValues.APPROVED;
+        status.officerId = officer.userId;
+        duaStorage.storeApprovalStatus(applicationId, status);
+
     }
 
     function rejectDua(bytes32 applicationId, string memory reason) public {
+        ApprovalStatus memory status = duaStorage.getApprovalStatus(
+            applicationId
+        );
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         //fetch the application
@@ -811,6 +843,18 @@ contract DRCManager is KdaCommon {
             reason,
             getApplicantIdsFromApplicants(application.signatories));
         duaStorage.updateApplication(application);
+        status.approved = ApprovalValues.REJECTED;
+        status.officerId = officer.userId;
+        status.comment = reason;
+        duaStorage.storeApprovalStatus(applicationId, status);
+    }
+    function getDuaApprovalStatus(
+        bytes32 applicationId
+    ) public view returns (ApprovalStatus memory) {
+        ApprovalStatus memory status = duaStorage.getApprovalStatus(
+            applicationId
+        );
+        return status;
     }
 
 

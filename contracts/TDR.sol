@@ -19,12 +19,12 @@ contract TdrStorage is KdaCommon{
     mapping(bytes32 => TdrApplication) public applicationMap; // appId => application
     // Map to store the applications against the notice
     mapping(bytes32 => bytes32[]) public noticeApplicationMap; //noticeId => application
-    mapping(bytes32 => VerificationStatus) public verificationStatusMap; //app Id => verification
+    mapping(bytes32 => TdrVerificationStatus) public verificationStatusMap; //app Id => verification
     mapping(bytes32 => bytes32[]) public userApplicationMap; // userId => applicationId[]
     //User application mapping
 
     // TDR struct definition
-    mapping(bytes32 => ApprovalStatus) public approvalStatusMap; //app Id => verification
+    mapping(bytes32 => TdrApprovalStatus) public approvalStatusMap; //app Id => verification
 
     // Event emitted after a TDR is created
     event TdrApplicationUpdated(bytes32 noticeId, bytes32 applicationId, bytes32[] applicants);
@@ -315,14 +315,14 @@ contract TdrStorage is KdaCommon{
 
     function storeVerificationStatus(
         bytes32 id,
-        VerificationStatus memory status
+        TdrVerificationStatus memory status
     ) public {
         verificationStatusMap[id] = status;
     }
 
     function getVerificationStatus(
         bytes32 applicationId
-    ) public view returns (VerificationStatus memory) {
+    ) public view returns (TdrVerificationStatus memory) {
         return verificationStatusMap[applicationId];
     }
 
@@ -335,14 +335,14 @@ contract TdrStorage is KdaCommon{
 // CRUD operation for approval status
     function storeApprovalStatus(
         bytes32 id,
-        ApprovalStatus memory status
+        TdrApprovalStatus memory status
     ) public {
         approvalStatusMap[id] = status;
     }
 
     function getApprovalStatus(
         bytes32 id
-    ) public view returns (ApprovalStatus memory) {
+    ) public view returns (TdrApprovalStatus memory) {
         return approvalStatusMap[id];
     }
 
