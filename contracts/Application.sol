@@ -10,7 +10,8 @@ contract DrcTransferApplicationStorage is KdaCommon{
 
     mapping(bytes32 => DrcTransferApplication) public applicationMap; // application id => application
     mapping(bytes32 => bytes32[]) public userApplicationMap; // userId => application Id
-    mapping(bytes32 => DtaVerificationStatus) public verificationStatusMap; //applicationId => verification status
+    mapping(bytes32 => VerificationStatus) public verificationStatusMap; //applicationId => verification status
+    mapping(bytes32 => ApprovalStatus) public approvalStatusMap; //applicationId => approval status
 
     //events
    
@@ -112,23 +113,44 @@ constructor(address _admin,address _manager) KdaCommon(_admin,_manager) {}
 
     function storeVerificationStatus(
         bytes32 id,
-        DtaVerificationStatus memory status
+        VerificationStatus memory status
     ) public onlyManager {
         verificationStatusMap[id] = status;
     }
 
     function deleteVerificationStatus(
         bytes32 id,
-        DtaVerificationStatus memory status
+        VerificationStatus memory status
     ) public {
         delete verificationStatusMap[id];
     }
 
     function getVerificationStatus(
         bytes32 applicationId
-    ) public view returns (DtaVerificationStatus memory) {
+    ) public view returns (VerificationStatus memory) {
         return verificationStatusMap[applicationId];
     }
+// CRUD operation for approval status
+    function storeApprovalStatus(
+        bytes32 id,
+        ApprovalStatus memory status
+    ) public onlyManager {
+        approvalStatusMap[id] = status;
+    }
+
+    function deleteApprovalStatus(
+        bytes32 id,
+        ApprovalStatus memory status
+    ) public {
+        delete approvalStatusMap[id];
+    }
+
+    function getApprovalStatus(
+        bytes32 applicationId
+    ) public view returns (ApprovalStatus memory) {
+        return approvalStatusMap[applicationId];
+    }
+
 
     function getApplicationForUser(
         bytes32 userId

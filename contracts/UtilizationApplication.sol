@@ -8,6 +8,7 @@ import "./KdaCommon.sol";
 contract DuaStorage is KdaCommon {
     mapping(bytes32 => DUA) public applicationMap; // applicaton id => dua application
     mapping(bytes32 => bytes32[]) public userApplicationMap; //userId => application id list
+    mapping(bytes32 => ApprovalStatus) public approvalStatusMap; //applicationId => approval status
 
     //logger events
     event DuaAddedToUser(bytes32 userId, bytes32 applicationId);
@@ -206,4 +207,26 @@ contract DuaStorage is KdaCommon {
         }
         return applicantList;
     }
+
+    // CRUD operation for approval status
+    function storeApprovalStatus(
+        bytes32 id,
+        ApprovalStatus memory status
+    ) public onlyManager {
+        approvalStatusMap[id] = status;
+    }
+
+    function deleteApprovalStatus(
+        bytes32 id,
+        ApprovalStatus memory status
+    ) public {
+        delete approvalStatusMap[id];
+    }
+
+    function getApprovalStatus(
+        bytes32 applicationId
+    ) public view returns (ApprovalStatus memory) {
+        return approvalStatusMap[applicationId];
+    }
+
 }

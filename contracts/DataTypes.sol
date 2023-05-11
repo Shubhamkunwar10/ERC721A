@@ -272,27 +272,32 @@ pragma solidity ^0.8.16;
 
 
 
-    struct SubVerificationStatus {
+    struct VerificationStatus {
         bytes32 officerId;
         VerificationValues verified;
         string comment;
     }
+    struct ApprovalStatus {
+        bytes32 officerId;
+        ApprovalValues approved;
+        string comment;
+    }
 
-    struct VerificationStatus {
+    struct TdrVerificationStatus {
         VerificationValues verified;
-        SubVerificationStatus landVerification;
-        SubVerificationStatus planningVerification;
-        SubVerificationStatus engineeringVerification;
-        SubVerificationStatus propertyVerification;
-        SubVerificationStatus salesVerification;
-        SubVerificationStatus legalVerification;
-        SubVerificationStatus townPlannerVerification;
+        VerificationStatus landVerification;
+        VerificationStatus planningVerification;
+        VerificationStatus engineeringVerification;
+        VerificationStatus propertyVerification;
+        VerificationStatus salesVerification;
+        VerificationStatus legalVerification;
+        VerificationStatus townPlannerVerification;
     }
-    struct DtaVerificationStatus {
-        VerificationValues verified;
-        bytes32 verifierId;
-        string verifierComment;
-    }
+//    struct VerificationStatus {
+//        VerificationValues verified;
+//        bytes32 officerId;
+//        string comment;
+//    }
 
     struct nomineeApplication {
         bytes32 applicationId;
@@ -300,7 +305,7 @@ pragma solidity ^0.8.16;
         bytes32[] nominees;
         ApplicationStatus status;
     }
-    struct ApprovalStatus {
+    struct TdrApprovalStatus {
         ApprovalValues approved;
         ApprovalValues hasTownPlannerApproved;
         ApprovalValues hasChiefEngineerApproved;
