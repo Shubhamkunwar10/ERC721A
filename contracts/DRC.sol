@@ -31,36 +31,17 @@ contract DrcStorage is KdaCommon {
     address public tdrManager;
 
 
-//    mapping(bytes32 => noticeCancellation) public cancelDrcMap;  // drcId => cancellation reason
 
     function storeDrcCancellationInfo(bytes32 drcId, DrcCancellationInfo memory _drcCancellationInfo) external onlyManager {
         require(isDrcCreated(drcId),"DRC does not exists");
         drcCancelMap[drcId] = _drcCancellationInfo;
 
-//        require(cancellationTime >= block.timestamp, "Time is greater than current time");
-//        noticeCancellation memory notice;
-//        notice.cancellationStarted = block.timestamp;
-//        notice.cancellationTime = cancellationTime;
-//        notice.reasonForCancellation = reasonForCancellation;
-//        notice.cancellationReason = cancellationReason;
-//        cancelDrcMap[drcId] = notice;
-    }   
+    }
 
     function deleteDrcCancellationInfo(bytes32 drcId) public onlyManager{
         delete drcCancelMap[drcId];
     }
 
-//    function updateDrcCancellationInfo(bytes32 drcId, DrcCancellationInfo memory _drcCancellationInfo) external onlyManager{
-//        require(isDrcCreated(drcId),"DRC does not exists");
-//        drcCancelMap[drcId] = _drcCancellationInfo;
-////        require(cancellationTime >= block.timestamp, "Time is greater than current time");
-////        noticeCancellation memory notice;
-////        notice.cancellationStarted = block.timestamp;
-////        notice.cancellationTime = cancellationTime;
-////        notice.reasonForCancellation = reasonForCancellation;
-////        notice.cancellationReason = cancellationReason;
-////        cancelDrcMap[drcId] = notice;
-//    }
 
     function getDrcCancellationInfo(bytes32 drcId) public view returns(DrcCancellationInfo memory) {
         return(drcCancelMap[drcId]);
