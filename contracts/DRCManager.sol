@@ -37,19 +37,19 @@ contract DRCManager is KdaCommon {
     address tdrManager;
 
     event LogOfficer(string message, KdaOfficer officer);
-//    event DtaVerified(
-//        KdaOfficer officer,
-//        bytes32 applicationId,
-//        bytes32[] applicants,
-//        bytes32[] buyers
-//    );
-    event DtaVerified(
-        KdaOfficer officer,
-        bytes32 applicationId,
-        string reason,
-        bytes32[] applicants,
-        bytes32[] buyers
-    );
+   event DtaVerified(
+       KdaOfficer officer,
+       bytes32 applicationId,
+       bytes32[] applicants,
+       bytes32[] buyers
+   );
+    // event DtaVerified(
+    //     KdaOfficer officer,
+    //     bytes32 applicationId,
+    //     string reason,
+    //     bytes32[] applicants,
+    //     bytes32[] buyers
+    // );
     event DtaApproved(
         KdaOfficer officer,
         bytes32 applicationId,
@@ -57,6 +57,13 @@ contract DRCManager is KdaCommon {
         bytes32[] buyers
     );
     event DtaRejected(
+        KdaOfficer officer,
+        bytes32 applicationId,
+        string reason,
+        bytes32[] applicants,
+        bytes32[] buyers
+    );
+    event DtaSentBack(
         KdaOfficer officer,
         bytes32 applicationId,
         string reason,
@@ -103,6 +110,7 @@ contract DRCManager is KdaCommon {
         bytes32[] applicants,
         bytes32[] buyers
     );
+
     event DrcIssuedByTransfer(
         bytes32 applicationId,
         bytes32[] applicants,
