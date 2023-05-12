@@ -122,13 +122,13 @@ pragma solidity ^0.8.16;
 
 
 
-    enum Zone {
-        NONE,
-        ZONE_1,
-        ZONE_2,
-        ZONE_3,
-        ZONE_4
-    }
+//    enum Zone {
+//        NONE,
+//        ZONE_1,
+//        ZONE_2,
+//        ZONE_3,
+//        ZONE_4
+//    }
 
     // DRC would be stored in this struct. knowing this DRC one should know the owner of the DRC,
     //  area and the status of the DRC
@@ -239,7 +239,7 @@ pragma solidity ^0.8.16;
     struct LocationInfo {
         bytes32 khasraOrPlotNo;
         bytes32 scheme;
-        Zone zone;
+        uint8 zone;
         bytes32 district;
     }
     struct PropertyInfo {
@@ -266,7 +266,7 @@ pragma solidity ^0.8.16;
         bytes32 userId;
         Role[] roles;
         Department department;
-        Zone[] zones;
+        uint8[] zones;
         Designation designation;
     }
 

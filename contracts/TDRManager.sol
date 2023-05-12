@@ -892,7 +892,7 @@ contract TDRManager is KdaCommon {
         );
 
     }
-    function getZone(bytes32 _applicationId) public view returns (Zone) {
+    function getZone(bytes32 _applicationId) public view returns (uint8) {
         TdrApplication memory application = tdrStorage.getApplication(_applicationId);
         if (application.applicationId == "") {
             revert("No such application found");
