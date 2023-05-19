@@ -870,8 +870,8 @@ contract DRCManager is KdaCommon {
         //application should not be already approved
         if (userManager.isOfficerDuaApprover(msg.sender)) {
             require(
-                application.status == ApplicationStatus.SUBMITTED,
-                "Application should be submitted "
+                application.status == ApplicationStatus.VERIFIED,
+                "Only verified applications can be rejected"
             );
         } else {
             revert("User not authorized");
@@ -881,7 +881,8 @@ contract DRCManager is KdaCommon {
             officer,
             applicationId,
             reason,
-            getApplicantIdsFromApplicants(application.signatories));
+            getApplicantIdsFromApplicants(application.signatories)
+        );
         duaStorage.updateApplication(application);
         status.approved = ApprovalValues.REJECTED;
         status.officerId = officer.userId;
