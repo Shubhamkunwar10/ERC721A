@@ -791,7 +791,7 @@ contract DRCManager is KdaCommon {
     }
 
     function verifyDua(bytes32 applicationId) public {
-        VerificationStatus memory status = dtaStorage.getVerificationStatus(
+        VerificationStatus memory status = duaStorage.getVerifiedStatus(
             applicationId
         );
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
