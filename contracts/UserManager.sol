@@ -184,9 +184,19 @@ contract UserManager is KdaCommon {
         return false;
     }
 
-    function isOfficerDuaApprover(address _address) view public returns(bool){
+    function isOfficerDuaVerifier(
+        address _address
+    ) public view returns (bool) {
         KdaOfficer memory officer = getOfficerByAddress(_address);
-        if( ifOfficerHasRole(officer, Role.DUA_APPROVER)){
+         if (officer.designation == Designation.TOWN_PLANNER){
+            return true;
+        }
+        return false;
+    }
+
+    function isOfficerDuaApprover(address _address) public view returns (bool) {
+        KdaOfficer memory officer = getOfficerByAddress(_address);
+        if (officer.designation == Designation.VC) {
             return true;
         }
         return false;

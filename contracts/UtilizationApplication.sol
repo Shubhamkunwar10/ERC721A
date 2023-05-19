@@ -9,6 +9,7 @@ contract DuaStorage is KdaCommon {
     mapping(bytes32 => DUA) public applicationMap; // applicaton id => dua application
     mapping(bytes32 => bytes32[]) public userApplicationMap; //userId => application id list
     mapping(bytes32 => ApprovalStatus) public approvalStatusMap; //applicationId => approval status
+    mapping(bytes32 => VerificationStatus) public verifiedStatusMap; //applicationId => verified status
 
     //logger events
     event DuaAddedToUser(bytes32 userId, bytes32 applicationId);
@@ -229,4 +230,24 @@ contract DuaStorage is KdaCommon {
         return approvalStatusMap[applicationId];
     }
 
+    // CRUD operation for verified status
+    function storeVerifiedStatus(
+        bytes32 id,
+        VerificationStatus memory status
+    ) public onlyManager {
+        verifiedStatusMap[id] = status;
+    }
+
+    function deleteVerifiedStatus(
+        bytes32 id,
+        VerificationStatus memory status
+    ) public {
+        delete verifiedStatusMap[id];
+    }
+
+    function getVerifiedStatus(
+        bytes32 applicationId
+    ) public view returns (VerificationStatus memory) {
+        return verifiedStatusMap[applicationId];
+    }
 }
