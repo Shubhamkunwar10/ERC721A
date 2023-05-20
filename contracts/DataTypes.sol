@@ -114,6 +114,7 @@ pragma solidity ^0.8.16;
         DRC_ISSUER,                         //issue drc
         DTA_VERIFIER,
         DTA_APPROVER,
+        DUA_VERIFIER,
         DUA_APPROVER,
         DRC_MANAGER, // manages drc after issuance
         DRC_CANCELLER,
@@ -219,7 +220,6 @@ pragma solidity ^0.8.16;
         uint timeStamp;
         bytes32 place;
         bytes32 noticeId;
-        uint farRequested;
         uint circleRate;
         Signatory[] applicants; // this should be applicants user id and then account should be taken from some mapping
         ApplicationStatus status;
