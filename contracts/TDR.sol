@@ -255,7 +255,6 @@ contract TdrStorage is KdaCommon{
         application.timeStamp = _application.timeStamp;
         application.place = _application.place;
         application.noticeId = _application.noticeId;
-        application.farRequested = _application.farRequested;
         application.circleRate = _application.circleRate;
         //        application.farGranted = _application.farGranted;
         application.status = _application.status;
