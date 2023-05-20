@@ -231,21 +231,21 @@ contract DuaStorage is KdaCommon {
     }
 
     // CRUD operation for verified status
-    function storeVerifiedStatus(
+    function storeVerificationStatus(
         bytes32 id,
         VerificationStatus memory status
     ) public onlyManager {
         verifiedStatusMap[id] = status;
     }
 
-    function deleteVerifiedStatus(
+    function deleteVerificatonStatus(
         bytes32 id,
         VerificationStatus memory status
     ) public {
         delete verifiedStatusMap[id];
     }
 
-    function getVerifiedStatus(
+    function getVerificationStatus(
         bytes32 applicationId
     ) public view returns (VerificationStatus memory) {
         return verifiedStatusMap[applicationId];

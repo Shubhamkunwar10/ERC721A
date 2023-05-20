@@ -188,7 +188,7 @@ contract UserManager is KdaCommon {
         address _address
     ) public view returns (bool) {
         KdaOfficer memory officer = getOfficerByAddress(_address);
-         if (officer.designation == Designation.TOWN_PLANNER){
+        if( ifOfficerHasRole(officer,Role.DUA_VERIFIER)){
             return true;
         }
         return false;
@@ -196,7 +196,7 @@ contract UserManager is KdaCommon {
 
     function isOfficerDuaApprover(address _address) public view returns (bool) {
         KdaOfficer memory officer = getOfficerByAddress(_address);
-        if (officer.designation == Designation.VC) {
+        if( ifOfficerHasRole(officer,Role.DUA_APPROVER)) {
             return true;
         }
         return false;
