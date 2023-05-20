@@ -1,6 +1,6 @@
 {
     "debug": true,
-    "nodeHost":"35.193.109.129",
+    "nodeHost":"35.239.73.237",
     "nodePort": "22001",
     "solcVersion": "0.8.16",
     "adminAccount": "0x12126974647d010ab7999fda6dee24e4fe0550662475343f1508f8c1fd837b8d",
