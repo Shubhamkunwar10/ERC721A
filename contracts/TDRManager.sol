@@ -615,7 +615,6 @@ contract TDRManager is KdaCommon {
     function issueDRC(
         bytes32 applicationId,
         bytes32 newDrcId,
-        uint256 farGranted,
         uint256 timeStamp
     ) public {
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
@@ -649,7 +648,7 @@ contract TDRManager is KdaCommon {
             emit Logger("DRC Issue was successful, creating DRC now");
             createDrc(
                 tdrApplication,
-                farGranted,
+                notice.tdrInfo.farProposed,
                 newDrcId,
                 timeStamp,
                 notice.tdrInfo.areaAffected,
