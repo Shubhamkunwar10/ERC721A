@@ -885,23 +885,13 @@ contract TDRManager is KdaCommon {
         // Check if the officer is in the same zone as the application Return false if zone of any one of them is NONE
         // get zone of notice
         TdrNotice memory notice = tdrStorage.getNotice(tdrApplication.noticeId);
-        bool isOfficerZoneValid;
-        if (officer.zone==Zone.NONE){
-            isOfficerZoneValid = true;
-        } else {
-            if (officer.zone == notice.locationInfo.zone &&
-                notice.locationInfo.zone != Zone.NONE) {
-                isOfficerZoneValid = true;
-            }
-            else {
-                isOfficerZoneValid = false;
-            }
-        }
-        require(isOfficerZoneValid,
-            "Officer and Application must be in the same non-NONE zone");
+        require(
+            userManager.ifOfficerIsOfZone(officer, notice.locationInfo.zone),
+            "Officer and Application must be in the same non-NONE zone"
+        );
 
     }
-    function getZone(bytes32 _applicationId) public view returns (Zone) {
+    function getZone(bytes32 _applicationId) public view returns (uint8) {
         TdrApplication memory application = tdrStorage.getApplication(_applicationId);
         if (application.applicationId == "") {
             revert("No such application found");

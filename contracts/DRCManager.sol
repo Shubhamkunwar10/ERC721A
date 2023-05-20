@@ -186,7 +186,6 @@ contract DRCManager is KdaCommon {
         uint256 _farCredited,
         uint256 _farAvailable
     ) public {
-        // KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         if (userManager.isOfficerDrcManager(msg.sender)) {
             DRC memory drc = drcStorage.getDrc(_drcId);
             require(drcStorage.isDrcCreated(_drcId), "DRC not created");
@@ -201,6 +200,7 @@ contract DRCManager is KdaCommon {
     }
 
     function addOwnerToDrc(bytes32 _drcId, bytes32[] memory ownerList) public {
+
         // KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
 
         require(

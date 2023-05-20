@@ -461,7 +461,7 @@ contract TdrStorage is KdaCommon{
     // getZone from TdrApplication by first getting Notice and then getting zone from notice
     function getZone(
         TdrApplication memory _tdrApplication
-    ) public view returns (Zone) {
+    ) public view returns (uint8) {
         TdrNotice memory _tdrNotice = noticeMap[_tdrApplication.noticeId];
         return _tdrNotice.locationInfo.zone;
     }
