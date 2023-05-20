@@ -114,6 +114,7 @@ pragma solidity ^0.8.16;
         DRC_ISSUER,                         //issue drc
         DTA_VERIFIER,
         DTA_APPROVER,
+        DUA_VERIFIER,
         DUA_APPROVER,
         DRC_MANAGER, // manages drc after issuance
         DRC_CANCELLER,

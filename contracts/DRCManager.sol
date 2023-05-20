@@ -85,9 +85,18 @@ contract DRCManager is KdaCommon {
     event DuaSubmitted (
         bytes32 applicationId, 
         bytes32[] applicants);
+    event DuaVerified (
+        bytes32 applicationId, 
+        bytes32[] applicants);
     event DuaApproved (
         bytes32 applicationId, 
         bytes32[] applicants);
+    event DuaVerificationRejected(
+        KdaOfficer officer,
+        bytes32 applicationId,
+        string reason,
+        bytes32[] applicants
+    );
     event DuaRejected(
         KdaOfficer officer,
         bytes32 applicationId,
@@ -177,7 +186,7 @@ contract DRCManager is KdaCommon {
         uint256 _farCredited,
         uint256 _farAvailable
     ) public {
-        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        // KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         if (userManager.isOfficerDrcManager(msg.sender)) {
             DRC memory drc = drcStorage.getDrc(_drcId);
             require(drcStorage.isDrcCreated(_drcId), "DRC not created");
@@ -192,7 +201,7 @@ contract DRCManager is KdaCommon {
     }
 
     function addOwnerToDrc(bytes32 _drcId, bytes32[] memory ownerList) public {
-        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        // KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
 
         require(
             userManager.isOfficerDrcManager(msg.sender),
@@ -207,7 +216,7 @@ contract DRCManager is KdaCommon {
         bytes32 _drcId,
         bytes32[] memory ownerList
     ) public {
-        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        // KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
 
         require(
             userManager.isOfficerDrcManager(msg.sender),
@@ -787,19 +796,56 @@ contract DRCManager is KdaCommon {
         duaStorage.updateApplication(application);
     }
 
-    function approveDua(bytes32 applicationId) public {
-        ApprovalStatus memory status = duaStorage.getApprovalStatus(
+    function verifyDua(bytes32 applicationId) public {
+        VerificationStatus memory status = duaStorage.getVerificationStatus(
             applicationId
         );
         KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
         emit LogOfficer("Officer in action", officer);
         //fetch the application
         DUA memory application =  duaStorage.getApplication(applicationId);
+
+        if (application.status == ApplicationStatus.VERIFIED) {
+            revert("Application already verified");
+        }
+        if (application.status == ApplicationStatus.REJECTED) {
+            revert("Application already rejected");
+        }
+        require(
+            application.status == ApplicationStatus.SUBMITTED,
+            "Application should be submitted"
+        );
+        //application should not be already verified
+        if (userManager.isOfficerDuaVerifier(msg.sender)) {
+            status.verified = VerificationValues.VERIFIED;
+            status.officerId = officer.userId;
+            application.status = ApplicationStatus.VERIFIED;
+            duaStorage.updateApplication(application);
+           emit DuaVerified(
+            applicationId,
+            getApplicantIdsFromApplicants(application.signatories)
+        );
+            // updating Verified status
+            duaStorage.storeVerificationStatus(applicationId, status);
+        } else {
+            revert("User not authorized");
+        }
+    }
+    
+
+    function approveDua(bytes32 applicationId) public{
+        ApprovalStatus memory status = duaStorage.getApprovalStatus(
+            applicationId
+        );
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+
+           DUA memory application =  duaStorage.getApplication(applicationId);
         //application should not be already approved
         if (userManager.isOfficerDuaApprover(msg.sender)) {
             require(
-                application.status == ApplicationStatus.SUBMITTED,
-                "Application should be submitted or rejected"
+                application.status == ApplicationStatus.VERIFIED ||
+                application.status == ApplicationStatus.REJECTED,
+                "Application should be Verified or rejected"
             );
         } else {
             revert("User not authorized");
@@ -830,8 +876,8 @@ contract DRCManager is KdaCommon {
         //application should not be already approved
         if (userManager.isOfficerDuaApprover(msg.sender)) {
             require(
-                application.status == ApplicationStatus.SUBMITTED,
-                "Application should be submitted "
+                application.status == ApplicationStatus.VERIFIED,
+                "Only verified applications can be rejected"
             );
         } else {
             revert("User not authorized");
@@ -841,12 +887,42 @@ contract DRCManager is KdaCommon {
             officer,
             applicationId,
             reason,
-            getApplicantIdsFromApplicants(application.signatories));
+            getApplicantIdsFromApplicants(application.signatories)
+        );
         duaStorage.updateApplication(application);
         status.approved = ApprovalValues.REJECTED;
         status.officerId = officer.userId;
         status.comment = reason;
         duaStorage.storeApprovalStatus(applicationId, status);
+    }
+
+    function rejectVerificationDua(bytes32 applicationId, string memory reason) public {
+        VerificationStatus memory status = duaStorage.getVerificationStatus(applicationId);
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        emit LogOfficer("Officer in action", officer);
+        //fetch the application
+        DUA memory application =  duaStorage.getApplication(applicationId);
+        //application should not be already approved
+        if (userManager.isOfficerDuaVerifier(msg.sender)) {
+            require(
+                application.status == ApplicationStatus.SUBMITTED,
+                "Only submitted applications can be rejected"
+            );
+        } else {
+            revert("User not authorized");
+        }
+        application.status = ApplicationStatus.VERIFICATION_REJECTED;
+        emit DuaVerificationRejected(
+            officer,
+            applicationId,
+            reason,
+            getApplicantIdsFromApplicants(application.signatories)
+        );
+        duaStorage.updateApplication(application);
+        status.verified = VerificationValues.REJECTED;
+        status.officerId = officer.userId;
+        status.comment = reason;
+        duaStorage.storeVerificationStatus(applicationId, status);
     }
     function getDuaApprovalStatus(
         bytes32 applicationId
