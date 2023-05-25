@@ -20,7 +20,10 @@ pragma solidity ^0.8.16;
     DRC_ISSUED,
     VERIFIED,
     VERIFICATION_REJECTED,
-    SENT_BACK_FOR_CORRECTION
+    SENT_BACK_FOR_CORRECTION,
+    DOCUMENTS_MATCHED_WITH_SCANNED,
+    DOCUMENTS_DID_NOT_MATCHED_WITH_SCANNED
+
 }
     enum VerificationValues{
         PENDING,
@@ -75,12 +78,11 @@ pragma solidity ^0.8.16;
 
     enum Designation {
         NONE,
-        ADMIN,
-        VERIFIER,
-        SUB_VERIFIER,
         VC,
-        APPROVER,
+        SUB_VERIFIER,
         TOWN_PLANNER,
+        SECRETARY,
+        ADDITIONAL_SECRETARY,
         CHIEF_TOWN_AND_COUNTRY_PLANNER,
         CHIEF_ENGINEER,
         DM,
@@ -102,15 +104,12 @@ pragma solidity ^0.8.16;
 
         NONE,
         USER_MANAGER,                       //add, update, delete KDA officer
-        KDA_REGISTRAR,                      //KDA  Registeration
-
         TDR_NOTICE_MANAGER,            //create or update TDR Notice
         TDR_APPLICATION_VERIFIER,
         TDR_APPLICATION_SUB_VERIFIER,
         TDR_APPLICATION_APPROVER_CHIEF_TOWN_AND_COUNTRY_PLANNER,
         TDR_APPLICATION_APPROVER_CHIEF_ENGINEER,
         TDR_APPLICATION_APPROVER_DM,
-        TDR_APPLICATION_ZONE_SETTER,
         DRC_ISSUER,                         //issue drc
         DTA_VERIFIER,
         DTA_APPROVER,
@@ -118,7 +117,8 @@ pragma solidity ^0.8.16;
         DUA_APPROVER,
         DRC_MANAGER, // manages drc after issuance
         DRC_CANCELLER,
-        NOMINEE_MANAGER
+        NOMINEE_MANAGER,
+        DOCUMENT_VERIFIER
     }
 
 
@@ -238,7 +238,9 @@ pragma solidity ^0.8.16;
     }
     struct LocationInfo {
         bytes32 khasraOrPlotNo;
-        bytes32 scheme;
+        string scheme;
+        bytes32 village;
+        bytes32 tehsil;
         uint8 zone;
         bytes32 district;
     }

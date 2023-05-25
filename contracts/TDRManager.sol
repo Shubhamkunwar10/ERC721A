@@ -899,4 +899,65 @@ contract TDRManager is KdaCommon {
         TdrNotice memory notice = tdrStorage.getNotice(application.noticeId);
         return (notice.locationInfo.zone);
     }
+
+    event TdrApplicationDocumentsMatched(
+        KdaOfficer officer,
+        bytes32 applicationId,
+        bytes32[] applicants
+    );
+    function acceptDocumentsMatching(bytes32 applicationId) public {
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        emit LogOfficer("Officer in action", officer);
+        // Check if notice is issued
+        TdrApplication memory tdrApplication = tdrStorage.getApplication(
+            applicationId
+        );
+
+        require((tdrApplication.status== ApplicationStatus.SUBMITTED),
+            "Only submitted application can be verified");
+
+        if (userManager.isOfficerDocumentVerifier(msg.sender)) {
+            tdrApplication.status = ApplicationStatus.DOCUMENTS_MATCHED_WITH_SCANNED;
+            tdrStorage.updateApplication(tdrApplication);
+            emit TdrApplicationDocumentsMatched(
+                officer,
+                applicationId,
+                getApplicantIdsFromTdrApplication(tdrApplication)
+            );
+
+        } else {
+            revert("user not authorized");
+        }
+    }
+
+    event TdrApplicationDocumentsNotMatched(
+        KdaOfficer officer,
+        bytes32 applicationId,
+        bytes32[] applicants
+    );
+    function rejectDocumentsMatching(bytes32 applicationId) public {
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        emit LogOfficer("Officer in action", officer);
+        // Check if notice is issued
+        TdrApplication memory tdrApplication = tdrStorage.getApplication(
+            applicationId
+        );
+
+        require((tdrApplication.status== ApplicationStatus.SUBMITTED),
+            "Only submitted application can be verified");
+
+        if (userManager.isOfficerDocumentVerifier(msg.sender)) {
+            tdrApplication.status = ApplicationStatus.DOCUMENTS_DID_NOT_MATCHED_WITH_SCANNED;
+            tdrStorage.updateApplication(tdrApplication);
+            emit TdrApplicationDocumentsNotMatched(
+                officer,
+                applicationId,
+                getApplicantIdsFromTdrApplication(tdrApplication)
+            );
+
+        } else {
+            revert("user not authorized");
+        }
+    }
+
 }
