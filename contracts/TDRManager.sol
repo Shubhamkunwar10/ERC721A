@@ -208,9 +208,9 @@ contract TDRManager is KdaCommon {
 
         // Loop through all applicants in the TDR application
         for (uint256 i = 0; i < application.applicants.length; i++) {
-            Signatory memory signatory = application.applicants[i];
-            if (signatory.userId == userId) {
-                return signatory.hasUserSigned;
+            TdrApplicant memory applicant = application.applicants[i];
+            if (applicant.userId == userId) {
+                return applicant.hasUserSigned;
             }
         }
         // false otherwise
@@ -228,8 +228,8 @@ contract TDRManager is KdaCommon {
         bytes32 userId = userManager.getUserId(adrs);
         //        emit LogAddress("address quries is ",adrs);
         for (uint256 i = 0; i < application.applicants.length; i++) {
-            Signatory memory signatory = application.applicants[i];
-            if (signatory.userId == userId) {
+            TdrApplicant memory applicant = application.applicants[i];
+            if (applicant.userId == userId) {
                 emit LogBytes("user found", userId);
                 emit LogAddress("at address", adrs);
                 return i + 1;
@@ -250,7 +250,7 @@ contract TDRManager is KdaCommon {
         );
         emit LogApplication("application is ", application);
         bytes32 userId = userManager.getUserId(msg.sender);
-        Signatory memory applicant = application.applicants[pos - 1];
+        TdrApplicant memory applicant = application.applicants[pos - 1];
         if (applicant.userId != userId) {
             revert("user is not sender");
         }
@@ -337,8 +337,8 @@ contract TDRManager is KdaCommon {
         returns (bool)
     {
         for (uint256 i = 0; i < application.applicants.length; i++) {
-            Signatory memory s = application.applicants[i];
-            if (!s.hasUserSigned) {
+            TdrApplicant memory applicant = application.applicants[i];
+            if (!applicant.hasUserSigned) {
                 return false;
             }
         }
