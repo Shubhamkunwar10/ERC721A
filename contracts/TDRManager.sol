@@ -507,9 +507,9 @@ contract TDRManager is KdaCommon {
             revert("Application already verified");
         }
 
-
+        // why should verified application be eligible for sent back for correction?
         if (userManager.isOfficerTdrApplicationVerifier(msg.sender)) {
-            require(tdrApplication.status == ApplicationStatus.SUBMITTED ||
+            require(tdrApplication.status == ApplicationStatus.DOCUMENTS_MATCHED_WITH_SCANNED ||
                     tdrApplication.status == ApplicationStatus.VERIFIED,
                 "Only submitted or verified application can be sent back for correction"
             );
@@ -714,8 +714,8 @@ contract TDRManager is KdaCommon {
             revert("DRC already issued against this notice");
         }
 
-        require((tdrApplication.status== ApplicationStatus.SUBMITTED),
-            "Only submitted application can be verified");
+        require((tdrApplication.status== ApplicationStatus.DOCUMENTS_MATCHED_WITH_SCANNED),
+            "Required application with verified documents");
 
         if (userManager.isOfficerTdrApplicationVerifier(msg.sender)) {
 
@@ -899,4 +899,65 @@ contract TDRManager is KdaCommon {
         TdrNotice memory notice = tdrStorage.getNotice(application.noticeId);
         return (notice.locationInfo.zone);
     }
+
+    event TdrApplicationDocumentsVerified(
+        KdaOfficer officer,
+        bytes32 applicationId,
+        bytes32[] applicants
+    );
+    function verifyDocuments(bytes32 applicationId) public {
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        emit LogOfficer("Officer in action", officer);
+        // Check if notice is issued
+        TdrApplication memory tdrApplication = tdrStorage.getApplication(
+            applicationId
+        );
+
+        require((tdrApplication.status== ApplicationStatus.SUBMITTED),
+            "Only submitted application can be verified");
+
+        if (userManager.isOfficerDocumentVerifier(msg.sender)) {
+            tdrApplication.status = ApplicationStatus.DOCUMENTS_MATCHED_WITH_SCANNED;
+            tdrStorage.updateApplication(tdrApplication);
+            emit TdrApplicationDocumentsVerified(
+                officer,
+                applicationId,
+                getApplicantIdsFromTdrApplication(tdrApplication)
+            );
+
+        } else {
+            revert("user not authorized");
+        }
+    }
+
+    event TdrApplicationDocumentsRejected(
+        KdaOfficer officer,
+        bytes32 applicationId,
+        bytes32[] applicants
+    );
+    function rejectDocuments(bytes32 applicationId) public {
+        KdaOfficer memory officer = userManager.getOfficerByAddress(msg.sender);
+        emit LogOfficer("Officer in action", officer);
+        // Check if notice is issued
+        TdrApplication memory tdrApplication = tdrStorage.getApplication(
+            applicationId
+        );
+
+        require((tdrApplication.status== ApplicationStatus.DOCUMENTS_MATCHED_WITH_SCANNED),
+            "Requires application with verified documents");
+
+        if (userManager.isOfficerDocumentVerifier(msg.sender)) {
+            tdrApplication.status = ApplicationStatus.DOCUMENTS_DID_NOT_MATCHED_WITH_SCANNED;
+            tdrStorage.updateApplication(tdrApplication);
+            emit TdrApplicationDocumentsRejected(
+                officer,
+                applicationId,
+                getApplicantIdsFromTdrApplication(tdrApplication)
+            );
+
+        } else {
+            revert("user not authorized");
+        }
+    }
+
 }

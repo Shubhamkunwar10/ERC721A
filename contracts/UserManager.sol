@@ -122,17 +122,18 @@ contract UserManager is KdaCommon {
         return false;
     }
 
-    function isOfficerKdaRegistrar(address _address) view public returns(bool){
-        KdaOfficer memory officer = getOfficerByAddress(_address);
-        if( ifOfficerHasRole(officer,Role.KDA_REGISTRAR)){
-            return true;
-        }
-        return false;
-    }
     // roles related to TDR notice and application
     function isOfficerNoticeManager(address _address) view public returns(bool){
         KdaOfficer memory officer = getOfficerByAddress(_address);
         if( ifOfficerHasRole(officer,Role.TDR_NOTICE_MANAGER)){
+            return true;
+        }
+        return false;
+    }
+
+    function isOfficerDocumentVerifier(address _address) view public returns(bool){
+        KdaOfficer memory officer = getOfficerByAddress(_address);
+        if(ifOfficerHasRole(officer,Role.DOCUMENT_VERIFIER)){
             return true;
         }
         return false;
