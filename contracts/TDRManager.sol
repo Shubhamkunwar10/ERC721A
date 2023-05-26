@@ -425,7 +425,7 @@ contract TDRManager is KdaCommon {
 
 
         if (userManager.isOfficerTdrApplicationVerifier(msg.sender)) {
-            require(tdrApplication.status == ApplicationStatus.SUBMITTED ||
+            require(tdrApplication.status == ApplicationStatus.DOCUMENTS_MATCHED_WITH_SCANNED ||
                     tdrApplication.status == ApplicationStatus.VERIFIED,
                 "Only application in submitted or verified can be rejected");
                     // all sub verifier must have verified
@@ -439,7 +439,7 @@ contract TDRManager is KdaCommon {
 
         } else if (userManager.isOfficerTdrApplicationSubVerifier(msg.sender)) {
             validateOfficerZone(tdrApplication, officer);
-            require(tdrApplication.status== ApplicationStatus.SUBMITTED,
+            require(tdrApplication.status== ApplicationStatus.DOCUMENTS_MATCHED_WITH_SCANNED,
                     "Only submitted application can be verified");
             if (officer.department == Department.LAND) {
                 status.landVerification.officerId = officer.userId;
@@ -520,7 +520,7 @@ contract TDRManager is KdaCommon {
 
         } else if (userManager.isOfficerTdrApplicationSubVerifier(msg.sender)) {
             validateOfficerZone(tdrApplication, officer);
-            require(tdrApplication.status== ApplicationStatus.SUBMITTED,
+            require(tdrApplication.status== ApplicationStatus.DOCUMENTS_MATCHED_WITH_SCANNED,
                 "Only submitted application can be verified");
             if (officer.department == Department.LAND) {
                 status.landVerification.officerId = officer.userId;
@@ -736,8 +736,6 @@ contract TDRManager is KdaCommon {
             tdrStorage.storeVerificationStatus(applicationId, status);
         } else if (userManager.isOfficerTdrApplicationSubVerifier(msg.sender)) {
             validateOfficerZone(tdrApplication, officer);
-            require(tdrApplication.status== ApplicationStatus.SUBMITTED,
-                    "Only submitted application can be verified");
             if (officer.department == Department.LAND) {
 //                status.landVerification.dep = officer.department;
                 status.landVerification.officerId = officer.userId;
@@ -943,8 +941,8 @@ contract TDRManager is KdaCommon {
             applicationId
         );
 
-        require((tdrApplication.status== ApplicationStatus.DOCUMENTS_MATCHED_WITH_SCANNED),
-            "Requires application with verified documents");
+        require((tdrApplication.status== ApplicationStatus.SUBMITTED),
+            "Only submitted application can be rejected");
 
         if (userManager.isOfficerDocumentVerifier(msg.sender)) {
             tdrApplication.status = ApplicationStatus.DOCUMENTS_DID_NOT_MATCHED_WITH_SCANNED;
