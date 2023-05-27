@@ -208,9 +208,9 @@ contract TDRManager is KdaCommon {
 
         // Loop through all applicants in the TDR application
         for (uint256 i = 0; i < application.applicants.length; i++) {
-            Signatory memory signatory = application.applicants[i];
-            if (signatory.userId == userId) {
-                return signatory.hasUserSigned;
+            TdrApplicant memory applicant = application.applicants[i];
+            if (applicant.userId == userId) {
+                return applicant.hasUserSigned;
             }
         }
         // false otherwise
@@ -228,8 +228,8 @@ contract TDRManager is KdaCommon {
         bytes32 userId = userManager.getUserId(adrs);
         //        emit LogAddress("address quries is ",adrs);
         for (uint256 i = 0; i < application.applicants.length; i++) {
-            Signatory memory signatory = application.applicants[i];
-            if (signatory.userId == userId) {
+            TdrApplicant memory applicant = application.applicants[i];
+            if (applicant.userId == userId) {
                 emit LogBytes("user found", userId);
                 emit LogAddress("at address", adrs);
                 return i + 1;
@@ -250,7 +250,7 @@ contract TDRManager is KdaCommon {
         );
         emit LogApplication("application is ", application);
         bytes32 userId = userManager.getUserId(msg.sender);
-        Signatory memory applicant = application.applicants[pos - 1];
+        TdrApplicant memory applicant = application.applicants[pos - 1];
         if (applicant.userId != userId) {
             revert("user is not sender");
         }
@@ -337,8 +337,8 @@ contract TDRManager is KdaCommon {
         returns (bool)
     {
         for (uint256 i = 0; i < application.applicants.length; i++) {
-            Signatory memory s = application.applicants[i];
-            if (!s.hasUserSigned) {
+            TdrApplicant memory applicant = application.applicants[i];
+            if (!applicant.hasUserSigned) {
                 return false;
             }
         }
@@ -425,7 +425,7 @@ contract TDRManager is KdaCommon {
 
 
         if (userManager.isOfficerTdrApplicationVerifier(msg.sender)) {
-            require(tdrApplication.status == ApplicationStatus.SUBMITTED ||
+            require(tdrApplication.status == ApplicationStatus.DOCUMENTS_MATCHED_WITH_SCANNED ||
                     tdrApplication.status == ApplicationStatus.VERIFIED,
                 "Only application in submitted or verified can be rejected");
                     // all sub verifier must have verified
@@ -439,7 +439,7 @@ contract TDRManager is KdaCommon {
 
         } else if (userManager.isOfficerTdrApplicationSubVerifier(msg.sender)) {
             validateOfficerZone(tdrApplication, officer);
-            require(tdrApplication.status== ApplicationStatus.SUBMITTED,
+            require(tdrApplication.status== ApplicationStatus.DOCUMENTS_MATCHED_WITH_SCANNED,
                     "Only submitted application can be verified");
             if (officer.department == Department.LAND) {
                 status.landVerification.officerId = officer.userId;
@@ -520,7 +520,7 @@ contract TDRManager is KdaCommon {
 
         } else if (userManager.isOfficerTdrApplicationSubVerifier(msg.sender)) {
             validateOfficerZone(tdrApplication, officer);
-            require(tdrApplication.status== ApplicationStatus.SUBMITTED,
+            require(tdrApplication.status== ApplicationStatus.DOCUMENTS_MATCHED_WITH_SCANNED,
                 "Only submitted application can be verified");
             if (officer.department == Department.LAND) {
                 status.landVerification.officerId = officer.userId;
@@ -736,8 +736,6 @@ contract TDRManager is KdaCommon {
             tdrStorage.storeVerificationStatus(applicationId, status);
         } else if (userManager.isOfficerTdrApplicationSubVerifier(msg.sender)) {
             validateOfficerZone(tdrApplication, officer);
-            require(tdrApplication.status== ApplicationStatus.SUBMITTED,
-                    "Only submitted application can be verified");
             if (officer.department == Department.LAND) {
 //                status.landVerification.dep = officer.department;
                 status.landVerification.officerId = officer.userId;
@@ -943,8 +941,8 @@ contract TDRManager is KdaCommon {
             applicationId
         );
 
-        require((tdrApplication.status== ApplicationStatus.DOCUMENTS_MATCHED_WITH_SCANNED),
-            "Requires application with verified documents");
+        require((tdrApplication.status== ApplicationStatus.SUBMITTED),
+            "Only submitted application can be rejected");
 
         if (userManager.isOfficerDocumentVerifier(msg.sender)) {
             tdrApplication.status = ApplicationStatus.DOCUMENTS_DID_NOT_MATCHED_WITH_SCANNED;
