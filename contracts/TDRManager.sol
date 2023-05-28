@@ -50,7 +50,8 @@ contract TDRManager is KdaCommon {
         string reason,
         bytes32[] applicants
     );
-    event DrcIssued(DRC drc, bytes32[] owners);
+//    event DrcIssued(DRC drc, bytes32[] owners);
+    event DrcIssued(bytes32 drcId, bytes32 applicationId);
     event TdrApplicationSubmitted(bytes32 applicationId, bytes32[] applicants);
     event DrcSubmitted(bytes32 drcId);
 
@@ -843,7 +844,7 @@ contract TDRManager is KdaCommon {
             drc.owners[i] = tdrApplication.applicants[i].userId;
         }
         drcStorage.createDrc(drc);
-        emit DrcIssued(drc, getApplicantIdsFromTdrApplication(tdrApplication));
+        emit DrcIssued(drc.id, tdrApplication.applicantId);
     }
 
     function getTdrNotice(bytes32 noticeId)
