@@ -480,7 +480,7 @@ contract DRCManager is KdaCommon {
         }
         status.approved = ApprovalValues.APPROVED;
         status.officerId = officer.userId;
-        application.status = ApplicationStatus.APPROVED;
+        application.status = ApplicationStatus.DRC_ISSUED;
         dtaStorage.updateApplication(application);
         emit DtaApproved(
             officer,
@@ -535,7 +535,7 @@ contract DRCManager is KdaCommon {
         // need to reduce the available area of the old drc
         drc.farAvailable = drc.farAvailable - application.farTransferred;
         if (drc.farAvailable == 0) {
-            drc.status = DrcStatus.DRC_CANCELLED_BY_UTILIZATION;
+            drc.status = DrcStatus.TRANSFERRED;
         }
         drcStorage.updateDrc(drc.id, drc);
         emit genDRCFromApplication(newDrc);
