@@ -1,4 +1,4 @@
-# This repo contains the smart contract in solidity to deal with the TDR in Kanpur.
+# This repo contains the smart contract in solidity to provide Unique Ownership of Land In the form of NFT's.
 
 ## Heirarchy of the contracts
 smart contracts are immutable, and hence du diligence has to be observed while writing them. There are two truth however,  
