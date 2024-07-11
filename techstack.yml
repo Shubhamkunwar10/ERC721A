@@ -1,0 +1,626 @@
+repo_name: Shubhamkunwar10/ERC721A
+report_id: 8b02d11d8d3952684e46a658dca56aa2
+version: 0.1
+repo_type: Public
+timestamp: '2024-07-11T07:14:42+00:00'
+requested_by: Shubhamkunwar10
+provider: github
+branch: main
+detected_tools_count: 36
+tools:
+- name: JavaScript
+  description: Lightweight, interpreted, object-oriented language with first-class
+    functions
+  website_url: https://developer.mozilla.org/en-US/docs/Web/JavaScript
+  open_source: true
+  hosted_saas: false
+  category: Languages & Frameworks
+  sub_category: Languages
+  image_url: https://img.stackshare.io/service/1209/javascript.jpeg
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A
+  detection_source: Repo Metadata
+- name: Python
+  description: A clear and powerful object-oriented programming language, comparable
+    to Perl, Ruby, Scheme, or Java.
+  website_url: https://www.python.org
+  open_source: true
+  hosted_saas: false
+  category: Languages & Frameworks
+  sub_category: Languages
+  image_url: https://img.stackshare.io/service/993/pUBY5pVj.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A
+  detection_source: Repo Metadata
+- name: Protobuf
+  description: Google's data interchange format
+  website_url: https://developers.google.com/protocol-buffers/
+  version: 3.19.5
+  open_source: true
+  hosted_saas: false
+  category: Languages & Frameworks
+  sub_category: Serialization Frameworks
+  image_url: https://img.stackshare.io/service/4393/ma2jqJKH_400x400.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: Git
+  description: Fast, scalable, distributed revision control system
+  website_url: http://git-scm.com/
+  open_source: true
+  hosted_saas: false
+  category: Build, Test, Deploy
+  sub_category: Version Control System
+  image_url: https://img.stackshare.io/service/1046/git.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A
+  detection_source: Repo Metadata
+- name: PyPI
+  description: A repository of software for the Python programming language
+  website_url: https://pypi.org/
+  open_source: false
+  hosted_saas: false
+  category: Build, Test, Deploy
+  sub_category: Hosted Package Repository
+  image_url: https://img.stackshare.io/service/12572/-RIWgodF_400x400.jpg
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: Websockets
+  description: A technology that makes it possible to open a two-way interactive communication
+  website_url: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API
+  version: '9.1'
+  open_source: false
+  hosted_saas: false
+  image_url: https://img.stackshare.io/service/4220/LNPwoiWi_400x400.jpg
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: solidity
+  description: How people build software
+  website_url: https://ethereum.github.io/solidity/
+  open_source: false
+  hosted_saas: false
+  image_url: https://img.stackshare.io/service/4959/1__IS8pZzkhvd6kUbSFpSgag.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A
+  detection_source: Repo Metadata
+- name: aiohttp
+  description: Async http client/server framework
+  package_url: https://pypi.org/project/aiohttp
+  version: 3.8.4
+  license: Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/19852/default_d748224707283d9d8a73c2323730c87bda6b313a.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+  vulnerabilities:
+  - name: aiohttp's ClientSession is vulnerable to CRLF injection via version
+    cve_id: CVE-2023-49081
+    cve_url: https://github.com/advisories/GHSA-q3qx-c6g2-7pw2
+    detected_date: Nov 28
+    severity: high
+    first_patched: 3.9.0
+  - name: aiohttp vulnerable to Denial of Service when trying to parse malformed POST
+      requests
+    cve_id: CVE-2024-30251
+    cve_url: https://github.com/advisories/GHSA-5m98-qgg9-wh84
+    detected_date: May 4
+    severity: high
+    first_patched: 3.9.4
+  - name: aiohttp's HTTP parser (the python one, not llhttp) still overly lenient
+      about separators
+    cve_id: CVE-2024-23829
+    cve_url: https://github.com/advisories/GHSA-8qpw-xqxj-h4r2
+    detected_date: Jan 30
+    severity: moderate
+    first_patched: 3.9.2
+  - name: aiohttp is vulnerable to directory traversal
+    cve_id: CVE-2024-23334
+    cve_url: https://github.com/advisories/GHSA-5h86-8mv2-jq9f
+    detected_date: Jan 30
+    severity: moderate
+    first_patched: 3.9.2
+  - name: AIOHTTP has problems in HTTP parser (the python one, not llhttp)
+    cve_id: CVE-2023-47627
+    cve_url: https://github.com/advisories/GHSA-gfw2-4jvh-wgfg
+    detected_date: Nov 15
+    severity: moderate
+    first_patched: 3.8.6
+  - name: aiohttp has vulnerable dependency that is vulnerable to request smuggling
+    cve_id:
+    cve_url: https://github.com/advisories/GHSA-pjjw-qhg8-p2p9
+    detected_date: Nov 29
+    severity: moderate
+    first_patched: 3.8.6
+  - name: aiohttp's ClientSession is vulnerable to CRLF injection via method
+    cve_id: CVE-2023-49082
+    cve_url: https://github.com/advisories/GHSA-qvrw-v9rv-5rjx
+    detected_date: Nov 28
+    severity: moderate
+    first_patched: 3.9.0
+  - name: aiohttp Cross-site Scripting vulnerability on index pages for static file
+      handling
+    cve_id: CVE-2024-27306
+    cve_url: https://github.com/advisories/GHSA-7gpw-8wmc-pm8g
+    detected_date: Apr 19
+    severity: moderate
+    first_patched: 3.9.4
+  - name: aiohttp.web.Application vulnerable to HTTP request smuggling via llhttp
+      HTTP request parser
+    cve_id: CVE-2023-37276
+    cve_url: https://github.com/advisories/GHSA-45c4-8wx5-qw6w
+    detected_date: Jul 21
+    severity: moderate
+    first_patched: 3.8.5
+- name: certifi
+  description: Python package for providing Mozilla's CA Bundle
+  package_url: https://pypi.org/project/certifi
+  version: 2022.12.7
+  license: MPL-2.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/19849/default_75c38a39b9f0062814489e2ec2cbfca0ca15d9ba.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+  vulnerabilities:
+  - name: Removal of e-Tugra root certificate
+    cve_id: CVE-2023-37920
+    cve_url: https://github.com/advisories/GHSA-xqr8-7jwr-rhp7
+    detected_date: Jul 26
+    severity: high
+    first_patched: 2023.7.22
+  - name: Certifi removes GLOBALTRUST root certificate
+    cve_id: CVE-2024-39689
+    cve_url: https://github.com/advisories/GHSA-248v-346w-9cwc
+    detected_date: Jul 6
+    severity: low
+    first_patched: 2024.07.04
+- name: eth-abi
+  description: Ethereum ABI Utils
+  package_url: https://pypi.org/project/eth-abi
+  version: 2.2.0
+  license: MIT
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/20466/default_d777e156225ecb5bdb0ecf55aeae82348a347aa8.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+  vulnerabilities:
+  - name: eth-abi is vulnerable to recursive DoS
+    cve_id:
+    cve_url: https://github.com/advisories/GHSA-3qwc-47jf-5rf7
+    detected_date: Mar 6
+    severity: moderate
+    first_patched: 5.0.1
+  - name: Ethereum ABI decoder DoS when parsing ZST
+    cve_id:
+    cve_url: https://github.com/advisories/GHSA-rqr8-pxh7-cq3g
+    detected_date: Nov 25
+    severity: moderate
+    first_patched: 4.2.0
+- name: idna
+  description: Internationalized Domain Names in Applications
+  package_url: https://pypi.org/project/idna
+  version: '3.4'
+  license: BSD-3-Clause
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/19863/default_f24e00e4cb7620e436f9d06e0305070e1335922a.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+  vulnerabilities:
+  - name: Internationalized Domain Names in Applications (IDNA) vulnerable to denial
+      of service from specially crafted inputs to idna.encode
+    cve_id: CVE-2024-3651
+    cve_url: https://github.com/advisories/GHSA-jjg7-2v4v-x38h
+    detected_date: Apr 12
+    severity: moderate
+    first_patched: '3.7'
+- name: pycryptodome
+  description: Cryptographic library for Python
+  package_url: https://pypi.org/project/pycryptodome
+  version: '3.17'
+  license: BSD-3-Clause,Unlicense,Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/19900/default_4f4fb10b6f169603a907dcb35a5a356d784e3bd3.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+  vulnerabilities:
+  - name: PyCryptodome and pycryptodomex side-channel leakage for OAEP decryption
+    cve_id: CVE-2023-52323
+    cve_url: https://github.com/advisories/GHSA-j225-cvw7-qrx7
+    detected_date: Jan 6
+    severity: moderate
+    first_patched: 3.19.1
+- name: requests
+  description: Python HTTP for Humans
+  package_url: https://pypi.org/project/requests
+  version: 2.28.2
+  license: Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/19826/default_d7c684bf2673f008a9f02ac93901229297a22d7e.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+  vulnerabilities:
+  - name: Requests `Session` object does not verify requests after making first request
+      with verify=False
+    cve_id: CVE-2024-35195
+    cve_url: https://github.com/advisories/GHSA-9wx4-h78v-vm56
+    detected_date: May 21
+    severity: moderate
+    first_patched: 2.32.0
+  - name: Unintended leak of Proxy-Authorization header in requests
+    cve_id: CVE-2023-32681
+    cve_url: https://github.com/advisories/GHSA-j8r2-6x86-q33q
+    detected_date: May 23
+    severity: moderate
+    first_patched: 2.31.0
+- name: urllib3
+  description: HTTP library with thread-safe connection pooling
+  package_url: https://pypi.org/project/urllib3
+  version: 1.26.14
+  license: MIT
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/19842/default_4604ff5dcb7f4d9c7b3833591c2142493951b19c.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+  vulnerabilities:
+  - name: 'urllib3''s Proxy-Authorization request header isn''t stripped during cross-origin
+      redirects '
+    cve_id: CVE-2024-37891
+    cve_url: https://github.com/advisories/GHSA-34jh-p97f-mpxf
+    detected_date: Jun 18
+    severity: moderate
+    first_patched: 1.26.19
+  - name: urllib3's request body not stripped after redirect from 303 status changes
+      request method to GET
+    cve_id: CVE-2023-45803
+    cve_url: https://github.com/advisories/GHSA-g4mx-q9vg-27p4
+    detected_date: Oct 18
+    severity: moderate
+    first_patched: 1.26.18
+  - name: "`Cookie` HTTP header isn't stripped on cross-origin redirects"
+    cve_id: CVE-2023-43804
+    cve_url: https://github.com/advisories/GHSA-v845-jxx5-vc9f
+    detected_date: Oct 3
+    severity: moderate
+    first_patched: 1.26.17
+- name: async-timeout
+  description: Timeout context manager for asyncio programs
+  package_url: https://pypi.org/project/async-timeout
+  version: 4.0.2
+  license: Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/20820/default_33e8d7fbba8bfff26ed0101b65f3a3af5fd63b4e.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: attrs
+  description: Classes Without Boilerplate
+  package_url: https://pypi.org/project/attrs
+  version: 22.2.0
+  license: MIT
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/19857/default_4a8a8fdc10130068bf295812b98e9b72fb42fe70.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: base58
+  description: Base58 and Base58Check implementation
+  package_url: https://pypi.org/project/base58
+  version: 2.1.1
+  license: MIT
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/20011/default_b32e64a45d8bf9f1d856079699536a385ca50457.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: bitarray
+  description: Efficient arrays of booleans -- C extension
+  package_url: https://pypi.org/project/bitarray
+  version: 2.7.3
+  license: Python-2.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/20209/default_6796c4086c025d18cdc673750b208b846d8e0914.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: charset-normalizer
+  description: The Real First Universal Charset Detector
+  package_url: https://pypi.org/project/charset-normalizer
+  version: 3.0.1
+  open_source: false
+  hosted_saas: false
+  category: Build, Test, Deploy
+  sub_category: Package Managers
+  image_url: https://img.stackshare.io/package/pypi/image.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: cytoolz
+  description: 'Cython implementation of Toolz: High performance functional utilities'
+  package_url: https://pypi.org/project/cytoolz
+  version: 0.12.1
+  license: BSD-3-Clause
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/20287/default_f4d4a579a1fa1de2789e2ae83a74ca7e8dff6982.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: eth-keys
+  description: Common API for Ethereum key operations
+  package_url: https://pypi.org/project/eth-keys
+  version: 0.3.4
+  license: MIT
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/20813/default_12fc958f2a2530eaf01762405bed2c16b93a422d.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: eth-typing
+  description: 'Eth-typing: Common type annotations for ethereum python packages'
+  package_url: https://pypi.org/project/eth-typing
+  version: 2.3.0
+  license: MIT
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/20701/default_4bfd97851e4fafa1b6bb8f220e98303679a25fd2.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: eth-utils
+  description: Common utility functions for ethereum codebases
+  package_url: https://pypi.org/project/eth-utils
+  version: 1.9.5
+  license: MIT
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/20225/default_b59ae392a9a3cfc500d235887094fb8ef16dbebc.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: jsonschema
+  description: An implementation of JSON Schema validation for Python
+  package_url: https://pypi.org/project/jsonschema
+  version: 4.17.3
+  license: MIT
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/19854/default_3fbfa1d88b4408e903227ac391490e8efb8dea58.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: multiaddr
+  description: Python implementation of jbenet's multiaddr
+  package_url: https://pypi.org/project/multiaddr
+  version: 0.0.9
+  license: MIT
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/pypi/image.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: multidict
+  description: Multidict implementation
+  package_url: https://pypi.org/project/multidict
+  version: 6.0.4
+  license: Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/20160/default_8822b1755ae0c97a622ebcb1aa9cafa328004f81.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: netaddr
+  description: A network address manipulation library for Python
+  package_url: https://pypi.org/project/netaddr
+  version: 0.8.0
+  license: BSD-3-Clause
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/19938/default_33cd769f45954740da26824e035edca16b8b6b14.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: parsimonious
+  description: ''
+  package_url: https://pypi.org/project/parsimonious
+  version: 0.8.1
+  license: MIT
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/pypi/image.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: pyrsistent
+  description: Persistent/Functional/Immutable data structures
+  package_url: https://pypi.org/project/pyrsistent
+  version: 0.19.3
+  license: MIT
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/20112/default_07c33e3fe9188a5efef46b09a8d6468a52dce7cb.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: rlp
+  description: A package for Recursive Length Prefix encoding and decoding
+  package_url: https://pypi.org/project/rlp
+  version: 2.0.1
+  license: MIT
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/20446/default_3594ac2294a6aa0f41792d27e3f019e66d1684f7.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: semantic-version
+  description: A library implementing the 'SemVer' scheme
+  package_url: https://pypi.org/project/semantic-version
+  version: 2.10.0
+  license: BSD-2-Clause
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/20254/default_49d350d2ae446ec5a00ebd45eeeaa0c300409a71.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: six
+  description: Python 2 and 3 compatibility utilities
+  package_url: https://pypi.org/project/six
+  version: 1.16.0
+  license: MIT
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/19827/default_74a61b43bdb9fc0cba2978316b9976f43545029b.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: toolz
+  description: List processing tools and functional utilities
+  package_url: https://pypi.org/project/toolz
+  version: 0.12.0
+  license: BSD-3-Clause
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/20079/default_7ab6b1c940c208874d4a483f0d832c7b45b3d24e.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: web3
+  description: Web3.py
+  package_url: https://pypi.org/project/web3
+  version: 5.31.3
+  license: MIT
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/20162/default_4ac30e385d247a1f87c5fe3f3f00001d9c4df723.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: websockets
+  description: An implementation of the WebSocket Protocol
+  package_url: https://pypi.org/project/websockets
+  version: '9.1'
+  license: BSD-3-Clause
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/19951/default_fbe690a687f1af7dc36ac3d526708be3294c4cc9.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
+- name: yarl
+  description: Yet another URL library
+  package_url: https://pypi.org/project/yarl
+  version: 1.8.2
+  license: Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: PyPI Packages
+  image_url: https://img.stackshare.io/package/20083/default_d8789f2f1b5b4e9994bef68371453a20460b4d6e.png
+  detection_source_url: https://github.com/Shubhamkunwar10/ERC721A/blob/main/deployer/requirements.txt
+  detection_source: deployer/requirements.txt
+  last_updated_by: 0xankit
+  last_updated_on: 2023-03-03 11:45:55.000000000 Z
